@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 5.4.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.png">
   <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
 <link rel="stylesheet" href="/css/main.css">
@@ -17,15 +17,15 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"un0o7.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"un0o7.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="原理详解 卷积 通过设置一个filter或者称为kernel，对输入的矩阵进行卷积，对应位置相乘。步长为1，矩阵两个维度均减小kernel维度-1. 可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征 CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别">
+  <meta name="description" content="原理详解 卷积 通过设置一个filter或者称为kernel，对输入的矩阵进行卷积，对应位置相乘。步长为1，矩阵两个维度均减小kernel维度-1. 可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CNN原理与实践">
 <meta property="og:url" content="http://un0o7.github.io/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html">
 <meta property="og:site_name" content="un0o7&#39;s blog">
-<meta property="og:description" content="原理详解 卷积 通过设置一个filter或者称为kernel，对输入的矩阵进行卷积，对应位置相乘。步长为1，矩阵两个维度均减小kernel维度-1. 可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征 CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别">
+<meta property="og:description" content="原理详解 卷积 通过设置一个filter或者称为kernel，对输入的矩阵进行卷积，对应位置相乘。步长为1，矩阵两个维度均减小kernel维度-1. 可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg">
 <meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg">
@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg">
 <meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png">
 <meta property="article:published_time" content="2021-10-17T08:37:18.000Z">
-<meta property="article:modified_time" content="2021-10-17T14:47:09.818Z">
+<meta property="article:modified_time" content="2021-10-17T15:00:37.282Z">
 <meta property="article:author" content="un0o7">
 <meta property="article:tag" content="model">
 <meta name="twitter:card" content="summary">
@@ -113,6 +113,7 @@
 
   <div class="site-nav-right">
     <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
 </div>
@@ -152,16 +153,38 @@
     <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
 
   </li>
-        <li class="menu-item menu-item-commonweal">
-
-    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
-
-  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
   </ul>
 </nav>
 
 
 
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
 
 </div>
     </header>
@@ -191,7 +214,7 @@
     <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.png#/images/avatar.png">
       <meta itemprop="name" content="un0o7">
       <meta itemprop="description" content="留言必回！">
     </span>
@@ -212,7 +235,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：22:47:09" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
+              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：23:00:37" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -273,9 +296,8 @@
         <h2 id="原理详解">原理详解</h2>
 <h3 id="卷积">卷积</h3>
 <p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
-<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong></p>
+<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
 <p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
-<span id="more"></span>
 <meta name="referrer" content="no-referrer"/>
 <p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
 <h3 id="padding填白">Padding填白</h3>
@@ -335,7 +357,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/model/" rel="tag"># model</a>
+              <a href="/tags/model/" rel="tag"> <i class="fa fa-tag"></i>model</a>
           </div>
 
         
@@ -416,6 +438,8 @@
 
       <div class="site-overview-wrap sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="un0o7"
+      src="/images/avatar.png#/images/avatar.png">
   <p class="site-author-name" itemprop="name">un0o7</p>
   <div class="site-description" itemprop="description">留言必回！</div>
 </div>
@@ -442,6 +466,10 @@
       </div>
   </nav>
 </div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
   <div class="links-of-author motion-element">
       <span class="links-of-author-item">
         <a href="https://github.com/un0o7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;un0o7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
@@ -528,6 +556,10 @@
   
 
 
+
+
+  
+<script src="/js/local-search.js"></script>
 
 
 
