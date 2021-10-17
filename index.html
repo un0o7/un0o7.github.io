@@ -176,6 +176,629 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-17 22:28:40" itemprop="dateCreated datePublished" datetime="2021-10-17T22:28:40+08:00">2021-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-25 15:08:47" itemprop="dateModified" datetime="2021-09-25T15:08:47+08:00">2021-09-25</time>
+              </span>
+
+          
+            <span id="/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="随机森林">随机森林</h1>
+<h2 id="决策树">决策树</h2>
+<p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p>
+<p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p>
+<h3 id="分类决策树">分类决策树</h3>
+<p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p>
+<p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p>
+<p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p>
+<p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
+<h3 id="回归决策树">回归决策树</h3>
+<h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3>
+<p>这里复习一下<strong>回归和拟合的区别</strong>：</p>
+<p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p>
+<p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p>
+<p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2>
+<h3 id="简介">简介</h3>
+<p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p>
+<p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p>
+<h3 id="决策树生成规则">决策树生成规则</h3>
+<ol type="1">
+<li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li>
+<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
+<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
+</ol>
+<p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p>
+<p>两个随机：随机取样和随机取m个特征。</p>
+<h3 id="分类效果">分类效果</h3>
+<ul>
+<li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li>
+<li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li>
+</ul>
+<p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p>
+<h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3>
+<p>袋外错误率主要用于选取最佳的m值。</p>
+<p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p>
+<p>最终得到每个样本是否被正确预测，计算袋外错误率。</p>
+<h3 id="代码使用">代码使用</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p>
+<p>https://www.zhihu.com/question/24904495/answer/371618173</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%E4%BD%9C%E4%B8%9A1.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/17/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%E4%BD%9C%E4%B8%9A1.html" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-17 22:28:40" itemprop="dateCreated datePublished" datetime="2021-10-17T22:28:40+08:00">2021-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-26 18:19:25" itemprop="dateModified" datetime="2021-09-26T18:19:25+08:00">2021-09-26</time>
+              </span>
+
+          
+            <span id="/2021/10/17/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%E4%BD%9C%E4%B8%9A1.html" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/10/17/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%E4%BD%9C%E4%B8%9A1.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%E4%BD%9C%E4%B8%9A1.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>427</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="数据挖掘作业1">数据挖掘作业1</h1>
+<h2 id="数据获取">数据获取</h2>
+<p>使用pandas提取到恶意和非恶意的url</p>
+<p>写代码要注意正常的只有域名，提取特征输入的参数可能为None</p>
+<p>为了简便，直接提取特征的函数，输入参数均为URL</p>
+<p>得到特征矩阵后由于显示好的url，后是恶意的，需要打乱数据集，保证标签对应。</p>
+<h2 id="特征选取">特征选取</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">特征（和函数名对应）</th>
+<th style="text-align: center;">取值和含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">URL_Length</td>
+<td style="text-align: center;">length of url</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Having_At_Symbol</td>
+<td style="text-align: center;">cout</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Number_Hyphen</td>
+<td style="text-align: center;">count</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">isMalicious_TLD</td>
+<td style="text-align: center;">-1/1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Number_Slash/</td>
+<td style="text-align: center;">count</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Number_dot.</td>
+<td style="text-align: center;">count</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Number_And&amp;</td>
+<td style="text-align: center;">co</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">having_IP_Address直接使用IP访问</td>
+<td style="text-align: center;">0/1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">SSLfinal_State是否使用了HTTPS</td>
+<td style="text-align: center;">0/1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Contain_sensitive</td>
+<td style="text-align: center;">0/1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="模型选择">模型选择</h2>
+<p>使用随机森林算法实现分类。</p>
+<p>主要需要设置决策树的个数参数n_estimators，越大越好，同时计算量也大。默认为<strong>bootstrap sample取样方法</strong>。</p>
+<h2 id="section"></h2>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-17 22:28:40" itemprop="dateCreated datePublished" datetime="2021-10-17T22:28:40+08:00">2021-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-21 19:46:09" itemprop="dateModified" datetime="2021-09-21T19:46:09+08:00">2021-09-21</time>
+              </span>
+
+          
+            <span id="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="机器学习常用库学习">机器学习常用库学习</h1>
+<p>[TOC]</p>
+<h2 id="numpy">numpy</h2>
+<p>一般我们选择<code>import numpy as np</code></p>
+<h3 id="np.array">np.array</h3>
+<p>创建多维数组</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a = np.array([2,4,8,20,16,30]) </span><br></pre></td></tr></table></figure>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210907080644508-245558544.png" alt="image-20210907080640639" /><figcaption aria-hidden="true">image-20210907080640639</figcaption>
+</figure>
+<h3 id="np.arange">np.arange</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#一个参数 默认起点0，步长为1 输出：[0 1 2]</span></span><br><span class="line">a = np.arange(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#两个参数 默认步长为1 输出[3 4 5 6 7 8]一维向量</span></span><br><span class="line">a = np.arange(<span class="number">3</span>,<span class="number">9</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#三个参数 起点为0，终点为3，步长为0.1 输出[ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4 1.5  1.6  1.7  1.8  1.9  2.   2.1  2.2  2.3  2.4  2.5  2.6  2.7  2.8  2.9]</span></span><br><span class="line">a = np.arange(<span class="number">0</span>, <span class="number">3</span>, <span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="np.split">np.split</h3>
+<p><strong><code>split(ary, indices_or_sections, axis=0)</code></strong></p>
+<p>ary:要切分的数组 indices_or_sections:<strong>如果是一个整数，就用该数平均切分</strong>，分成几份，如果是一个数组，为沿轴切分的位置（左开右闭） axis：沿着哪个维度进行切向，默认为0，横向切分。为1时，纵向切分</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x = np.arange(<span class="number">8.0</span>)</span><br><span class="line">np.split(x, [<span class="number">3</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">10</span>])<span class="comment">#也可以是一个元组，行数列数是从0开始的，左闭右开</span></span><br><span class="line"><span class="comment">#[array([ 0.,  1.,  2.]),array([ 3.,  4.]),array([ 5.]),array([ 6.,  7.]),array([], dtype=float64)]</span></span><br></pre></td></tr></table></figure>
+<h3 id="np.ravel">np.ravel</h3>
+<p>ravel()方法将数组维度拉成一维数组，返回一维数组，但是a本身不变</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = [[<span class="number">1</span>, <span class="number">2</span>], [<span class="number">2</span>, <span class="number">3</span>]]</span><br><span class="line">a=a.ravel（）<span class="comment">#按照行序 1 2 2 3 </span></span><br></pre></td></tr></table></figure>
+<h3 id="np.mean">np.mean</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">np.mean(a, <span class="comment"># 必须是数组</span></span><br><span class="line">		axis=<span class="literal">None</span>,</span><br><span class="line">		dtype=<span class="literal">None</span>, </span><br><span class="line">		out=<span class="literal">None</span>,</span><br><span class="line">		keepdims=&lt;<span class="class"><span class="keyword">class</span> &#x27;<span class="title">numpy</span>.<span class="title">_globals</span>.<span class="title">_NoValue</span>&#x27;&gt;)</span></span><br><span class="line"><span class="class"><span class="title">a</span>.<span class="title">mean</span>(<span class="params"><span class="number">1</span></span>)#<span class="title">axis</span>=1</span></span><br><span class="line"><span class="class"><span class="title">np</span>.<span class="title">mean</span>(<span class="params">a</span>)</span></span><br></pre></td></tr></table></figure>
+<p>mean()函数的功能是求取平均值，经常操作的参数是axis，以m*n的矩阵为例：</p>
+<ul>
+<li>axis不设置值，对m*n个数求平均值，返回一个实数</li>
+<li>axis = 0：压缩行，对各列求均值，返回1*n的矩阵</li>
+<li>axis = 1: 压缩列，对各行求均值，返回m*1的矩阵</li>
+</ul>
+<h3 id="np.r_">np.r_</h3>
+<p>按列连接两个矩阵，就是把两矩阵上下相加，要求列数相等.</p>
+<h3 id="np.c_">np.c_</h3>
+<p>按行连接两个矩阵，就是把两矩阵左右相加，要求行数相等。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = np.array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],[<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>]])</span><br><span class="line">b=np.array([[<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>],[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]])</span><br><span class="line">c=np.c_[a,b]</span><br><span class="line">array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],</span><br><span class="line">       [<span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]])</span><br></pre></td></tr></table></figure>
+<h3 id="numpy.random.rand">numpy.random.rand()</h3>
+<p>numpy.random.randn(d0,d1,…,dn)</p>
+<p>参数为维度数，返回array</p>
+<p>rand函数根据给定维度生成[0,1)之间的数据，包含0，不包含1</p>
+<h3 id="numpy.random.randn">numpy.random.randn()</h3>
+<p>参数同上</p>
+<p>randn函数返回一个或一组样本，具有标准正态分布。</p>
+<h3 id="np.random.seed0">np.random.seed(0)</h3>
+<p>使用相同的seed()值，则每次生成的随即数都相同</p>
+<h3 id="np.linspace-5-5">np.linspace(-5, 5)</h3>
+<p>numpy.linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None)</p>
+<p>前后两个数为start和stop，生成行向量，维度为num</p>
+<h3 id="np.random.randint">np.random.randint</h3>
+<p>np.random.randint(0,3,(2,3)) #生成[0,3)上的2行3列的随机整数</p>
+<h3 id="np.empty">np.empty</h3>
+<p><strong>np.empty((2,3),int) #创建2×3的整型空矩阵</strong></p>
+<h3 id="np.split-1">np.split</h3>
+<p>用于划分数据集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x, y = np.split(data,                  <span class="comment">#要切分的数组</span></span><br><span class="line">                (<span class="number">4</span>,),                  <span class="comment">#沿轴切分的位置，第5列开始往后为y</span></span><br><span class="line">                axis=<span class="number">1</span>)   	           <span class="comment">#代表纵向分割，按列分割</span></span><br></pre></td></tr></table></figure>
+<p>data假设为一个二维数组，其中y的形式为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">array([[0.],</span><br><span class="line">       [0.],</span><br><span class="line">       [0.],</span><br><span class="line">       [0.],]</span><br></pre></td></tr></table></figure>
+<h3 id="np.mgrid">np.mgrid</h3>
+<p>np.mgrid(start,stop,step)其中step为负数5j，表示生成从start到stop的5个数,左闭右闭；</p>
+<p>step为实数代表间隔，左闭右开。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>x,y=np.mgrid[-<span class="number">5</span>:<span class="number">5</span>:<span class="number">3j</span>,-<span class="number">2</span>:<span class="number">2</span>:<span class="number">3j</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>x</span><br><span class="line">array([[-<span class="number">5.</span>, -<span class="number">5.</span>, -<span class="number">5.</span>],</span><br><span class="line">       [ <span class="number">0.</span>,  <span class="number">0.</span>,  <span class="number">0.</span>],</span><br><span class="line">       [ <span class="number">5.</span>,  <span class="number">5.</span>,  <span class="number">5.</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>y</span><br><span class="line">array([[-<span class="number">2.</span>,  <span class="number">0.</span>,  <span class="number">2.</span>],</span><br><span class="line">       [-<span class="number">2.</span>,  <span class="number">0.</span>,  <span class="number">2.</span>],</span><br><span class="line">       [-<span class="number">2.</span>,  <span class="number">0.</span>,  <span class="number">2.</span>]])</span><br></pre></td></tr></table></figure>
+<h3 id="np.stack">np.stack</h3>
+<p>c=np.stack((a,b),axis=0)</p>
+<p>a,b为两个array数组，对a，b进行拼接，axis指定在前还在在后</p>
+<p>axis=0,c.shape[0]=2;axis=1,c.shape[1]=2;这里的二是因为a,b两个数组。</p>
+<h2 id="sklearn">sklearn</h2>
+<h3 id="sklearn.model_selection.train_test_split">sklearn.model_selection.train_test_split</h3>
+<p><code>sklearn.model_selection.train_test_split(*arrays, **options)</code></p>
+<p>arrays：分割对象同样长度的列表或者numpy arrays，矩阵,可以放入多个。 test_size：两种指定方法。1：指定小数。小数范围在0.0~0.1之间，它代表test集占据的比例。2：指定整数。整数的大小必须在这个数据集个数范围内，总不能指定一个数超出了数据集的个数范围吧。要是test_size在没有指定的场合，可以通过train_size来指定。（两个是对应关系）。如果train_size也没有指定，那么默认值是0.25. train_size：和test_size相似。 random_state:这是将分割的training和testing集合打乱的个数设定。如果不指定的话，也可以通过numpy.random来设定随机数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">namelist_train, namelist_test = train_test_split(namelist, test_size=<span class="number">0.3</span>)<span class="comment">#指定单个数据集</span></span><br><span class="line"><span class="comment">#指定多个数据集</span></span><br><span class="line">x_train,x_test,y_train,y_test=model_selection.train_test_split(x,          			<span class="comment">#所要划分的样本特征集</span></span><br><span class="line">               y,  <span class="comment">#所要划分的样本结果</span></span><br><span class="line">                                                               random_state=<span class="number">1</span>, <span class="comment">#随机数种子</span></span><br><span class="line">                                                               test_size=<span class="number">0.3</span>)  <span class="comment">#测试样本占比</span></span><br></pre></td></tr></table></figure>
+<h3 id="sklearn.svm">sklearn.svm</h3>
+<h3 id="sklearn.datasets.make_blobs">sklearn.datasets.make_blobs</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x,y=sklearn.datasets.make_blobs(n_samples=100,n_features=2,centers=3, cluster_std=1.0,center_box=(-10.0,10.0),shuffle=True,random_state=None)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>make_blobs函数是为聚类产生数据集，产生一个数据集和相应的标签</li>
+<li>n_samples:表示数据样本点个数,默认值100</li>
+<li>n_features:是每个样本的特征（或属性）数，也表示数据的维度，默认值是2</li>
+<li>centers:表示类别数（标签的种类数），默认值3</li>
+<li>cluster_std表示每个类别的方差，例如我们希望生成2类数据，其中一类比另一类具有更大的方差，可以将cluster_std设置为[1.0,3.0]，浮点数或者浮点数序列，默认值1.0</li>
+<li>center_box：中心确定之后的数据边界，默认值(-10.0, 10.0)</li>
+<li>shuffle ：将数据进行洗乱，默认值是True</li>
+<li>random_state:官网解释是随机生成器的种子，可以固定生成的数据，给定数之后，每次生成的数据集就是固定的。若不给定值，则由于随机性将导致每次运行程序所获得的的结果可能有所不同。在使用数据生成器练习机器学习算法练习或python练习时建议给定数值。 返回两个array，分别为训练集和标签</li>
+</ul>
+<h2 id="pandas">pandas</h2>
+<h3 id="pandas.read_csv">pandas.read_csv</h3>
+<h2 id="pickle">pickle</h2>
+<p>pickle模块实现了基本的数据序列和反序列化.通过pickle模块的序列化操作我们能够将程序中运行的对象信息保存到文件中去，永久存储；通过pickle模块的反序列化操作，我们能够从文件中创建上一次程序保存的对象。</p>
+<p>一般保存为pkl文件，后缀为.pkl. file打开记得close哦。</p>
+<h3 id="pickle.dump">pickle.dump</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dump(obj, file, [,protocol])</span><br></pre></td></tr></table></figure>
+<p>将序列化对象保存到文件中去，协议参数0：ASCII协议，所序列化的对象使用可打印的ASCII码表示；1：老式的二进制协议；2：2.3版本引入的新二进制协议。</p>
+<h3 id="pickle.load">pickle.load</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.load(file)</span><br></pre></td></tr></table></figure>
+<p>从file中读取一个字符串，并将它重构为原来的python对象。</p>
+<h2 id="codecs">codecs</h2>
+<h3 id="codecs.open">codecs.open</h3>
+<p>主要是能搞定不同的编码问题</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codecs.<span class="built_in">open</span>(filepath,method , encoding)</span><br></pre></td></tr></table></figure>
+<p>和文件的open相同，</p>
+<h2 id="tensorflow">tensorflow</h2>
+<h3 id="tf.convert_to_tensor">tf.convert_to_tensor</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.convert_to_tensor(value,dtype=None,dtype_hint=None,name=None)</span><br></pre></td></tr></table></figure>
+<p>将各种类型的Python对象转换为张量对象。它接受张量对象、数字数组、Python列表和Python标量。</p>
+<h2 id="参考">参考</h2>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41550480/article/details/89390579">(7条消息) np.arange()用法_恰个小茶茶的博客-CSDN博客_np.arange</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/mingyuli/article/details/81227629">(7条消息) numpy.split()函数_mingyuli的博客-CSDN博客</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/Transformer.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/17/Transformer.html" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-17 22:28:40" itemprop="dateCreated datePublished" datetime="2021-10-17T22:28:40+08:00">2021-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-06 20:54:07" itemprop="dateModified" datetime="2021-10-06T20:54:07+08:00">2021-10-06</time>
+              </span>
+
+          
+            <span id="/2021/10/17/Transformer.html" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/10/17/Transformer.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/Transformer.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>421</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="transformer">Transformer</h1>
+<h1 id="简介">简介</h1>
+<p>源自论文<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></p>
+<p>最近开始做计算机视觉CV，图像分割。</p>
+<p>本文希望全面了解tranformer，包括其中的一些细节，当然包括代码。</p>
+<h2 id="总结架构">总结架构</h2>
+<h3 id="总体框架">总体框架</h3>
+<p>​ Transformer中抛弃了传统的CNN和RNN，整个网络结构完全是由Attention机制组成。更准确地讲，Transformer由且仅由<strong>self-Attenion</strong>和Feed Forward Neural Network组成。一个基于Transformer的可训练的神经网络可以通过堆叠Transformer的形式进行搭建，作者的实验是通过搭建编码器和解码器各6层，总共12层的<strong>Encoder-Decoder</strong>，并在机器翻译中取得了BLEU值得新高。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211006205055663-2033423660.jpg" alt="img" style="zoom:67%;" /></p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211006204817749-1870825928.jpg" alt="img" style="zoom:67%;" /></p>
+<h3 id="步骤"><strong>步骤</strong></h3>
+<h2 id="参考">参考</h2>
+<p>[1] <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/48508221">详解Transformer （Attention Is All You Need） - 知乎 (zhihu.com)</a></p>
+<p>[2] <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/338817680">Transformer模型详解（图解最完整版） - 知乎 (zhihu.com)</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/test-img.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -273,7 +896,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/C%E8%AF%AD%E8%A8%80%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -287,7 +910,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/10/17/C%E8%AF%AD%E8%A8%80%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html" class="post-title-link" itemprop="url">cccc</a>
+            <a href="/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html" class="post-title-link" itemprop="url">CNN原理与实践</a>
         </h2>
 
         <div class="post-meta">
@@ -298,7 +921,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：20:19:44" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
+              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：22:32:34" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -306,12 +929,12 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/tsd/" itemprop="url" rel="index"><span itemprop="name">tsd</span></a>
+                  <a href="/categories/deep-learning/" itemprop="url" rel="index"><span itemprop="name">deep_learning</span></a>
                 </span>
             </span>
 
           
-            <span id="/2021/10/17/C%E8%AF%AD%E8%A8%80%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html" class="post-meta-item leancloud_visitors" data-flag-title="cccc" title="阅读次数">
+            <span id="/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html" class="post-meta-item leancloud_visitors" data-flag-title="CNN原理与实践" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -326,8 +949,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2021/10/17/C%E8%AF%AD%E8%A8%80%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/C%E8%AF%AD%E8%A8%80%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html" itemprop="commentCount"></span>
+    <a title="valine" href="/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -337,7 +960,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>832</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -356,50 +979,134 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="c语言函数调用栈的变化">C语言函数调用栈的变化</h1>
-<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928175432813-259024174.png" alt="image-20210928175428688" /><figcaption aria-hidden="true">image-20210928175428688</figcaption>
-</figure>
-<h2 id="od调试">OD调试</h2>
-<p>备注OD中显示的字符串顺序和字节顺序相反。olle<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
-<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
-</figure>
-<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
-</figure>
-<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
-<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
-</figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
-</figure>
-<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
-<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
-</figure>
-<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
-</figure>
-<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
-</figure>
-<p>最后执行retn，EIP=0x40152E</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
-</figure>
-<h2 id="总结">总结</h2>
-<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
-<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
+          <h1 id="cnn原理与实践">CNN原理与实践</h1>
+<h2 id="原理详解">原理详解</h2>
+<h3 id="卷积">卷积</h3>
+<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
+<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong></p>
+<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
 
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/SVM.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/17/SVM.html" class="post-title-link" itemprop="url">SVM</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：22:33:06" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/machine-learning/" itemprop="url" rel="index"><span itemprop="name">machine_learning</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2021/10/17/SVM.html" class="post-meta-item leancloud_visitors" data-flag-title="SVM" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/10/17/SVM.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/SVM.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="svm模型">SVM模型</h1>
+<p>[TOC]</p>
+<h2 id="简介">简介</h2>
+<p><strong>支持向量机（support vector machines, SVM）</strong>是一种<strong>二分类模型</strong>，它的基本模型是定义在特征空间上的<strong>间隔最大的线性分类器</strong>，间隔最大使它有别于感知机；SVM还包括<strong>核技巧</strong>，这使它成为实质上的非线性分类器。</p>
+<p>SVM的的学习策略就是间隔最大化，可形式化为一个求解<strong>凸二次规划</strong>的问题，也等价于正则化的合页损失函数的最小化问题。SVM的的学习算法就是求解凸二次规划的最优化算法。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/10/17/SVM.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -443,7 +1150,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：20:13:08" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
+              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：22:30:21" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -528,7 +1235,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/hello.html">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/word2vec.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -542,7 +1249,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/10/17/hello.html" class="post-title-link" itemprop="url">hello</a>
+            <a href="/2021/10/17/word2vec.html" class="post-title-link" itemprop="url">Word2vec</a>
         </h2>
 
         <div class="post-meta">
@@ -553,7 +1260,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：19:37:50" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
+              <time title="创建时间：2021-10-17 16:37:18 / 修改时间：22:33:46" itemprop="dateCreated datePublished" datetime="2021-10-17T16:37:18+08:00">2021-10-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -561,12 +1268,12 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/tsd/" itemprop="url" rel="index"><span itemprop="name">tsd</span></a>
+                  <a href="/categories/deep-learning/" itemprop="url" rel="index"><span itemprop="name">deep_learning</span></a>
                 </span>
             </span>
 
           
-            <span id="/2021/10/17/hello.html" class="post-meta-item leancloud_visitors" data-flag-title="hello" title="阅读次数">
+            <span id="/2021/10/17/word2vec.html" class="post-meta-item leancloud_visitors" data-flag-title="Word2vec" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -581,8 +1288,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2021/10/17/hello.html#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/hello.html" itemprop="commentCount"></span>
+    <a title="valine" href="/2021/10/17/word2vec.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/word2vec.html" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -592,14 +1299,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>10</span>
+              <span>3.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>3 分钟</span>
             </span>
 
         </div>
@@ -611,10 +1318,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>ssdsd</p>
+          <h1 id="word2vec">word2vec</h1>
+<h2 id="简介">简介</h2>
+<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
+<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2021/10/17/hello.html#more" rel="contents">
+              <a class="btn" href="/2021/10/17/word2vec.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -700,14 +1410,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -760,12 +1470,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">1k</span>
+    <span title="站点总字数">20k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1 分钟</span>
+    <span title="站点阅读时长">18 分钟</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>

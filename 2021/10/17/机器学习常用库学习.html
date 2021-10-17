@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"un0o7.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="机器学习常用库学习 [TOC] numpy 一般我们选择import numpy as np np.array 创建多维数组 1a &#x3D; np.array([2,4,8,20,16,30])   image-20210907080640639  np.arange 12345678#一个参数 默认起点0，步长为1 输出：[0 1 2]a &#x3D; np.arange(3)#两个参数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="un0o7&#39;s blog">
+<meta property="og:url" content="http://un0o7.github.io/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html">
+<meta property="og:site_name" content="un0o7&#39;s blog">
+<meta property="og:description" content="机器学习常用库学习 [TOC] numpy 一般我们选择import numpy as np np.array 创建多维数组 1a &#x3D; np.array([2,4,8,20,16,30])   image-20210907080640639  np.arange 12345678#一个参数 默认起点0，步长为1 输出：[0 1 2]a &#x3D; np.arange(3)#两个参数">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210907080644508-245558544.png">
+<meta property="article:published_time" content="2021-10-17T14:28:40.589Z">
+<meta property="article:modified_time" content="2021-09-21T11:46:09.607Z">
+<meta property="article:author" content="un0o7">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210907080644508-245558544.png">
+
+<link rel="canonical" href="http://un0o7.github.io/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | un0o7's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">un0o7's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">This is a wensite for sharing</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/un0o7" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-17 22:28:40" itemprop="dateCreated datePublished" datetime="2021-10-17T22:28:40+08:00">2021-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-21 19:46:09" itemprop="dateModified" datetime="2021-09-21T19:46:09+08:00">2021-09-21</time>
+              </span>
+
+          
+            <span id="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/10/17/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="机器学习常用库学习">机器学习常用库学习</h1>
+<p>[TOC]</p>
+<h2 id="numpy">numpy</h2>
+<p>一般我们选择<code>import numpy as np</code></p>
+<h3 id="np.array">np.array</h3>
+<p>创建多维数组</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a = np.array([2,4,8,20,16,30]) </span><br></pre></td></tr></table></figure>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210907080644508-245558544.png" alt="image-20210907080640639" /><figcaption aria-hidden="true">image-20210907080640639</figcaption>
+</figure>
+<h3 id="np.arange">np.arange</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#一个参数 默认起点0，步长为1 输出：[0 1 2]</span></span><br><span class="line">a = np.arange(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#两个参数 默认步长为1 输出[3 4 5 6 7 8]一维向量</span></span><br><span class="line">a = np.arange(<span class="number">3</span>,<span class="number">9</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#三个参数 起点为0，终点为3，步长为0.1 输出[ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4 1.5  1.6  1.7  1.8  1.9  2.   2.1  2.2  2.3  2.4  2.5  2.6  2.7  2.8  2.9]</span></span><br><span class="line">a = np.arange(<span class="number">0</span>, <span class="number">3</span>, <span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="np.split">np.split</h3>
+<p><strong><code>split(ary, indices_or_sections, axis=0)</code></strong></p>
+<p>ary:要切分的数组 indices_or_sections:<strong>如果是一个整数，就用该数平均切分</strong>，分成几份，如果是一个数组，为沿轴切分的位置（左开右闭） axis：沿着哪个维度进行切向，默认为0，横向切分。为1时，纵向切分</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x = np.arange(<span class="number">8.0</span>)</span><br><span class="line">np.split(x, [<span class="number">3</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">10</span>])<span class="comment">#也可以是一个元组，行数列数是从0开始的，左闭右开</span></span><br><span class="line"><span class="comment">#[array([ 0.,  1.,  2.]),array([ 3.,  4.]),array([ 5.]),array([ 6.,  7.]),array([], dtype=float64)]</span></span><br></pre></td></tr></table></figure>
+<h3 id="np.ravel">np.ravel</h3>
+<p>ravel()方法将数组维度拉成一维数组，返回一维数组，但是a本身不变</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = [[<span class="number">1</span>, <span class="number">2</span>], [<span class="number">2</span>, <span class="number">3</span>]]</span><br><span class="line">a=a.ravel（）<span class="comment">#按照行序 1 2 2 3 </span></span><br></pre></td></tr></table></figure>
+<h3 id="np.mean">np.mean</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">np.mean(a, <span class="comment"># 必须是数组</span></span><br><span class="line">		axis=<span class="literal">None</span>,</span><br><span class="line">		dtype=<span class="literal">None</span>, </span><br><span class="line">		out=<span class="literal">None</span>,</span><br><span class="line">		keepdims=&lt;<span class="class"><span class="keyword">class</span> &#x27;<span class="title">numpy</span>.<span class="title">_globals</span>.<span class="title">_NoValue</span>&#x27;&gt;)</span></span><br><span class="line"><span class="class"><span class="title">a</span>.<span class="title">mean</span>(<span class="params"><span class="number">1</span></span>)#<span class="title">axis</span>=1</span></span><br><span class="line"><span class="class"><span class="title">np</span>.<span class="title">mean</span>(<span class="params">a</span>)</span></span><br></pre></td></tr></table></figure>
+<p>mean()函数的功能是求取平均值，经常操作的参数是axis，以m*n的矩阵为例：</p>
+<ul>
+<li>axis不设置值，对m*n个数求平均值，返回一个实数</li>
+<li>axis = 0：压缩行，对各列求均值，返回1*n的矩阵</li>
+<li>axis = 1: 压缩列，对各行求均值，返回m*1的矩阵</li>
+</ul>
+<h3 id="np.r_">np.r_</h3>
+<p>按列连接两个矩阵，就是把两矩阵上下相加，要求列数相等.</p>
+<h3 id="np.c_">np.c_</h3>
+<p>按行连接两个矩阵，就是把两矩阵左右相加，要求行数相等。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = np.array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],[<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>]])</span><br><span class="line">b=np.array([[<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>],[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]])</span><br><span class="line">c=np.c_[a,b]</span><br><span class="line">array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],</span><br><span class="line">       [<span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]])</span><br></pre></td></tr></table></figure>
+<h3 id="numpy.random.rand">numpy.random.rand()</h3>
+<p>numpy.random.randn(d0,d1,…,dn)</p>
+<p>参数为维度数，返回array</p>
+<p>rand函数根据给定维度生成[0,1)之间的数据，包含0，不包含1</p>
+<h3 id="numpy.random.randn">numpy.random.randn()</h3>
+<p>参数同上</p>
+<p>randn函数返回一个或一组样本，具有标准正态分布。</p>
+<h3 id="np.random.seed0">np.random.seed(0)</h3>
+<p>使用相同的seed()值，则每次生成的随即数都相同</p>
+<h3 id="np.linspace-5-5">np.linspace(-5, 5)</h3>
+<p>numpy.linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None)</p>
+<p>前后两个数为start和stop，生成行向量，维度为num</p>
+<h3 id="np.random.randint">np.random.randint</h3>
+<p>np.random.randint(0,3,(2,3)) #生成[0,3)上的2行3列的随机整数</p>
+<h3 id="np.empty">np.empty</h3>
+<p><strong>np.empty((2,3),int) #创建2×3的整型空矩阵</strong></p>
+<h3 id="np.split-1">np.split</h3>
+<p>用于划分数据集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x, y = np.split(data,                  <span class="comment">#要切分的数组</span></span><br><span class="line">                (<span class="number">4</span>,),                  <span class="comment">#沿轴切分的位置，第5列开始往后为y</span></span><br><span class="line">                axis=<span class="number">1</span>)   	           <span class="comment">#代表纵向分割，按列分割</span></span><br></pre></td></tr></table></figure>
+<p>data假设为一个二维数组，其中y的形式为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">array([[0.],</span><br><span class="line">       [0.],</span><br><span class="line">       [0.],</span><br><span class="line">       [0.],]</span><br></pre></td></tr></table></figure>
+<h3 id="np.mgrid">np.mgrid</h3>
+<p>np.mgrid(start,stop,step)其中step为负数5j，表示生成从start到stop的5个数,左闭右闭；</p>
+<p>step为实数代表间隔，左闭右开。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>x,y=np.mgrid[-<span class="number">5</span>:<span class="number">5</span>:<span class="number">3j</span>,-<span class="number">2</span>:<span class="number">2</span>:<span class="number">3j</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>x</span><br><span class="line">array([[-<span class="number">5.</span>, -<span class="number">5.</span>, -<span class="number">5.</span>],</span><br><span class="line">       [ <span class="number">0.</span>,  <span class="number">0.</span>,  <span class="number">0.</span>],</span><br><span class="line">       [ <span class="number">5.</span>,  <span class="number">5.</span>,  <span class="number">5.</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>y</span><br><span class="line">array([[-<span class="number">2.</span>,  <span class="number">0.</span>,  <span class="number">2.</span>],</span><br><span class="line">       [-<span class="number">2.</span>,  <span class="number">0.</span>,  <span class="number">2.</span>],</span><br><span class="line">       [-<span class="number">2.</span>,  <span class="number">0.</span>,  <span class="number">2.</span>]])</span><br></pre></td></tr></table></figure>
+<h3 id="np.stack">np.stack</h3>
+<p>c=np.stack((a,b),axis=0)</p>
+<p>a,b为两个array数组，对a，b进行拼接，axis指定在前还在在后</p>
+<p>axis=0,c.shape[0]=2;axis=1,c.shape[1]=2;这里的二是因为a,b两个数组。</p>
+<h2 id="sklearn">sklearn</h2>
+<h3 id="sklearn.model_selection.train_test_split">sklearn.model_selection.train_test_split</h3>
+<p><code>sklearn.model_selection.train_test_split(*arrays, **options)</code></p>
+<p>arrays：分割对象同样长度的列表或者numpy arrays，矩阵,可以放入多个。 test_size：两种指定方法。1：指定小数。小数范围在0.0~0.1之间，它代表test集占据的比例。2：指定整数。整数的大小必须在这个数据集个数范围内，总不能指定一个数超出了数据集的个数范围吧。要是test_size在没有指定的场合，可以通过train_size来指定。（两个是对应关系）。如果train_size也没有指定，那么默认值是0.25. train_size：和test_size相似。 random_state:这是将分割的training和testing集合打乱的个数设定。如果不指定的话，也可以通过numpy.random来设定随机数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">namelist_train, namelist_test = train_test_split(namelist, test_size=<span class="number">0.3</span>)<span class="comment">#指定单个数据集</span></span><br><span class="line"><span class="comment">#指定多个数据集</span></span><br><span class="line">x_train,x_test,y_train,y_test=model_selection.train_test_split(x,          			<span class="comment">#所要划分的样本特征集</span></span><br><span class="line">               y,  <span class="comment">#所要划分的样本结果</span></span><br><span class="line">                                                               random_state=<span class="number">1</span>, <span class="comment">#随机数种子</span></span><br><span class="line">                                                               test_size=<span class="number">0.3</span>)  <span class="comment">#测试样本占比</span></span><br></pre></td></tr></table></figure>
+<h3 id="sklearn.svm">sklearn.svm</h3>
+<h3 id="sklearn.datasets.make_blobs">sklearn.datasets.make_blobs</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x,y=sklearn.datasets.make_blobs(n_samples=100,n_features=2,centers=3, cluster_std=1.0,center_box=(-10.0,10.0),shuffle=True,random_state=None)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>make_blobs函数是为聚类产生数据集，产生一个数据集和相应的标签</li>
+<li>n_samples:表示数据样本点个数,默认值100</li>
+<li>n_features:是每个样本的特征（或属性）数，也表示数据的维度，默认值是2</li>
+<li>centers:表示类别数（标签的种类数），默认值3</li>
+<li>cluster_std表示每个类别的方差，例如我们希望生成2类数据，其中一类比另一类具有更大的方差，可以将cluster_std设置为[1.0,3.0]，浮点数或者浮点数序列，默认值1.0</li>
+<li>center_box：中心确定之后的数据边界，默认值(-10.0, 10.0)</li>
+<li>shuffle ：将数据进行洗乱，默认值是True</li>
+<li>random_state:官网解释是随机生成器的种子，可以固定生成的数据，给定数之后，每次生成的数据集就是固定的。若不给定值，则由于随机性将导致每次运行程序所获得的的结果可能有所不同。在使用数据生成器练习机器学习算法练习或python练习时建议给定数值。 返回两个array，分别为训练集和标签</li>
+</ul>
+<h2 id="pandas">pandas</h2>
+<h3 id="pandas.read_csv">pandas.read_csv</h3>
+<h2 id="pickle">pickle</h2>
+<p>pickle模块实现了基本的数据序列和反序列化.通过pickle模块的序列化操作我们能够将程序中运行的对象信息保存到文件中去，永久存储；通过pickle模块的反序列化操作，我们能够从文件中创建上一次程序保存的对象。</p>
+<p>一般保存为pkl文件，后缀为.pkl. file打开记得close哦。</p>
+<h3 id="pickle.dump">pickle.dump</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dump(obj, file, [,protocol])</span><br></pre></td></tr></table></figure>
+<p>将序列化对象保存到文件中去，协议参数0：ASCII协议，所序列化的对象使用可打印的ASCII码表示；1：老式的二进制协议；2：2.3版本引入的新二进制协议。</p>
+<h3 id="pickle.load">pickle.load</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.load(file)</span><br></pre></td></tr></table></figure>
+<p>从file中读取一个字符串，并将它重构为原来的python对象。</p>
+<h2 id="codecs">codecs</h2>
+<h3 id="codecs.open">codecs.open</h3>
+<p>主要是能搞定不同的编码问题</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codecs.<span class="built_in">open</span>(filepath,method , encoding)</span><br></pre></td></tr></table></figure>
+<p>和文件的open相同，</p>
+<h2 id="tensorflow">tensorflow</h2>
+<h3 id="tf.convert_to_tensor">tf.convert_to_tensor</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.convert_to_tensor(value,dtype=None,dtype_hint=None,name=None)</span><br></pre></td></tr></table></figure>
+<p>将各种类型的Python对象转换为张量对象。它接受张量对象、数字数组、Python列表和Python标量。</p>
+<h2 id="参考">参考</h2>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41550480/article/details/89390579">(7条消息) np.arange()用法_恰个小茶茶的博客-CSDN博客_np.arange</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/mingyuli/article/details/81227629">(7条消息) numpy.split()函数_mingyuli的博客-CSDN博客</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/17/Transformer.html" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/10/17/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%E4%BD%9C%E4%B8%9A1.html" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%B8%B8%E7%94%A8%E5%BA%93%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text">机器学习常用库学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#numpy"><span class="nav-number">1.1.</span> <span class="nav-text">numpy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#np.array"><span class="nav-number">1.1.1.</span> <span class="nav-text">np.array</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.arange"><span class="nav-number">1.1.2.</span> <span class="nav-text">np.arange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.split"><span class="nav-number">1.1.3.</span> <span class="nav-text">np.split</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.ravel"><span class="nav-number">1.1.4.</span> <span class="nav-text">np.ravel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.mean"><span class="nav-number">1.1.5.</span> <span class="nav-text">np.mean</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.r_"><span class="nav-number">1.1.6.</span> <span class="nav-text">np.r_</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.c_"><span class="nav-number">1.1.7.</span> <span class="nav-text">np.c_</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#numpy.random.rand"><span class="nav-number">1.1.8.</span> <span class="nav-text">numpy.random.rand()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#numpy.random.randn"><span class="nav-number">1.1.9.</span> <span class="nav-text">numpy.random.randn()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.random.seed0"><span class="nav-number">1.1.10.</span> <span class="nav-text">np.random.seed(0)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.linspace-5-5"><span class="nav-number">1.1.11.</span> <span class="nav-text">np.linspace(-5, 5)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.random.randint"><span class="nav-number">1.1.12.</span> <span class="nav-text">np.random.randint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.empty"><span class="nav-number">1.1.13.</span> <span class="nav-text">np.empty</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.split-1"><span class="nav-number">1.1.14.</span> <span class="nav-text">np.split</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.mgrid"><span class="nav-number">1.1.15.</span> <span class="nav-text">np.mgrid</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#np.stack"><span class="nav-number">1.1.16.</span> <span class="nav-text">np.stack</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sklearn"><span class="nav-number">1.2.</span> <span class="nav-text">sklearn</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#sklearn.model_selection.train_test_split"><span class="nav-number">1.2.1.</span> <span class="nav-text">sklearn.model_selection.train_test_split</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sklearn.svm"><span class="nav-number">1.2.2.</span> <span class="nav-text">sklearn.svm</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sklearn.datasets.make_blobs"><span class="nav-number">1.2.3.</span> <span class="nav-text">sklearn.datasets.make_blobs</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pandas"><span class="nav-number">1.3.</span> <span class="nav-text">pandas</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pandas.read_csv"><span class="nav-number">1.3.1.</span> <span class="nav-text">pandas.read_csv</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pickle"><span class="nav-number">1.4.</span> <span class="nav-text">pickle</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pickle.dump"><span class="nav-number">1.4.1.</span> <span class="nav-text">pickle.dump</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pickle.load"><span class="nav-number">1.4.2.</span> <span class="nav-text">pickle.load</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#codecs"><span class="nav-number">1.5.</span> <span class="nav-text">codecs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#codecs.open"><span class="nav-number">1.5.1.</span> <span class="nav-text">codecs.open</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tensorflow"><span class="nav-number">1.6.</span> <span class="nav-text">tensorflow</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tf.convert_to_tensor"><span class="nav-number">1.6.1.</span> <span class="nav-text">tf.convert_to_tensor</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.7.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">un0o7</p>
+  <div class="site-description" itemprop="description">留言必回！</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/un0o7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;un0o7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1955981564@qq.com" title="E-Mail → mailto:1955981564@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/ddddd1234654732" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;ddddd1234654732" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">un0o7</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">20k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">18 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'mdvXRfkv4gfe7M6IAz3sA1KO-gzGzoHsz',
+      appKey     : 'ukMNggcY3GfPrgKHd3UaMOw9',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"live2d-widget-model-shizuku"},"display":{"position":"right","width":70,"height":120},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
