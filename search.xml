@@ -316,6 +316,68 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
 ]]></content>
   </entry>
   <entry>
+    <title>books</title>
+    <url>/2021/10/19/books.html</url>
+    <content><![CDATA[<figure>
+<img src="../images/books/image-20211019110546295.png" alt="image-20211019110546295" /><figcaption aria-hidden="true">image-20211019110546295</figcaption>
+</figure>
+]]></content>
+      <categories>
+        <category>ctf</category>
+      </categories>
+      <tags>
+        <tag>pwn</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Word2vec</title>
+    <url>/2021/10/17/word2vec.html</url>
+    <content><![CDATA[<h2 id="简介">简介</h2>
+<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
+<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="基础概念">基础概念</h2>
+<h3 id="语料">语料</h3>
+<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
+<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
+<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
+<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
+<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
+<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
+<h3 id="模型基础">模型基础</h3>
+<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
+<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
+<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
+<h2 id="word2vec网络结构">word2vec网络结构</h2>
+<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
+<h3 id="cbow模型">CBOW模型</h3>
+<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
+<h3 id="skip-gram模型">skip-gram模型</h3>
+<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
+<h2 id="word2vec实践">word2vec实践</h2>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
+<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
+]]></content>
+      <categories>
+        <category>deep_learning</category>
+      </categories>
+      <tags>
+        <tag>model</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>RandomForest</title>
     <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
     <content><![CDATA[<h2 id="决策树">决策树</h2>
@@ -372,54 +434,6 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
 ]]></content>
       <categories>
         <category>machine_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Word2vec</title>
-    <url>/2021/10/17/word2vec.html</url>
-    <content><![CDATA[<h2 id="简介">简介</h2>
-<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
-<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="基础概念">基础概念</h2>
-<h3 id="语料">语料</h3>
-<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
-<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
-<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
-<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
-<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
-<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
-<h3 id="模型基础">模型基础</h3>
-<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
-<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
-<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
-<h2 id="word2vec网络结构">word2vec网络结构</h2>
-<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
-<h3 id="cbow模型">CBOW模型</h3>
-<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
-<h3 id="skip-gram模型">skip-gram模型</h3>
-<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
-<h2 id="word2vec实践">word2vec实践</h2>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
-<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
-]]></content>
-      <categories>
-        <category>deep_learning</category>
       </categories>
       <tags>
         <tag>model</tag>
