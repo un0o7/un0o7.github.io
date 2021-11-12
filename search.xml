@@ -1,72 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>CNN原理与实践</title>
-    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
-    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
-<h3 id="卷积">卷积</h3>
-<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
-<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
-<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
-<meta name="referrer" content="no-referrer"/>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
-<h3 id="padding填白">Padding填白</h3>
-<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
-<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
-<p>valid 就是不经过任何填白。</p>
-<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h3 id="步长stride">步长stride</h3>
-<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
-<h3 id="pooling池化">pooling池化</h3>
-<p>有的地方也成为<strong>采样sampling</strong></p>
-<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
-<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h3 id="多通道卷积">多通道卷积</h3>
-<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
-<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
-<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
-<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<h3 id="cnn网络结构">CNN网络结构</h3>
-<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
-<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
-<ul>
-<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
-<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" alt="image-20211010095224357" /><figcaption aria-hidden="true">image-20211010095224357</figcaption>
-</figure>
-<h2 id="cnn代码实践">CNN代码实践</h2>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>deep_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>SVM</title>
     <url>/2021/10/17/SVM.html</url>
     <content><![CDATA[<h1 id="svm模型">SVM模型</h1>
@@ -277,17 +211,99 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </tags>
   </entry>
   <entry>
-    <title>books</title>
-    <url>/2021/10/19/books.html</url>
-    <content><![CDATA[<figure>
-<img src="../images/books/image-20211019110546295.png" alt="image-20211019110546295" /><figcaption aria-hidden="true">image-20211019110546295</figcaption>
-</figure>
+    <title>Hello World</title>
+    <url>/2021/10/17/hello-world.html</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="quick-start">Quick Start</h2>
+<p><span class="math display">\[hello sdsd(\frac{a}{b})\]</span></p>
+<p><img src="/images/hello-world/image-20211017201247881.png" /></p>
+<h3 id="create-a-new-post">Create a new post</h3>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211017194040110-1069279989.png" /></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="run-server">Run server</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="generate-static-files">Generate static files</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
       <categories>
-        <category>ctf</category>
+        <category>time</category>
       </categories>
       <tags>
         <tag>pwn</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CNN原理与实践</title>
+    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
+    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
+<h3 id="卷积">卷积</h3>
+<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
+<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
+<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
+<meta name="referrer" content="no-referrer"/>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
+<h3 id="padding填白">Padding填白</h3>
+<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
+<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
+<p>valid 就是不经过任何填白。</p>
+<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h3 id="步长stride">步长stride</h3>
+<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
+<h3 id="pooling池化">pooling池化</h3>
+<p>有的地方也成为<strong>采样sampling</strong></p>
+<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
+<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h3 id="多通道卷积">多通道卷积</h3>
+<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
+<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
+<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
+<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
+</figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<h3 id="cnn网络结构">CNN网络结构</h3>
+<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
+<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
+<ul>
+<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
+<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" alt="image-20211010095224357" /><figcaption aria-hidden="true">image-20211010095224357</figcaption>
+</figure>
+<h2 id="cnn代码实践">CNN代码实践</h2>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
+<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>deep_learning</category>
+      </categories>
+      <tags>
+        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -336,45 +352,6 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </categories>
       <tags>
         <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>test_img</title>
-    <url>/2021/10/17/test-img.html</url>
-    <content><![CDATA[<p><img src="./test-img/image-20211017195615356.png" /></p>
-<figure>
-<img src="test-img/image-20211017200351123.png" alt="image-20211017200351123" /><figcaption aria-hidden="true">image-20211017200351123</figcaption>
-</figure>
-]]></content>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2021/10/17/hello-world.html</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="quick-start">Quick Start</h2>
-<p><span class="math display">\[hello sdsd(\frac{a}{b})\]</span></p>
-<p><img src="/images/hello-world/image-20211017201247881.png" /></p>
-<h3 id="create-a-new-post">Create a new post</h3>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211017194040110-1069279989.png" /></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-      <categories>
-        <category>time</category>
-      </categories>
-      <tags>
-        <tag>pwn</tag>
       </tags>
   </entry>
   <entry>
