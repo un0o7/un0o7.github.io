@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/avatar.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/avatar.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"un0o7.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="ELF可执行可链接格式，最初由UNIX系统实验室作为应用程序二进制接口的一部分制定，是COFF(common file format)的变种，相关定义在&#x2F;usr&#x2F;include&#x2F;elf.h文件中。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELF文件解析">
+<meta property="og:url" content="http://un0o7.github.io/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html">
+<meta property="og:site_name" content="un0o7&#39;s blog">
+<meta property="og:description" content="ELF可执行可链接格式，最初由UNIX系统实验室作为应用程序二进制接口的一部分制定，是COFF(common file format)的变种，相关定义在&#x2F;usr&#x2F;include&#x2F;elf.h文件中。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://un0o7.github.io/2021/11/images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/2348945-20211111190022555-192049174.jpg">
+<meta property="og:image" content="http://un0o7.github.io/2021/11/images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/v2-c9e476401c19307c82b3fe89e3555224_720w.jpg">
+<meta property="article:published_time" content="2021-11-12T15:07:12.000Z">
+<meta property="article:modified_time" content="2021-11-12T15:09:54.058Z">
+<meta property="article:author" content="un0o7">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://un0o7.github.io/2021/11/images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/2348945-20211111190022555-192049174.jpg">
+
+<link rel="canonical" href="http://un0o7.github.io/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ELF文件解析 | un0o7's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">un0o7's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">This is a wensite for sharing</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/un0o7" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://un0o7.github.io/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png#/images/avatar.png">
+      <meta itemprop="name" content="un0o7">
+      <meta itemprop="description" content="留言必回！">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="un0o7's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ELF文件解析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-11-12 23:07:12 / 修改时间：23:09:54" itemprop="dateCreated datePublished" datetime="2021-11-12T23:07:12+08:00">2021-11-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CTF/" itemprop="url" rel="index"><span itemprop="name">CTF</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html" class="post-meta-item leancloud_visitors" data-flag-title="ELF文件解析" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>ELF可执行可链接格式，最初由UNIX系统实验室作为应用程序二进制接口的一部分制定，是COFF(common file format)的变种，相关定义在/usr/include/elf.h文件中。</p>
+<span id="more"></span>
+<h2 id="elf-文件类型">ELF 文件类型</h2>
+<p>说明：linux和windows识别文件格式不同，linux是根据文件头的字段，windows直接根据文件名后缀。</p>
+<p>主要分为三类：</p>
+<ul>
+<li>可执行文件executable file：经过链接、可执行的目标文件，也被称为程序。</li>
+<li>可重定位文（relocatable file）：由源文件编译但是没有链接的目标文件，通常以.o作为拓展名。用于与其他文件链接构成可执行文件或动态链接库，通常是一段位置独立的代码(Position Independent code, PIC)</li>
+<li>共享目标文件（shared object file）：动态链接库文件，用于在链接的过程中与其他动态链接库或可重定位文件一起构建可执行文件。</li>
+</ul>
+<p>除此之外，还存在 <strong>核心转储文件(core dump file)</strong>作为进程以外终止时地址空间的转储，也是ELF文件的一种。可以使用gdb工具读取辅助调试和查找程序崩溃的原因。</p>
+<p>在内核中的定义（/include/uapi/linux/elf.h）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_REL     1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_EXEC   2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_DYN    3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_CORE  4</span></span><br></pre></td></tr></table></figure>
+<h2 id="elf文件格式">ELF文件格式</h2>
+<h3 id="总体布局">总体布局</h3>
+<p>ELF文件格式提供了两种视图，分别是链接视图和执行视图。<strong>链接视图是以节（section）为单位</strong>，<strong>执行视图是以段（segment）为单位</strong>。接视图就是在链接时用到的视图，而执行视图则是在执行时用到的视图。</p>
+<figure>
+<img src="../images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/2348945-20211111190022555-192049174.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>可以使用<code>readelf -l hello</code>查看一个链接后的elf可执行文件，Section to Segment 的映射关系</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Elf 文件类型为 EXEC (可执行文件)</span><br><span class="line">Entry point 0x401cc0</span><br><span class="line">There are 8 program headers, starting at offset 64</span><br><span class="line"></span><br><span class="line">程序头：</span><br><span class="line">  Type           Offset             VirtAddr           PhysAddr</span><br><span class="line">                 FileSiz            MemSiz              Flags  Align</span><br><span class="line">  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000</span><br><span class="line">                 0x0000000000000488 0x0000000000000488  R      0x1000</span><br><span class="line">  LOAD           0x0000000000001000 0x0000000000401000 0x0000000000401000</span><br><span class="line">                 0x000000000007fab1 0x000000000007fab1  R E    0x1000</span><br><span class="line">  LOAD           0x0000000000081000 0x0000000000481000 0x0000000000481000</span><br><span class="line">                 0x0000000000026e0b 0x0000000000026e0b  R      0x1000</span><br><span class="line">  LOAD           0x00000000000a8000 0x00000000004a9000 0x00000000004a9000</span><br><span class="line">                 0x00000000000052f0 0x0000000000006b20  RW     0x1000</span><br><span class="line">  NOTE           0x0000000000000200 0x0000000000400200 0x0000000000400200</span><br><span class="line">                 0x0000000000000044 0x0000000000000044  R      0x4</span><br><span class="line">  TLS            0x00000000000a8000 0x00000000004a9000 0x00000000004a9000</span><br><span class="line">                 0x0000000000000020 0x0000000000000060  R      0x8</span><br><span class="line">  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">                 0x0000000000000000 0x0000000000000000  RW     0x10</span><br><span class="line">  GNU_RELRO      0x00000000000a8000 0x00000000004a9000 0x00000000004a9000</span><br><span class="line">                 0x0000000000003000 0x0000000000003000  R      0x1</span><br><span class="line"></span><br><span class="line"> Section to Segment mapping:</span><br><span class="line">  段节...</span><br><span class="line">   00     .note.gnu.build-id .note.ABI-tag .rela.plt </span><br><span class="line">   01     .init .plt .text __libc_freeres_fn .fini </span><br><span class="line">   02     .rodata .eh_frame .gcc_except_table </span><br><span class="line">   03     .tdata .init_array .fini_array .data.rel.ro .got .got.plt .data __libc_subfreeres __libc_IO_vtables __libc_atexit .bss __libc_freeres_ptrs </span><br><span class="line">   04     .note.gnu.build-id .note.ABI-tag </span><br><span class="line">   05     .tdata .tbss </span><br><span class="line">   06     </span><br><span class="line">   07     .tdata .init_array .fini_array .data.rel.ro .got </span><br></pre></td></tr></table></figure>
+<p>下面的段序号和上面程序头里的段一一对应。</p>
+<h3 id="文件结构">文件结构</h3>
+<p>主要从链接的角度看elf文件。</p>
+<h4 id="elf头">elf头</h4>
+<p>描述文件的一些基本信息，文件头部存在魔术字符7f 45 4c 46即字符串"\177ELF"，当文件被映射到内存时可以通过该字符串查找位置，dump内存。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -h relocfile //查看文件头信息</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">ELF 头：</span><br><span class="line">  Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 </span><br><span class="line">  类别:                              ELF64</span><br><span class="line">  数据:                              2 补码，小端序 (little endian)</span><br><span class="line">  Version:                           1 (current)</span><br><span class="line">  OS/ABI:                            UNIX - System V</span><br><span class="line">  ABI 版本:                          0</span><br><span class="line">  类型:                              REL (可重定位文件)</span><br><span class="line">  系统架构:                          Advanced Micro Devices X86-64</span><br><span class="line">  版本:                              0x1</span><br><span class="line">  入口点地址：              0x0</span><br><span class="line">  程序头起点：              0 (bytes into file)</span><br><span class="line">  Start of section headers:          816 (bytes into file)</span><br><span class="line">  标志：             0x0</span><br><span class="line">  Size of this header:               64 (bytes)</span><br><span class="line">  Size of program headers:           0 (bytes)</span><br><span class="line">  Number of program headers:         0</span><br><span class="line">  Size of section headers:           64 (bytes)</span><br><span class="line">  Number of section headers:         13</span><br><span class="line">  Section header string table index: 12</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_hdr</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	  <span class="keyword">unsigned</span> <span class="keyword">char</span>	e_ident[EI_NIDENT];	<span class="comment">/* Magic number and other info */</span></span><br><span class="line">	  Elf32_Half	e_type;			    <span class="comment">/* Object file type */</span></span><br><span class="line">	  Elf32_Half	e_machine;		    <span class="comment">/* Architecture */</span></span><br><span class="line">	  Elf32_Word	e_version;		    <span class="comment">/* Object file version */</span></span><br><span class="line">	  Elf32_Addr	e_entry;		    <span class="comment">/* Entry point virtual address */</span></span><br><span class="line">	  Elf32_Off	e_phoff;		        <span class="comment">/* Program header table file offset */</span></span><br><span class="line">	  Elf32_Off	e_shoff;		        <span class="comment">/* Section header table file offset */</span></span><br><span class="line">	  Elf32_Word	e_flags;		    <span class="comment">/* Processor-specific flags */</span></span><br><span class="line">	  Elf32_Half	e_ehsize;		    <span class="comment">/* ELF header size in bytes */</span></span><br><span class="line">	  Elf32_Half	e_phentsize;		<span class="comment">/* Program header table entry size */</span></span><br><span class="line">	  Elf32_Half	e_phnum;		    <span class="comment">/* Program header table entry count */</span></span><br><span class="line">	  Elf32_Half	e_shentsize;		<span class="comment">/* Section header table entry size */</span></span><br><span class="line">	  Elf32_Half	e_shnum;		    <span class="comment">/* Section header table entry count */</span></span><br><span class="line">	  Elf32_Half	e_shstrndx;		    <span class="comment">/* Section header string table index */</span></span><br><span class="line">&#125; Elf32_Ehdr;</span><br></pre></td></tr></table></figure>
+<h4 id="程序头表program-header-table">程序头表（program header table）</h4>
+<p>列举了所有有效的段(segments)和他们的属性（执行视图）,链接视图是可选的，一般没有。</p>
+<p>程序头是一个结构的数组，每一个结构都表示一个段(segments)。在可执行文件或者共享链接库中所有的节(sections)都被分为不同的几个段(segments)。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_phdr</span>&#123;</span></span><br><span class="line">	  Elf32_Word	p_type;    <span class="comment">/* Magic number and other info */</span></span><br><span class="line">	  Elf32_Off	p_offset;</span><br><span class="line">	  Elf32_Addr	p_vaddr;</span><br><span class="line">	  Elf32_Addr	p_paddr;</span><br><span class="line">	  Elf32_Word	p_filesz;</span><br><span class="line">	  Elf32_Word	p_memsz;</span><br><span class="line">	  Elf32_Word	p_flags;</span><br><span class="line">	  Elf32_Word	p_align;</span><br><span class="line">&#125; Elf32_Phdr;</span><br></pre></td></tr></table></figure>
+<p>程序头的索引地址(e_phoff)、段数量(e_phnum)、表项大小(e_phentsize)都是通过 ELF头部信息获取的。</p>
+<p>可通过<code>readelf -l</code>读取ELF程序头信息：</p>
+<h4 id="节头表section-header-table">节头表（section header table）</h4>
+<p>一个ELF文件中到底有哪些具体的 sections，由包含在这个ELF文件中的 section head table(SHT)决定。每个section描述了这个段的信息，比如每个段的段名、段的长度、在文件中的偏移、读写权限及段的其它属性。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_shdr</span>&#123;</span></span><br><span class="line">	    Elf32_Word sh_name;   <span class="comment">//节区名，名字是一个 NULL 结尾的字符串。</span></span><br><span class="line">	    Elf32_Word sh_type;    <span class="comment">//为节区类型</span></span><br><span class="line">	    Elf32_Word sh_flags;    <span class="comment">//节区标志</span></span><br><span class="line">	    Elf32_Addr sh_addr;    <span class="comment">//节区的第一个字节应处的位置。否则，此字段为 0。</span></span><br><span class="line">	    Elf32_Off sh_offset;    <span class="comment">//此成员的取值给出节区的第一个字节与文件头之间的偏移。</span></span><br><span class="line">	    Elf32_Word sh_size;   <span class="comment">//此 成 员 给 出 节 区 的 长 度 （ 字 节 数 ）。</span></span><br><span class="line">	    Elf32_Word sh_link;   <span class="comment">//此成员给出节区头部表索引链接。其具体的解释依赖于节区类型。</span></span><br><span class="line">	    Elf32_Word sh_info;       <span class="comment">//此成员给出附加信息，其解释依赖于节区类型。</span></span><br><span class="line">	    Elf32_Word sh_addralign;    <span class="comment">//某些节区带有地址对齐约束.</span></span><br><span class="line">	    Elf32_Word sh_entsize;    <span class="comment">//给出每个表项的长度字节数。</span></span><br><span class="line">&#125;Elf32_Shdr;</span><br></pre></td></tr></table></figure>
+<p>节区名存储在.<a href="onenote:#elf加载过程&amp;section-id=%7B503CCFB6-C32E-4B72-8C67-CB9E878870BE%7D&amp;page-id=%7B934E7334-CB4A-4A41-814C-8742312D7636%7D&amp;object-id=%7BC81FF8EC-AF62-0DAD-105B-29D5DD1E0EA2%7D&amp;7D&amp;base-path=https://d.docs.live.net/aba64c6627629f31/文档/我的笔记本/源码整理/Linux内核学习/进程管理.one">shstrtab</a>字符串表中，sh_name是表中偏移。</p>
+<p>可通过<strong>readelf -S</strong> 读取sections' header：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">There are 29 section headers, starting at offset 0xbf0f8:</span><br><span class="line"></span><br><span class="line">节头：</span><br><span class="line">  [号] 名称              类型             地址              偏移量</span><br><span class="line">       大小              全体大小          旗标   链接   信息   对齐</span><br><span class="line">  [ 0]                   NULL             0000000000000000  00000000</span><br><span class="line">       0000000000000000  0000000000000000           0     0     0</span><br><span class="line">  [ 1] .note.gnu.bu[...] NOTE             0000000000400200  00000200</span><br><span class="line">       0000000000000024  0000000000000000   A       0     0     4</span><br><span class="line">  [ 2] .note.ABI-tag     NOTE             0000000000400224  00000224</span><br><span class="line">       0000000000000020  0000000000000000   A       0     0     4</span><br><span class="line">  [ 3] .rela.plt         RELA             0000000000400248  00000248</span><br><span class="line">       0000000000000240  0000000000000018  AI       0    18     8</span><br><span class="line">  [ 4] .init             PROGBITS         0000000000401000  00001000</span><br><span class="line">       0000000000000017  0000000000000000  AX       0     0     4</span><br><span class="line">  [ 5] .plt              PROGBITS         0000000000401018  00001018</span><br><span class="line">       00000000000000c0  0000000000000000  AX       0     0     8</span><br><span class="line">  [ 6] .text             PROGBITS         00000000004010e0  000010e0</span><br><span class="line">       000000000007ef60  0000000000000000  AX       0     0     16</span><br><span class="line">  [ 7] __libc_freeres_fn PROGBITS         0000000000480040  00080040</span><br><span class="line">       0000000000000a66  0000000000000000  AX       0     0     16</span><br><span class="line">  [ 8] .fini             PROGBITS         0000000000480aa8  00080aa8</span><br><span class="line">       0000000000000009  0000000000000000  AX       0     0     4</span><br><span class="line">  [ 9] .rodata           PROGBITS         0000000000481000  00081000</span><br><span class="line">       000000000001c61c  0000000000000000   A       0     0     32</span><br><span class="line">  [10] .eh_frame         PROGBITS         000000000049d620  0009d620</span><br><span class="line">       000000000000a71c  0000000000000000   A       0     0     8</span><br><span class="line">  [11] .gcc_except_table PROGBITS         00000000004a7d3c  000a7d3c</span><br><span class="line">       00000000000000cf  0000000000000000   A       0     0     1</span><br><span class="line">  [12] .tdata            PROGBITS         00000000004a9000  000a8000</span><br><span class="line">       0000000000000020  0000000000000000 WAT       0     0     8</span><br><span class="line">  [13] .tbss             NOBITS           00000000004a9020  000a8020</span><br><span class="line">       0000000000000040  0000000000000000 WAT       0     0     8</span><br><span class="line">  [14] .init_array       INIT_ARRAY       00000000004a9020  000a8020</span><br><span class="line">       0000000000000010  0000000000000008  WA       0     0     8</span><br><span class="line">  [15] .fini_array       FINI_ARRAY       00000000004a9030  000a8030</span><br><span class="line">       0000000000000010  0000000000000008  WA       0     0     8</span><br><span class="line">  [16] .data.rel.ro      PROGBITS         00000000004a9040  000a8040</span><br><span class="line">       0000000000002ed4  0000000000000000  WA       0     0     32</span><br><span class="line">  [17] .got              PROGBITS         00000000004abf18  000aaf18</span><br><span class="line">       00000000000000e0  0000000000000000  WA       0     0     8</span><br><span class="line">  [18] .got.plt          PROGBITS         00000000004ac000  000ab000</span><br><span class="line">       00000000000000d8  0000000000000008  WA       0     0     8</span><br><span class="line">  [19] .data             PROGBITS         00000000004ac0e0  000ab0e0</span><br><span class="line">       0000000000001a50  0000000000000000  WA       0     0     32</span><br><span class="line">  [20] __libc_subfreeres PROGBITS         00000000004adb30  000acb30</span><br><span class="line">       0000000000000048  0000000000000000  WA       0     0     8</span><br><span class="line">  [21] __libc_IO_vtables PROGBITS         00000000004adb80  000acb80</span><br><span class="line">       0000000000000768  0000000000000000  WA       0     0     32</span><br><span class="line">  [22] __libc_atexit     PROGBITS         00000000004ae2e8  000ad2e8</span><br><span class="line">       0000000000000008  0000000000000000  WA       0     0     8</span><br><span class="line">  [23] .bss              NOBITS           00000000004ae300  000ad2f0</span><br><span class="line">       0000000000001800  0000000000000000  WA       0     0     32</span><br><span class="line">  [24] __libc_freer[...] NOBITS           00000000004afb00  000ad2f0</span><br><span class="line">       0000000000000020  0000000000000000  WA       0     0     8</span><br><span class="line">  [25] .comment          PROGBITS         0000000000000000  000ad2f0</span><br><span class="line">       0000000000000027  0000000000000001  MS       0     0     1</span><br><span class="line">  [26] .symtab           SYMTAB           0000000000000000  000ad318</span><br><span class="line">       000000000000b3e8  0000000000000018          27   765     8</span><br><span class="line">  [27] .strtab           STRTAB           0000000000000000  000b8700</span><br><span class="line">       00000000000068cf  0000000000000000           0     0     1</span><br><span class="line">  [28] .shstrtab         STRTAB           0000000000000000  000befcf</span><br><span class="line">       0000000000000128  0000000000000000           0     0     1</span><br><span class="line">Key to Flags:</span><br><span class="line">  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),</span><br><span class="line">  L (link order), O (extra OS processing required), G (group), T (TLS),</span><br><span class="line">  C (compressed), x (unknown), o (OS specific), E (exclude),</span><br><span class="line">  l (large), p (processor specific)</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr class="header">
+<th>sh_name</th>
+<th>sh_type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>.text</td>
+<td>SHT_PROGBITS</td>
+<td>代码段，包含程序的可执行指令</td>
+</tr>
+<tr class="even">
+<td>.data</td>
+<td>SHT_PROGBITS</td>
+<td>包含初始化了的数据，将出现在程序的内存映像中</td>
+</tr>
+<tr class="odd">
+<td>.bss</td>
+<td>SHT_NOBITS</td>
+<td>未初始化数据，因为只有符号所以</td>
+</tr>
+<tr class="even">
+<td>.rodata</td>
+<td>SHT_PROGBITS</td>
+<td>包含只读数据</td>
+</tr>
+<tr class="odd">
+<td>.comment</td>
+<td>SHT_PROGBITS</td>
+<td>包含版本控制信息</td>
+</tr>
+<tr class="even">
+<td>.eh_frame</td>
+<td>SHT_PROGBITS</td>
+<td>它生成描述如何unwind 堆栈的表</td>
+</tr>
+<tr class="odd">
+<td>.debug</td>
+<td>SHT_PROGBITS</td>
+<td>此节区包含用于符号调试的信息</td>
+</tr>
+<tr class="even">
+<td>.dynsym</td>
+<td>SHT_DYNSYM</td>
+<td>此节区包含了动态链接符号表</td>
+</tr>
+<tr class="odd">
+<td>.shstrtab</td>
+<td>SHT_STRTAB</td>
+<td>存放section名，字符串表。Section Header String Table</td>
+</tr>
+<tr class="even">
+<td>.strtab</td>
+<td>SHT_STRTAB</td>
+<td>字符串表</td>
+</tr>
+<tr class="odd">
+<td>.symtab</td>
+<td>SHT_SYMTAB</td>
+<td>符号表</td>
+</tr>
+<tr class="even">
+<td>.got</td>
+<td>SHT_PROGBITS</td>
+<td>全局偏移表</td>
+</tr>
+<tr class="odd">
+<td>.plt</td>
+<td>SHT_PROGBITS</td>
+<td>过程链接表</td>
+</tr>
+<tr class="even">
+<td>.relname</td>
+<td>SHT_REL</td>
+<td>包含了重定位信息，例如 .text 节区的重定位节区名字将是：.rel.text</td>
+</tr>
+</tbody>
+</table>
+<p><em>1）.text 代码段</em></p>
+<p>可以通过objdump -d 反汇编，查看ELF文件代码段内容。</p>
+<p><em>2）.strtab / .shstrtab 字符串表</em></p>
+<p>在ELF文件中，会用到很多字符串，比如节名，变量名等。所以ELF将所有的字符串集中放到一个表里，每一个字符串以’\0’分隔，然后使用字符串在表中的偏移来引用字符串。这样在ELF中引用字符串只需要给出一个数组下标即可。字符串表在ELF也以段的形式保存， .shstrtab是专供section name的字符串表。</p>
+<p>可以用一下命令查看：readelf -S xxx.o</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Section Headers:  [Nr] Name              Type             Address           Offset       Size              EntSize          Flags  Link  Info  Align  [ 0]                   NULL             0000000000000000  00000000       0000000000000000  0000000000000000           0     0     0  [ 1] .text             PROGBITS         0000000000000000  00000040       0000000000000045  0000000000000000  AX       0     0     1  [ 2] .rela.text        RELA             0000000000000000  00000658       0000000000000048  0000000000000018          12     1     8  [ 3] .data             PROGBITS         0000000000000000  00000085       0000000000000000  0000000000000000  WA       0     0     1                         … …  [11] .shstrtab         STRTAB           0000000000000000  00000108       0000000000000074  0000000000000000           0     0     1  [12] .symtab           SYMTAB           0000000000000000  00000500       0000000000000138  0000000000000018          13    10     8  [13] .strtab           STRTAB           0000000000000000  00000638       000000000000001e  0000000000000000           0     0     1</span><br></pre></td></tr></table></figure>
+<p><em>3）.symtab 符号表</em></p>
+<p>在链接的过程中需要把多个不同的目标文件合并在一起，不同的目标文件相互之间会引用变量和函数。在链接过程中，我们将函数和变量统称为符号，函数名和变量名就是符号名。</p>
+<p>每个定义的符号都有一个相应的值，叫做符号值(Symbol Value)，对于变量和函数，符号值就是它们的地址。</p>
+<p>可以使用下面命令查看：readelf -s xxx.o</p>
+<figure>
+<img src="../images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/v2-c9e476401c19307c82b3fe89e3555224_720w.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p><em>4）.eh_frame / .eh_frame_hdr</em></p>
+<p>在调试程序的时候经常需要进行堆<strong>栈回溯</strong>，早期使用通用寄存器(ebp)来保存每层函数调用的栈帧地址，但局限性很大。后来现代Linux操作系统在LSB(Linux Standard Base)标准中定义了一个.eh_frame section，用来描述如何去unwind the stack。gcc编译器默认打开，如果不想把.eh_frame section编入elf文件，可以通过gcc选项 -fno-asynchronous-unwind-tables 去除。</p>
+<p>GAS(GCC Assembler)汇编编译器定义了一组伪指令来协助eh_frame生成调用栈信息CFI(Call Frame Information)。具体原理在后续《栈回溯》章节分析，这里不再阐述。</p>
+<p><em>5）重定位表（.relname）</em></p>
+<p>链接器在处理目标文件时，需要对目标文件中的某些部位进行重定位，即代码段和数据中中那些绝对地址引用的位置。对于每个需要重定位的代码段或数据段，都会有一个相应的重定位表。比如”.rel.text”就是针对”.text”的重定位表，”.rel.data”就是针对”.data”的重定位表。</p>
+<p>GOT是全局偏移表（ Global Offset Table），用于存储外部符号地址；PLT是程序链接表（Procedure Link Table），用于存储记录定位信息的额外代码。关于linux动态链接重定位原理，可以参考<a href="https://link.zhihu.com/?target=https%3A//linyt.blog.csdn.net/">海枫</a>写的《<a href="https://link.zhihu.com/?target=https%3A//blog.csdn.net/linyt/article/details/51635768">Linux动态链接中的PLT和GOT</a>》。</p>
+<h2 id="相关命令">相关命令</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -S relocfile //查看节头表objdump -x -s -d relocfile //查看.text汇编readelf -x .strtab relocfile //查看字符串表readelf -r file //查看重定位表</span><br></pre></td></tr></table></figure>
+<h2 id="可执行文件的装载">可执行文件的装载</h2>
+<p>当运行一个可执行文件时，首先需要将该文件和动态链接库装载到进程空间，形成一个进程镜像。</p>
+<p>每个进程都有独立的虚拟地址空间，空间的布局由<strong>程序头（program header）</strong>决定，通过<code>readelf -l file</code>可以看到节到段的映射，以及段的地址空间布局。每一个段都包含一个或多个节，因为随着节数量的增多，在进行内存映射时就会大量浪费空间和资源。系统并不关心节的实际内容，而是不同节的读写、执行的权限。</p>
+<h2 id="参考">参考</h2>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/286088470">ELF文件格式 - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/380180101">gcc 编译命令详解及最佳实践 - 知乎 (zhihu.com)</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"> <i class="fa fa-tag"></i>pwn</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html" rel="prev" title="GCC编译过程">
+      <i class="fa fa-chevron-left"></i> GCC编译过程
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#elf-%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">ELF 文件类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#elf%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">ELF文件格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E4%BD%93%E5%B8%83%E5%B1%80"><span class="nav-number">2.1.</span> <span class="nav-text">总体布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.2.</span> <span class="nav-text">文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#elf%E5%A4%B4"><span class="nav-number">2.2.1.</span> <span class="nav-text">elf头</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%A4%B4%E8%A1%A8program-header-table"><span class="nav-number">2.2.2.</span> <span class="nav-text">程序头表（program header table）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%8A%82%E5%A4%B4%E8%A1%A8section-header-table"><span class="nav-number">2.2.3.</span> <span class="nav-text">节头表（section header table）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">相关命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E7%9A%84%E8%A3%85%E8%BD%BD"><span class="nav-number">4.</span> <span class="nav-text">可执行文件的装载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="un0o7"
+      src="/images/avatar.png#/images/avatar.png">
+  <p class="site-author-name" itemprop="name">un0o7</p>
+  <div class="site-description" itemprop="description">留言必回！</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="sidebar-button motion-element"><i class="fa fa-comment"></i>
+    Chat
+  </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/un0o7" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;un0o7" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1955981564@qq.com" title="E-Mail → mailto:1955981564@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/ddddd1234654732" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;ddddd1234654732" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">un0o7</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">34k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">31 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'mdvXRfkv4gfe7M6IAz3sA1KO-gzGzoHsz',
+      appKey     : 'ukMNggcY3GfPrgKHd3UaMOw9',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"live2d-widget-model-shizuku"},"display":{"position":"right","width":70,"height":120},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>

