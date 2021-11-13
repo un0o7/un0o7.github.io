@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg">
 <meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png">
 <meta property="article:published_time" content="2021-10-17T08:37:18.000Z">
-<meta property="article:modified_time" content="2021-11-12T15:16:10.179Z">
+<meta property="article:modified_time" content="2021-11-13T01:02:07.487Z">
 <meta property="article:author" content="un0o7">
 <meta property="article:tag" content="model">
 <meta name="twitter:card" content="summary">
@@ -241,7 +241,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-12 23:16:10" itemprop="dateModified" datetime="2021-11-12T23:16:10+08:00">2021-11-12</time>
+                <time title="修改时间：2021-11-13 09:02:07" itemprop="dateModified" datetime="2021-11-13T09:02:07+08:00">2021-11-13</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -311,45 +311,33 @@
 <p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
 <p>valid 就是不经过任何填白。</p>
 <p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" /></p>
 <h3 id="步长stride">步长stride</h3>
 <p>就是卷积核的移动长度，每次向右移动一个步长。</p>
 <h3 id="pooling池化">pooling池化</h3>
 <p>有的地方也成为<strong>采样sampling</strong></p>
 <p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
 <p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" /></p>
 <h3 id="多通道卷积">多通道卷积</h3>
 <p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
 <p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
 <p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
 <p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" /></p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" /></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
 <h3 id="cnn网络结构">CNN网络结构</h3>
 <p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
 <p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" /></p>
 <h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
 <ul>
 <li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
 <li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
 </ul>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" alt="image-20211010095224357" /><figcaption aria-hidden="true">image-20211010095224357</figcaption>
-</figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" /></p>
 <h2 id="cnn代码实践">CNN代码实践</h2>
 <h2 id="参考">参考</h2>
 <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
@@ -372,8 +360,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/10/17/hello-world.html" rel="prev" title="Hello World">
-      <i class="fa fa-chevron-left"></i> Hello World
+    <a href="/2021/10/17/SVM.html" rel="prev" title="SVM">
+      <i class="fa fa-chevron-left"></i> SVM
     </a></div>
       <div class="post-nav-item">
     <a href="/2021/11/12/xctf-fakebook.html" rel="next" title="xctf-fakebook">

@@ -27,15 +27,15 @@
 <meta property="og:site_name" content="un0o7&#39;s blog">
 <meta property="og:description" content="pwn 入门学习，走一遍流程">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png">
+<meta property="og:image" content="http://un0o7.github.io/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png">
+<meta property="og:image" content="http://un0o7.github.io/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png">
+<meta property="og:image" content="http://un0o7.github.io/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png">
 <meta property="article:published_time" content="2021-11-12T14:58:38.000Z">
-<meta property="article:modified_time" content="2021-11-12T15:15:47.444Z">
+<meta property="article:modified_time" content="2021-11-13T01:05:53.675Z">
 <meta property="article:author" content="un0o7">
 <meta property="article:tag" content="pwn">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://un0o7.github.io/2021/11/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png">
+<meta name="twitter:image" content="http://un0o7.github.io/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png">
 
 <link rel="canonical" href="http://un0o7.github.io/2021/11/12/PWN%E5%85%A5%E9%97%A8.html">
 
@@ -229,10 +229,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-11-12 22:58:38 / 修改时间：23:15:47" itemprop="dateCreated datePublished" datetime="2021-11-12T22:58:38+08:00">2021-11-12</time>
+              <time title="创建时间：2021-11-12 22:58:38" itemprop="dateCreated datePublished" datetime="2021-11-12T22:58:38+08:00">2021-11-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-13 09:05:53" itemprop="dateModified" datetime="2021-11-13T09:05:53+08:00">2021-11-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -310,17 +316,13 @@
 <h2 id="静态分析代码">静态分析代码</h2>
 <p>看到main函数，gets函数可能存在栈溢出漏洞，接着点击s局部变量进入栈空间。</p>
 <figure>
-<img src="../images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption>
+<img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption>
 </figure>
 <p>第一次看到略感奇怪怎么两个s，r又是什么。首先明确这是main函数的栈空间，<strong>上面的s是局部变量，下面的s指的是rbp</strong>，64位程序8个字节。r比较特殊，有的地方说是return的东西，但是返回东西一般是通过寄存器eax或rax返回的，有点忘了。<strong>r应该是main函数执行完成后，EIP的值，即main函数结束后要执行的下一条执行。</strong></p>
 <p>栈溢出漏洞请自行补充知识。</p>
-<figure>
-<img src="../images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" alt="image-20210924133134114" /><figcaption aria-hidden="true">image-20210924133134114</figcaption>
-</figure>
+<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" /></p>
 <p>找到提权函数，这个还没有搞懂，大概就是让mian函数执行完了，执行fun函数，然后既可以cat flag了。</p>
-<figure>
-<img src="../images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" alt="image-20210924133520323" /><figcaption aria-hidden="true">image-20210924133520323</figcaption>
-</figure>
+<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" /></p>
 <h2 id="动态分析">动态分析</h2>
 <p>难度大一些的才需要，使用GDB和peda分析。</p>
 <h2 id="编写exp">编写exp</h2>

