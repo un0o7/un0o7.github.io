@@ -173,6 +173,13 @@
 
   
   <url>
+    <loc>http://un0o7.github.io/tags/pwn/</loc>
+    <lastmod>2022-06-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://un0o7.github.io/tags/reversing/</loc>
     <lastmod>2022-06-20</lastmod>
     <changefreq>weekly</changefreq>
@@ -181,13 +188,6 @@
   
   <url>
     <loc>http://un0o7.github.io/tags/model/</loc>
-    <lastmod>2022-06-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://un0o7.github.io/tags/pwn/</loc>
     <lastmod>2022-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -217,14 +217,14 @@
   </url>
   
   <url>
-    <loc>http://un0o7.github.io/categories/time/</loc>
+    <loc>http://un0o7.github.io/categories/machine-learning/</loc>
     <lastmod>2022-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://un0o7.github.io/categories/machine-learning/</loc>
+    <loc>http://un0o7.github.io/categories/time/</loc>
     <lastmod>2022-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

