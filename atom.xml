@@ -216,6 +216,28 @@
   </entry>
   
   <entry>
+    <title>RandomForest</title>
+    <link href="http://un0o7.github.io/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html"/>
+    <id>http://un0o7.github.io/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</id>
+    <published>2021-10-17T08:37:18.000Z</published>
+    <updated>2022-06-30T01:52:38.866Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="决策树">决策树</h2><p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p><span id="more"></span><meta name="referrer" content="no-referrer"/><p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p><h3 id="分类决策树">分类决策树</h3><p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p><p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p><p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p><p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p><p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p><h3 id="回归决策树">回归决策树</h3><h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3><p>这里复习一下<strong>回归和拟合的区别</strong>：</p><p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p><p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p><p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2><h3 id="简介">简介</h3><p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p><p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p><h3 id="决策树生成规则">决策树生成规则</h3><ol type="1"><li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li><li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li><li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li></ol><p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p><p>两个随机：随机取样和随机取m个特征。</p><h3 id="分类效果">分类效果</h3><ul><li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li><li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li></ul><p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p><h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3><p>袋外错误率主要用于选取最佳的m值。</p><p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p><p>最终得到每个样本是否被正确预测，计算袋外错误率。</p><h3 id="代码使用">代码使用</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure><h2 id="参考">参考</h2><p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p><p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p><p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p><p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p><p>https://www.zhihu.com/question/24904495/answer/371618173</p>]]></content>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;决策树&quot;&gt;决策树&lt;/h2&gt;
+&lt;p&gt;先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="machine_learning" scheme="http://un0o7.github.io/categories/machine-learning/"/>
+    
+    
+    <category term="model" scheme="http://un0o7.github.io/tags/model/"/>
+    
+  </entry>
+  
+  <entry>
     <title>SVM</title>
     <link href="http://un0o7.github.io/2021/10/17/SVM.html"/>
     <id>http://un0o7.github.io/2021/10/17/SVM.html</id>
@@ -228,28 +250,6 @@
     <summary type="html">&lt;h1 id=&quot;svm模型&quot;&gt;SVM模型&lt;/h1&gt;
 &lt;h2 id=&quot;简介&quot;&gt;简介&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;支持向量机（support vector machines, SVM）&lt;/strong&gt;是一种&lt;strong&gt;二分类模型&lt;/strong&gt;，它的基本模型是定义在特征空间上的&lt;strong&gt;间隔最大的线性分类器&lt;/strong&gt;，间隔最大使它有别于感知机；SVM还包括&lt;strong&gt;核技巧&lt;/strong&gt;，这使它成为实质上的非线性分类器。&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="machine_learning" scheme="http://un0o7.github.io/categories/machine-learning/"/>
-    
-    
-    <category term="model" scheme="http://un0o7.github.io/tags/model/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>RandomForest</title>
-    <link href="http://un0o7.github.io/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html"/>
-    <id>http://un0o7.github.io/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</id>
-    <published>2021-10-17T08:37:18.000Z</published>
-    <updated>2022-06-30T01:52:38.866Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="决策树">决策树</h2><p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p><span id="more"></span><meta name="referrer" content="no-referrer"/><p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p><h3 id="分类决策树">分类决策树</h3><p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p><p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p><p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p><p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p><p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p><h3 id="回归决策树">回归决策树</h3><h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3><p>这里复习一下<strong>回归和拟合的区别</strong>：</p><p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p><p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p><p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p><p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p><figure><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption></figure><h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2><h3 id="简介">简介</h3><p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p><p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p><h3 id="决策树生成规则">决策树生成规则</h3><ol type="1"><li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li><li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li><li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li></ol><p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p><p>两个随机：随机取样和随机取m个特征。</p><h3 id="分类效果">分类效果</h3><ul><li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li><li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li></ul><p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p><h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3><p>袋外错误率主要用于选取最佳的m值。</p><p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p><p>最终得到每个样本是否被正确预测，计算袋外错误率。</p><h3 id="代码使用">代码使用</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure><h2 id="参考">参考</h2><p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p><p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p><p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p><p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p><p>https://www.zhihu.com/question/24904495/answer/371618173</p>]]></content>
-    
-    
-    <summary type="html">&lt;h2 id=&quot;决策树&quot;&gt;决策树&lt;/h2&gt;
-&lt;p&gt;先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。&lt;/p&gt;</summary>
     
     
     

