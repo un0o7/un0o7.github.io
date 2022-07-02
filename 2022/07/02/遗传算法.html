@@ -1,0 +1,339 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>遗传算法（单目标） | un0o7's blog</title><meta name="keywords" content="优化算法"><meta name="author" content="un0o7"><meta name="copyright" content="un0o7"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="简介 遗传算法模拟了自然界物竞天择、适者生存的的进化过程，保留好的物种。 遗传算法是从代表问题可能潜在的解集的一个种群（population）开始的，而一个种群则由经过基因（gene）编码的一定数目的个体(individual)组成。每个个体实际上是染色体(chromosome)带有特征的实体。 是一种搜索最优解的优化模型，个人感觉很多这种搜索算法都是为了解决局部最优解的问题。遗传算法并不保">
+<meta property="og:type" content="article">
+<meta property="og:title" content="遗传算法（单目标）">
+<meta property="og:url" content="http://un0o7.github.io/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html">
+<meta property="og:site_name" content="un0o7&#39;s blog">
+<meta property="og:description" content="简介 遗传算法模拟了自然界物竞天择、适者生存的的进化过程，保留好的物种。 遗传算法是从代表问题可能潜在的解集的一个种群（population）开始的，而一个种群则由经过基因（gene）编码的一定数目的个体(individual)组成。每个个体实际上是染色体(chromosome)带有特征的实体。 是一种搜索最优解的优化模型，个人感觉很多这种搜索算法都是为了解决局部最优解的问题。遗传算法并不保">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg">
+<meta property="article:published_time" content="2022-07-02T15:08:22.000Z">
+<meta property="article:modified_time" content="2022-07-02T15:09:52.027Z">
+<meta property="article:author" content="un0o7">
+<meta property="article:tag" content="优化算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg"><link rel="shortcut icon" href="/img/avatar.png"><link rel="canonical" href="http://un0o7.github.io/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: un0o7","link":"链接: ","source":"来源: un0o7's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '遗传算法（单目标）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-02 23:09:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="referrer" content="no-referrer"/><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="un0o7's blog" type="application/atom+xml">
+</head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">un0o7's blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">遗传算法（单目标）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-02T15:08:22.000Z" title="发表于 2022-07-02 23:08:22">2022-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-02T15:09:52.027Z" title="更新于 2022-07-02 23:09:52">2022-07-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%95%B0%E5%AD%A6%E6%A8%A1%E5%9E%8B/">数学模型</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="遗传算法（单目标）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="简介">简介</h2>
+<p>遗传算法模拟了自然界物竞天择、适者生存的的进化过程，保留好的物种。</p>
+<p>遗传算法是从代表问题可能潜在的解集的一个<strong>种群</strong>（population）开始的，而一个种群则由经过<strong>基因</strong>（gene）编码的一定数目的<strong>个体</strong>(individual)组成。每个个体实际上是<strong>染色体</strong>(chromosome)带有特征的实体。</p>
+<p>是一种搜索最优解的优化模型，个人感觉很多这种搜索算法都是为了解决局部最优解的问题。遗传算法并<strong>不保证你能获得问题的最优解</strong>，但是使用遗传算法的最大优点在于你不<strong>必去了解和操心如何去“找”最优解</strong>,而只要简单的“否定”一些表现不好的个体就行了。</p>
+<h2 id="理解">理解</h2>
+<p>遗传算法中<strong>每一条染色体/个体，对应着遗传算法的一个解决方案</strong>，一般我们用<strong>适应性函数（fitness function）</strong>来衡量这个解决方案的优劣。所以从一个基因组到其解的适应度形成一个映射。可以把遗传算法的过程看作是一个在多元函数里面求最优解的过程。</p>
+<p>生动理解：</p>
+<p>在遗传算法中，有很多袋鼠，它们降落到喜玛拉雅山脉的任意地方。这些袋鼠并不知道它们的任务是寻找珠穆朗玛峰。但每过几年，就在一些<strong>海拔高度较低的地方射杀一些袋鼠</strong>，并希望存活下来的袋鼠是多产的，在它们所处的地方生儿育女。就这样经过许多年，这些袋鼠们竟然都不自觉地聚拢到了一个个的山峰上，可是在所有的袋鼠中，只有聚拢到珠穆朗玛峰的袋鼠被带回了美丽的澳洲（最优解）。</p>
+<h2 id="概念">概念</h2>
+<h3 id="列举">列举</h3>
+<p>基因型(genotype)：性状染色体的内部表现；</p>
+<p>表现型(phenotype)：染色体决定的性状的外部表现，或者说，根据基因型形成的个体的外部表现；</p>
+<p>进化(evolution)：种群逐渐适应生存环境，品质不断得到改良。生物的进化是以种群的形式进行的。</p>
+<p>适应度(fitness)：度量某个物种对于生存环境的适应程度。</p>
+<p>选择(selection)：<strong>以一定的概率</strong>从种群中选择若干个个体。一般，选择过程是一种<strong>基于适应度</strong>的优胜劣汰的过程。</p>
+<p>复制(reproduction)：细胞分裂时，遗传物质DNA通过复制而转移到新产生的细胞中，新细胞就继承了旧细胞的基因。</p>
+<p>交叉(crossover)：两个染色体的某一相同位置处DNA被切断，前后两串分别交叉组合形成两个新的染色体。也称基因重组或杂交；</p>
+<p>变异(mutation)：复制时可能（很小的概率）产生某些复制差错，变异产生新的染色体，表现出新的性状。</p>
+<p>编码(coding)：DNA中遗传信息在一个长链上按一定的模式排列。遗传编码可看作从表现型到基因型的映射。</p>
+<p>解码(decoding)：基因型到表现型的映射。</p>
+<p>个体（individual）：指染色体带有特征的实体；</p>
+<p>种群（population）：个体的集合，该集合内个体数称为种群的大小。</p>
+<h3 id="编码方式">编码方式</h3>
+<p>二进制编码和浮点数编码基因型</p>
+<p>人的基因型是46条染色体所描述的却能解码成一个眼，耳，口，鼻等特征各不相同的活生生的人。</p>
+<p>编码的前提是了解需要编码的个体的特征，尤其是与问题相关的特征。</p>
+<h3 id="物竞天择">物竞天择</h3>
+<p>物竞体现在适应度函数上。</p>
+<p>天择体现在适应度高的个体以较大概率繁殖后代，在种群中产生更多的基因留存。轮盘赌（Roulette Wheel Selection）选择法即是计算适应度函数输入结果占比来确定这个概率。</p>
+<h3 id="基因交叉重组和变异">基因交叉(重组)和变异</h3>
+<h4 id="重组交叉">重组/交叉</h4>
+<p>二进制编码，其实就是简单对基因序列进行交换、移位、翻转等操作。</p>
+<p>浮点数编码则可能产生介于中间的值，或者其他。</p>
+<h4 id="变异突变">变异/突变</h4>
+<p>二进制编码体现在某个或多个位以一定概率取反。</p>
+<p>浮点数编码体现在随机增加或减小一个步长，步长开始大，后面小，动态改变步长，尽可能加快收敛，同时保证能收敛到精确的点上。</p>
+<center>
+<image src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg"/>
+</center>
+<h2 id="题目实践">题目实践</h2>
+<h3 id="问题">问题</h3>
+<p><span class="math inline">\(f(x)=2*\sin{(x)}+\cos{(x)}\)</span>的最大值</p>
+<h3 id="求解完整代码">求解完整代码</h3>
+<p>代码来自参考中,比较详尽，可以直接运行，可能要去掉第3和7行。</p>
+<p>轮盘赌部分没看懂，抽奖的方法，转盘转。</p>
+<h4 id="函数作用表">函数作用表</h4>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">函数</th>
+<th style="text-align: center;">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">species_origin</td>
+<td style="text-align: center;">返回个体数*基因数的矩阵population</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">translation</td>
+<td style="text-align: center;">输入population，得到每个个体基因的<strong>十进制数</strong>的1*population_size的矩阵</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">function</td>
+<td style="text-align: center;">输入population，得到每个个体的适应度<span class="math inline">\(f(x)\)</span>一维数组</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">fitness</td>
+<td style="text-align: center;">对function输入结果进行过滤，小于0的变为0（没看懂，可能是因为要计算适应度的和）</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">cumsum</td>
+<td style="text-align: center;">输入fitness结果，输出各适应度所占的区间，依次增大，最后一个为1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">selection</td>
+<td style="text-align: center;">输入population和fitness,根据轮盘赌算法输出新的种群</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">crossover</td>
+<td style="text-align: center;">输入population,基因的交叉操作，每相邻两个个体之间交换基因</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">mutation</td>
+<td style="text-align: center;">变异操作，根据pm，在某一位置上取反</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">b2d</td>
+<td style="text-align: center;">取最大值函数</td>
+</tr>
+</tbody>
+</table>
+<h4 id="完整代码">完整代码</h4>
+<details>
+<summary>
+点击查看代码
+</summary>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*-coding:utf-8 -*-</span></span><br><span class="line"><span class="comment">#目标求解2*sin(x)+cos(x)最大值</span></span><br><span class="line">%matplotlib notebook</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">%matplotlib inline</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GA</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line"><span class="comment">#初始化种群 生成chromosome_length大小的population_size个个体的种群</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self,population_size,chromosome_length,max_value,pc,pm</span>):</span></span><br><span class="line"></span><br><span class="line">        self.population_size=population_size</span><br><span class="line">        self.choromosome_length=chromosome_length</span><br><span class="line">        <span class="comment"># self.population=[[]]</span></span><br><span class="line">        self.max_value=max_value</span><br><span class="line">        self.pc=pc</span><br><span class="line">        self.pm=pm</span><br><span class="line">        <span class="comment"># self.fitness_value=[]</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">species_origin</span>(<span class="params">self</span>):</span></span><br><span class="line">        population=[[]]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.population_size):</span><br><span class="line"></span><br><span class="line">            temporary=[]</span><br><span class="line">        <span class="comment">#染色体暂存器</span></span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.choromosome_length):</span><br><span class="line"></span><br><span class="line">                temporary.append(random.randint(<span class="number">0</span>,<span class="number">1</span>))</span><br><span class="line">            <span class="comment">#随机产生一个染色体,由二进制数组成</span></span><br><span class="line"></span><br><span class="line">            population.append(temporary)</span><br><span class="line">            <span class="comment">#将染色体添加到种群中</span></span><br><span class="line">        <span class="keyword">return</span> population[<span class="number">1</span>:]</span><br><span class="line">            <span class="comment"># 将种群返回，种群是个二维数组，个体和染色体两维</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#从二进制到十进制</span></span><br><span class="line">    <span class="comment">#编码  input:种群,染色体长度 编码过程就是将多元函数转化成一元函数的过程</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">translation</span>(<span class="params">self,population</span>):</span></span><br><span class="line"></span><br><span class="line">        temporary=[]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(population)):</span><br><span class="line">            total=<span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.choromosome_length):</span><br><span class="line">                total+=population[i][j]*(math.<span class="built_in">pow</span>(<span class="number">2</span>,j))</span><br><span class="line">            <span class="comment">#从第一个基因开始，每位对2求幂，再求和</span></span><br><span class="line">            <span class="comment"># 如：0101 转成十进制为：1 * 20 + 0 * 21 + 1 * 22 + 0 * 23 = 1 + 0 + 4 + 0 = 5</span></span><br><span class="line">            temporary.append(total)</span><br><span class="line">        <span class="comment">#一个染色体编码完成，由一个二进制数编码为一个十进制数</span></span><br><span class="line">        <span class="keyword">return</span> temporary</span><br><span class="line">   <span class="comment"># 返回种群中所有个体编码完成后的十进制数</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#from protein to function,according to its functoin value</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#a protein realize its function according its structure</span></span><br><span class="line"><span class="comment"># 目标函数相当于环境 对染色体进行筛选，这里是2*sin(x)+math.cos(x)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">function</span>(<span class="params">self,population</span>):</span></span><br><span class="line">        temporary=[]</span><br><span class="line">        function1=[]</span><br><span class="line">        temporary=self.translation(population)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(temporary)):</span><br><span class="line">            x=temporary[i]*self.max_value/(math.<span class="built_in">pow</span>(<span class="number">2</span>,self.choromosome_length)-<span class="number">10</span>)</span><br><span class="line">            function1.append(<span class="number">2</span>*math.sin(x)+math.cos(x))</span><br><span class="line"></span><br><span class="line">         <span class="comment">#这里将sin(x)作为目标函数</span></span><br><span class="line">        <span class="keyword">return</span> function1</span><br><span class="line"></span><br><span class="line"><span class="comment">#定义适应度</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fitness</span>(<span class="params">self,function1</span>):</span></span><br><span class="line"></span><br><span class="line">        fitness_value=[]</span><br><span class="line"></span><br><span class="line">        num=<span class="built_in">len</span>(function1)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num):</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(function1[i]&gt;<span class="number">0</span>):</span><br><span class="line">                temporary=function1[i]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                temporary=<span class="number">0.0</span></span><br><span class="line">        <span class="comment"># 如果适应度小于0,则定为0</span></span><br><span class="line"></span><br><span class="line">            fitness_value.append(temporary)</span><br><span class="line">        <span class="comment">#将适应度添加到列表中</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> fitness_value</span><br><span class="line"></span><br><span class="line"><span class="comment">#计算适应度和</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">sum</span>(<span class="params">self,fitness_value</span>):</span></span><br><span class="line">        total=<span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fitness_value)):</span><br><span class="line">            total+=fitness_value[i]</span><br><span class="line">        <span class="keyword">return</span> total</span><br><span class="line"></span><br><span class="line"><span class="comment">#计算适应度斐伯纳且列表</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">cumsum</span>(<span class="params">self,fitness1</span>):</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fitness1)-<span class="number">2</span>,-<span class="number">1</span>,-<span class="number">1</span>):</span><br><span class="line">        <span class="comment"># range(start,stop,[step])</span></span><br><span class="line">        <span class="comment"># 倒计数</span></span><br><span class="line">            total=<span class="number">0</span></span><br><span class="line">            j=<span class="number">0</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span>(j&lt;=i):</span><br><span class="line">                 total+=fitness1[j]</span><br><span class="line">                 j+=<span class="number">1</span></span><br><span class="line"></span><br><span class="line">            fitness1[i]=total</span><br><span class="line">            fitness1[<span class="built_in">len</span>(fitness1)-<span class="number">1</span>]=<span class="number">1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#3.选择种群中个体适应度最大的个体</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">selection</span>(<span class="params">self,population,fitness_value</span>):</span></span><br><span class="line">        new_fitness=[]</span><br><span class="line">    <span class="comment">#单个公式暂存器</span></span><br><span class="line">        total_fitness=self.<span class="built_in">sum</span>(fitness_value)</span><br><span class="line">    <span class="comment">#将所有的适应度求和</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fitness_value)):</span><br><span class="line">            new_fitness.append(fitness_value[i]/total_fitness)</span><br><span class="line">    <span class="comment">#将所有个体的适应度正则化</span></span><br><span class="line">        self.cumsum(new_fitness)</span><br><span class="line">    <span class="comment">#</span></span><br><span class="line">        ms=[]</span><br><span class="line">    <span class="comment">#存活的种群</span></span><br><span class="line">        population_length=pop_len=<span class="built_in">len</span>(population)</span><br><span class="line">    <span class="comment">#求出种群长度</span></span><br><span class="line">    <span class="comment">#根据随机数确定哪几个能存活</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(pop_len):</span><br><span class="line">            ms.append(random.random())</span><br><span class="line">    <span class="comment"># 产生种群个数的随机值</span></span><br><span class="line">    <span class="comment"># ms.sort()</span></span><br><span class="line">    <span class="comment"># 存活的种群排序</span></span><br><span class="line">        fitin=<span class="number">0</span></span><br><span class="line">        newin=<span class="number">0</span></span><br><span class="line">        new_population=new_pop=population</span><br><span class="line"></span><br><span class="line">    <span class="comment">#轮盘赌方式</span></span><br><span class="line">        <span class="keyword">while</span> newin&lt;pop_len:</span><br><span class="line">              <span class="keyword">if</span>(ms[newin]&lt;new_fitness[fitin]):</span><br><span class="line">                 new_pop[newin]=population[fitin]</span><br><span class="line">                 newin+=<span class="number">1</span></span><br><span class="line">              <span class="keyword">else</span>:</span><br><span class="line">                 fitin+=<span class="number">1</span></span><br><span class="line">        population=new_pop</span><br><span class="line"></span><br><span class="line"><span class="comment">#4.交叉操作</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">crossover</span>(<span class="params">self,population</span>):</span></span><br><span class="line"><span class="comment">#pc是概率阈值，选择单点交叉还是多点交叉，生成新的交叉个体，这里没用</span></span><br><span class="line">        pop_len=<span class="built_in">len</span>(population)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(pop_len-<span class="number">1</span>):</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(random.random()&lt;self.pc):</span><br><span class="line"></span><br><span class="line">               cpoint=random.randint(<span class="number">0</span>,<span class="built_in">len</span>(population[<span class="number">0</span>]))</span><br><span class="line">           <span class="comment">#在种群个数内随机生成单点交叉点</span></span><br><span class="line">               temporary1=[]</span><br><span class="line">               temporary2=[]</span><br><span class="line"></span><br><span class="line">               temporary1.extend(population[i][<span class="number">0</span>:cpoint])</span><br><span class="line">               temporary1.extend(population[i+<span class="number">1</span>][cpoint:<span class="built_in">len</span>(population[i])])</span><br><span class="line">           <span class="comment">#将tmporary1作为暂存器，暂时存放第i个染色体中的前0到cpoint个基因，</span></span><br><span class="line">           <span class="comment">#然后再把第i+1个染色体中的后cpoint到第i个染色体中的基因个数，补充到temporary2后面</span></span><br><span class="line"></span><br><span class="line">               temporary2.extend(population[i+<span class="number">1</span>][<span class="number">0</span>:cpoint])</span><br><span class="line">               temporary2.extend(population[i][cpoint:<span class="built_in">len</span>(population[i])])</span><br><span class="line">        <span class="comment"># 将tmporary2作为暂存器，暂时存放第i+1个染色体中的前0到cpoint个基因，</span></span><br><span class="line">        <span class="comment"># 然后再把第i个染色体中的后cpoint到第i个染色体中的基因个数，补充到temporary2后面</span></span><br><span class="line">               population[i]=temporary1</span><br><span class="line">               population[i+<span class="number">1</span>]=temporary2</span><br><span class="line">        <span class="comment"># 第i个染色体和第i+1个染色体基因重组/交叉完成</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">mutation</span>(<span class="params">self,population</span>):</span></span><br><span class="line">     <span class="comment"># pm是概率阈值</span></span><br><span class="line">         px=<span class="built_in">len</span>(population)</span><br><span class="line">    <span class="comment"># 求出种群中所有种群/个体的个数</span></span><br><span class="line">         py=<span class="built_in">len</span>(population[<span class="number">0</span>])</span><br><span class="line">    <span class="comment"># 染色体/个体基因的个数</span></span><br><span class="line">         <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(px):</span><br><span class="line">             <span class="keyword">if</span>(random.random()&lt;self.pm):</span><br><span class="line">                mpoint=random.randint(<span class="number">0</span>,py-<span class="number">1</span>)</span><br><span class="line">            <span class="comment">#</span></span><br><span class="line">                <span class="keyword">if</span>(population[i][mpoint]==<span class="number">1</span>):</span><br><span class="line">               <span class="comment">#将mpoint个基因进行单点随机变异，变为0或者1</span></span><br><span class="line">                   population[i][mpoint]=<span class="number">0</span></span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                   population[i][mpoint]=<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#transform the binary to decimalism</span></span><br><span class="line"><span class="comment"># 将每一个染色体都转化成十进制 max_value,再筛去过大的值</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">b2d</span>(<span class="params">self,best_individual</span>):</span></span><br><span class="line">        total=<span class="number">0</span></span><br><span class="line">        b=<span class="built_in">len</span>(best_individual)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(b):</span><br><span class="line">            total=total+best_individual[i]*math.<span class="built_in">pow</span>(<span class="number">2</span>,i)</span><br><span class="line"></span><br><span class="line">        total=total*self.max_value/(math.<span class="built_in">pow</span>(<span class="number">2</span>,self.choromosome_length)-<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> total</span><br><span class="line"></span><br><span class="line"><span class="comment">#寻找最好的适应度和个体</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">best</span>(<span class="params">self,population,fitness_value</span>):</span></span><br><span class="line"></span><br><span class="line">        px=<span class="built_in">len</span>(population)</span><br><span class="line">        bestindividual=[]</span><br><span class="line">        bestfitness=fitness_value[<span class="number">0</span>]</span><br><span class="line">        <span class="comment"># print(fitness_value)</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,px):</span><br><span class="line">   <span class="comment"># 循环找出最大的适应度，适应度最大的也就是最好的个体</span></span><br><span class="line">            <span class="keyword">if</span>(fitness_value[i]&gt;bestfitness):</span><br><span class="line"></span><br><span class="line">               bestfitness=fitness_value[i]</span><br><span class="line">               bestindividual=population[i]</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> [bestindividual,bestfitness]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">plot</span>(<span class="params">self, results</span>):</span></span><br><span class="line">        X = []</span><br><span class="line">        Y = []</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">500</span>):</span><br><span class="line">            X.append(i)</span><br><span class="line">            Y.append(results[i][<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">        plt.plot(X, Y)</span><br><span class="line">        plt.show()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">main</span>(<span class="params">self</span>):</span></span><br><span class="line"></span><br><span class="line">        results = [[]]</span><br><span class="line">        fitness_value = []</span><br><span class="line">        fitmean = []</span><br><span class="line"></span><br><span class="line">        population = pop = self.species_origin()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">500</span>):</span><br><span class="line">            function_value = self.function(population)</span><br><span class="line">            <span class="comment"># print(&#x27;fit funtion_value:&#x27;,function_value)</span></span><br><span class="line">            fitness_value = self.fitness(function_value)</span><br><span class="line">            <span class="comment"># print(&#x27;fitness_value:&#x27;,fitness_value)</span></span><br><span class="line"></span><br><span class="line">            best_individual, best_fitness = self.best(population,fitness_value)</span><br><span class="line">            results.append([best_fitness, self.b2d(best_individual)])</span><br><span class="line">        <span class="comment"># 将最好的个体和最好的适应度保存，并将最好的个体转成十进制,适应度函数</span></span><br><span class="line">            self.selection(population,fitness_value)</span><br><span class="line">            self.crossover(population)</span><br><span class="line">            self.mutation(population)</span><br><span class="line">        results = results[<span class="number">1</span>:]</span><br><span class="line">        results.sort()</span><br><span class="line">        self.plot(results)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">   population_size=<span class="number">400</span><span class="comment">#种群大小</span></span><br><span class="line">   max_value=<span class="number">10</span><span class="comment">#x的最大值，x是表现型，由基因构造的比率乘以最大值得到，其他情况下是乘以区间长度加上最小值</span></span><br><span class="line">   chromosome_length=<span class="number">20</span><span class="comment">#基因的位数，采用二进制编码</span></span><br><span class="line">   pc=<span class="number">0.6</span><span class="comment">#交叉中的概率阈值，但是这个代码貌似并没有用</span></span><br><span class="line">   pm=<span class="number">0.01</span><span class="comment">#突变的概率，突变时使用random生成一个概率和它比较</span></span><br><span class="line">   ga=GA(population_size,chromosome_length,max_value,pc,pm)</span><br><span class="line">   ga.main()</span><br></pre></td></tr></table></figure>
+</details>
+<h3 id="运行结果">运行结果</h3>
+<p>500次每次的最大<span class="math inline">\(f(x)\)</span>,可以清除看到每次都在上升，但是貌似并没有标注是哪个<span class="math inline">\(x\)</span>生成的。</p>
+<center>
+<image src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919112345724-1119869064.png"/>
+</center>
+<h2 id="轮盘赌算法">轮盘赌算法</h2>
+<p>因为前面的轮盘赌算法没看懂，又去找博客看了看。</p>
+<p>个人理解：假设有一个转盘和指针，指针转动一圈停留在哪个区间就是哪个。指针转动可以使用随机函数random.random模拟，随机落到0-1的区间，落在哪个区间对应的方案就是哪个。构造区间我们使用</p>
+<pre><code>                                                                            $$q_i=\sum_&#123;j=0&#125;^&#123;i&#125;P(x_j)$$</code></pre>
+<p><span class="math inline">\(P(x_j)\)</span>是<span class="math inline">\(x_j\)</span>被选中的概率，依次生成<span class="math inline">\(0,q_1,q_2,q_3,\cdots,q_n，1\)</span>，随机一个概率<span class="math inline">\(r\)</span>，落在哪个区间就是哪个。例如<span class="math inline">\(q_2&lt;r&lt;q_3\)</span>,则选中了<span class="math inline">\(x_3\)</span></p>
+<center>
+<image src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919125024238-93986478.png" style="width:50%;height:50%;"/>
+</center>
+<h2 id="参考">参考</h2>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/112788663">用Python实现遗传算法 - 知乎 (zhihu.com)</a>理解详尽，推荐</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/pymqq/article/details/51375522">(10条消息) 轮盘赌算法_pymqq的专栏-CSDN博客</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://www.un0o7.asia/">un0o7</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://un0o7.github.io/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html">http://un0o7.github.io/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://un0o7.github.io" target="_blank">un0o7's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95/">优化算法</a></div><div class="post_share"><div class="social-share" data-image="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/07/02/Git.html"><img class="prev-cover" src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231142568-2108853789.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Git</div></div></a></div><div class="next-post pull-right"><a href="/2022/07/02/pwn-protect.html"><img class="next-cover" src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253247-1850220162.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">pwn_protect</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">un0o7</div><div class="author-info__description">sharing, learning and creating</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/un0o7"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/un0o7" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:un0o7@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://www.cnblogs.com/dddddblog/" target="_blank" title=""><i class="fa-solid fa-square-rss"></i></a><a class="social-icon" href="https://www.kaggle.com/hjhsdsdww" target="_blank" title=""><i class="fa-brands fa-kaggle"></i></a><a class="social-icon" href="https://ctf.show/user" target="_blank" title=""><i class="fa-solid fa-flag"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">无极之道，在我内心延续。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5"><span class="toc-number">3.</span> <span class="toc-text">概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%97%E4%B8%BE"><span class="toc-number">3.1.</span> <span class="toc-text">列举</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">编码方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%AB%9E%E5%A4%A9%E6%8B%A9"><span class="toc-number">3.3.</span> <span class="toc-text">物竞天择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9B%A0%E4%BA%A4%E5%8F%89%E9%87%8D%E7%BB%84%E5%92%8C%E5%8F%98%E5%BC%82"><span class="toc-number">3.4.</span> <span class="toc-text">基因交叉(重组)和变异</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E7%BB%84%E4%BA%A4%E5%8F%89"><span class="toc-number">3.4.1.</span> <span class="toc-text">重组&#x2F;交叉</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%98%E5%BC%82%E7%AA%81%E5%8F%98"><span class="toc-number">3.4.2.</span> <span class="toc-text">变异&#x2F;突变</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%AE%9E%E8%B7%B5"><span class="toc-number">4.</span> <span class="toc-text">题目实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-number">4.1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%82%E8%A7%A3%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-number">4.2.</span> <span class="toc-text">求解完整代码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%BD%9C%E7%94%A8%E8%A1%A8"><span class="toc-number">4.2.1.</span> <span class="toc-text">函数作用表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-number">4.2.2.</span> <span class="toc-text">完整代码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">4.3.</span> <span class="toc-text">运行结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%AE%E7%9B%98%E8%B5%8C%E7%AE%97%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">轮盘赌算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F.html" title="PE文件格式"><img src="/img/default_cover3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="PE文件格式"/></a><div class="content"><a class="title" href="/2022/07/02/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F.html" title="PE文件格式">PE文件格式</a><time datetime="2022-07-02T15:12:55.000Z" title="发表于 2022-07-02 23:12:55">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/Git.html" title="Git"><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231142568-2108853789.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Git"/></a><div class="content"><a class="title" href="/2022/07/02/Git.html" title="Git">Git</a><time datetime="2022-07-02T15:10:38.000Z" title="发表于 2022-07-02 23:10:38">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html" title="遗传算法（单目标）"><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="遗传算法（单目标）"/></a><div class="content"><a class="title" href="/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html" title="遗传算法（单目标）">遗传算法（单目标）</a><time datetime="2022-07-02T15:08:22.000Z" title="发表于 2022-07-02 23:08:22">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/pwn-protect.html" title="pwn_protect"><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253247-1850220162.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="pwn_protect"/></a><div class="content"><a class="title" href="/2022/07/02/pwn-protect.html" title="pwn_protect">pwn_protect</a><time datetime="2022-07-02T15:02:41.000Z" title="发表于 2022-07-02 23:02:41">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/NRL.html" title="随机游走"><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230139717-1905633555.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="随机游走"/></a><div class="content"><a class="title" href="/2022/07/02/NRL.html" title="随机游走">随机游走</a><time datetime="2022-07-02T15:01:13.000Z" title="发表于 2022-07-02 23:01:13">2022-07-02</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By un0o7</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'mdvXRfkv4gfe7M6IAz3sA1KO-gzGzoHsz# leancloud application app id',
+      appKey: 'ukMNggcY3GfPrgKHd3UaMOw9# leancloud application app key',
+      avatar: 'monsterid',
+      serverURLs: 'https://mdvxrfkv.lc-cn-n1-shared.com# This configuration is suitable for domestic custom domain name users, overseas version will be automatically detected (no need to manually fill in)',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"live2d-widget-model-shizuku"},"display":{"position":"right","width":70,"height":120},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>

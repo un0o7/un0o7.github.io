@@ -54,60 +54,6 @@
       </tags>
   </entry>
   <entry>
-    <title>C语言函数调用栈的变化</title>
-    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
-    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
-<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
-<h2 id="od调试">OD调试</h2>
-<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
-<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
-</figure>
-<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
-</figure>
-<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
-<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
-</figure>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
-</figure>
-<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
-<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
-</figure>
-<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
-</figure>
-<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
-</figure>
-<p>最后执行retn，EIP=0x40152E</p>
-<figure>
-<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
-</figure>
-<h2 id="总结">总结</h2>
-<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
-<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>reversing</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ELF文件解析</title>
     <url>/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html</url>
     <content><![CDATA[<figure>
@@ -270,6 +216,60 @@
       </tags>
   </entry>
   <entry>
+    <title>C语言函数调用栈的变化</title>
+    <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
+    <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="写一个简单的c程序">写一个简单的C程序</h2>
+<p><img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175432813-259024174.png" /></p>
+<h2 id="od调试">OD调试</h2>
+<p>备注OD中显示的字符串顺序和字节顺序相反。<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175856659-1739815303.png" alt="image-20210928175853974" /></p>
+<p>设置两个断点，上面的是fun函数，下面的是main函数，直接F9执行到printf处。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928175530047-778883573.png" alt="image-20210928175527193" /><figcaption aria-hidden="true">image-20210928175527193</figcaption>
+</figure>
+<p>执行到printf处时，栈的情况。EBP=0x0061FEA8，需要主要栈窗口中会将一个函数对应的栈空间用大括号括起来，上一个函数保存的EBP往往在<strong>大括号外面</strong>的下一个，EBP寄存器也指向那个单元。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180053498-1839617944.png" alt="image-20210928180050775" /><figcaption aria-hidden="true">image-20210928180050775</figcaption>
+</figure>
+<p>F8继续执行，发现栈顶的hello并没有消失，不知道为啥。难道是因为使用的是move esp hello？</p>
+<p>F7进入fun函数，push了调用fun函数指令的下一条执行。0x401500是fun函数的起始地址，push ebp指令的地址。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180651374-840441997.png" alt="image-20210928180648633" /><figcaption aria-hidden="true">image-20210928180648633</figcaption>
+</figure>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180832040-362440497.png" alt="image-20210928180829321" /><figcaption aria-hidden="true">image-20210928180829321</figcaption>
+</figure>
+<p>继续执行push ebp，观察栈的变化。0x0061FEA8是main函数的EBP，此时EBP任然等于0x0061FEA8.</p>
+<p>注意这里大括号的位置，EBP和之后的EIP都存在main的栈里面。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928180931017-719194241.png" alt="image-20210928180928333" /><figcaption aria-hidden="true">image-20210928180928333</figcaption>
+</figure>
+<p>直接执行到leave，栈空间大小位16个单元。局部变量放在EBP上面，还有12个单元是空着的。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181348437-912568688.png" alt="image-20210928181345703" /><figcaption aria-hidden="true">image-20210928181345703</figcaption>
+</figure>
+<p>执行leave，观察C9 leave的作用.关闭了栈空间，但是原来的数据还是在那。相当于仅仅改变了EBP和ESP到执行fun函数的第一条指令前。</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181655819-1321192269.png" alt="image-20210928181653008" /><figcaption aria-hidden="true">image-20210928181653008</figcaption>
+</figure>
+<p>最后执行retn，EIP=0x40152E</p>
+<figure>
+<img src="/images/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96/2348945-20210928181911952-576817960.png" alt="image-20210928181908302" /><figcaption aria-hidden="true">image-20210928181908302</figcaption>
+</figure>
+<h2 id="总结">总结</h2>
+<p>函数调用过程中，先入下一条指令地址，再保存EBP，再往上面放局部变量等。</p>
+<p>fun没有包含参数调用，参数应该是最早入栈的.然后才是EIP，最后是EBP。之后就是调用函数的参数</p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>reversing</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>GCC编译过程</title>
     <url>/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html</url>
     <content><![CDATA[<p>GCC（英文全拼：GNU Compiler Collection）是 GNU 工具链的主要组成部分，是一套以 GPL 和 LGPL 许可证发布的程序语言编译器自由软件，由 Richard Stallman 于 1985 年开始开发。</p>
@@ -375,6 +375,139 @@
       </categories>
       <tags>
         <tag>deep_learning</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>PE文件格式</title>
+    <url>/2022/07/02/PE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F.html</url>
+    <content><![CDATA[<h1 id="pe文件格式">PE文件格式</h1>
+<h2 id="总体">总体</h2>
+<p>PE即Portable Executable，是Windows OS下使用的可执行文件格式。PE文件是指32位的可执行文件，亦称为PE32。64位的可执行文件称为PE+或PE32+，是PE文件的一种扩展形式。</p>
+<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231319266-1023829015.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="相关概念">相关概念</h2>
+<ul>
+<li>虚拟内存地址（Virtual Address, VA）PE文件中的指令被装入内存后的地址。</li>
+<li>相对虚拟内存地址（Reverse Virtual Address, RVA相对虚拟地址是内存地址相对于映射基址的偏移量。</li>
+<li>文件偏移地址（File Offset Address, FOA）数据在PE文件中的地址叫文件偏移地址，这是文件在磁盘上存放时相对于文件开头的偏移。</li>
+<li>装在基址（Image base）PE装入内存时的基地址。默认情况下，EXE文件在内存中的基地址时0x00400000, DLL文件是0x10000000。这些位置可以通过修改编译选项更改。</li>
+<li>虚拟内存地址、映射基址、相对虚拟内存地址的关系：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">VA = Image Base + RVA</span><br></pre></td></tr></table></figure>
+<ul>
+<li>文件偏移是相对于文件开始处0字节的偏移，相对虚拟地址则是相对于装载基址0x00400000处的偏移。（1）PE文件中的数据按照磁盘数据标准存放，以0x200字节为基本单位进行组织，PE数据节的大小永远是0x200的整数倍。（2）当代码装入内存后，将按照内存数据标准存放，并以0x1000字节为基本单位进行组织，内存中的节总是0x1000的整数倍。</li>
+<li>内存中数据节相对于装载基址的偏移量和文件中数据节的偏移量的差异称为节偏移。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">文件偏移地址 = 虚拟内存地址（VA） - 装载基址（Image Base） - 节偏移 </span><br><span class="line">             = RVA - 节偏移</span><br></pre></td></tr></table></figure>
+<p><strong>注：</strong>在可执行文件中，有相当多的地方需要指定内存的地址。例如：引用全局变量时，需要指定它的地址。PE文件尽管有一个<strong>首选的载入地址（基地址）</strong>,但是他们可以载入到<strong>进程空间的任意地方</strong>，所以<strong>不能依赖与PE的载入点</strong>。由于这个原因，必须有一个方法来指定一个地址而不是依赖于PE载入点。</p>
+<h2 id="结构">结构</h2>
+<h3 id="d0s部分">D0S部分</h3>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_DOS_HEADER</span> &#123;</span>      <span class="comment">// DOS .EXE header</span></span><br><span class="line">    WORD   e_magic;                    <span class="comment">// Magic number</span></span><br><span class="line">    WORD   e_cblp;                <span class="comment">// Bytes on last page of file</span></span><br><span class="line">    WORD   e_cp;                        <span class="comment">// Pages in file</span></span><br><span class="line">    WORD   e_crlc;                      <span class="comment">// Relocations</span></span><br><span class="line">    WORD   e_cparhdr;             <span class="comment">// Size of header in paragraphs</span></span><br><span class="line">    WORD   e_minalloc;                  <span class="comment">// Minimum extra paragraphs needed</span></span><br><span class="line">    WORD   e_maxalloc;                  <span class="comment">// Maximum extra paragraphs needed</span></span><br><span class="line">    WORD   e_ss;                        <span class="comment">// Initial (relative) SS value</span></span><br><span class="line">    WORD   e_sp;                        <span class="comment">// Initial SP value</span></span><br><span class="line">    WORD   e_csum;                      <span class="comment">// Checksum</span></span><br><span class="line">    WORD   e_ip;                        <span class="comment">// Initial IP value</span></span><br><span class="line">    WORD   e_cs;                        <span class="comment">// Initial (relative) CS value</span></span><br><span class="line">    WORD   e_lfarlc;                    <span class="comment">// File address of relocation table</span></span><br><span class="line">    WORD   e_ovno;                      <span class="comment">// Overlay number</span></span><br><span class="line">    WORD   e_res[<span class="number">4</span>];                    <span class="comment">// Reserved words</span></span><br><span class="line">    WORD   e_oemid;                     <span class="comment">// OEM identifier (for e_oeminfo)</span></span><br><span class="line">    WORD   e_oeminfo;                   <span class="comment">// OEM information; e_oemid specific</span></span><br><span class="line">    WORD   e_res2[<span class="number">10</span>];                  <span class="comment">// Reserved words</span></span><br><span class="line">    LONG   e_lfanew;                    <span class="comment">// File address of new exe header</span></span><br><span class="line">  &#125; IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;</span><br></pre></td></tr></table></figure>
+<p><strong>e_magic：一个WORD类型，值是一个常数0x4D5A，用文本编辑器查看该值位 MZ，可执行文件必须都是 MZ 开头。</strong></p>
+<p><strong>e_lfanew：为32位可执行文件扩展的域，用来表示DOS头之后的PE头相对文件起始地址的偏移。</strong>直接指向PE文件头开头，是一个文件偏移地址，PE部分开头<strong>固定</strong>为‘’PE00‘’ 0x00004550。PE文件采用小端，低位放在低地址。大端是高位放在低地址。</p>
+<p>18个 WORD 类型，一个 LONG 类型，WORD为2字节，LONG为4字节</p>
+<p>18*2+4+24*2 = 64</p>
+<p>DOS头的下面是DOS Stub。整个DOS Stub是一个字节块，其内容随着链接时使用的链接器不同而不同，PE中并没有与之对应的相关结构。常见里面有This program cannot run in dos mode</p>
+<h3 id="pe文件头">PE文件头</h3>
+<p>前四字节为PE文件头标志,可根据 DOS头的 e_lfanew 得到。（一个64位，一个32位）只有一个出现</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS64</span> &#123;</span></span><br><span class="line">    DWORD Signature;</span><br><span class="line">    IMAGE_FILE_HEADER FileHeader;</span><br><span class="line">    IMAGE_OPTIONAL_HEADER64 OptionalHeader;</span><br><span class="line">&#125; IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS</span> &#123;</span></span><br><span class="line">    DWORD Signature;</span><br><span class="line">    IMAGE_FILE_HEADER FileHeader;</span><br><span class="line">    IMAGE_OPTIONAL_HEADER32 OptionalHeader;</span><br><span class="line">&#125; IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;</span><br></pre></td></tr></table></figure>
+<p><code>DWORD Signature;</code>4字节，小端存储， 00004550 ，代表PE文件头标志 PE00</p>
+<p><code>IMAGE_FILE_HEADER FileHeader;</code>20字节，代表PE文件表头</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_FILE_HEADER</span> &#123;</span></span><br><span class="line">    WORD    Machine;</span><br><span class="line">    WORD    NumberOfSections;</span><br><span class="line">    DWORD   TimeDateStamp;</span><br><span class="line">    DWORD   PointerToSymbolTable;</span><br><span class="line">    DWORD   NumberOfSymbols;</span><br><span class="line">    WORD    SizeOfOptionalHeader;</span><br><span class="line">    WORD    Characteristics;</span><br><span class="line">&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</span><br></pre></td></tr></table></figure>
+<p><code>WORD Machine;</code>2字节，该文件的运行平台，是x86、x64还是I64等等，可以是下面值里的某一个。</p>
+<p><code>WORD Machine;</code>2字节，该文件的运行平台，是x86、x64还是I64等等，可以是下面值里的某一个。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_UNKNOWN           0</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_I386              0x014c  <span class="comment">// Intel 386.</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_R3000             0x0162  <span class="comment">// MIPS little-endian, 0x160 big-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_R4000             0x0166  <span class="comment">// MIPS little-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_R10000            0x0168  <span class="comment">// MIPS little-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_WCEMIPSV2         0x0169  <span class="comment">// MIPS little-endian WCE v2</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_ALPHA             0x0184  <span class="comment">// Alpha_AXP</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_SH3               0x01a2  <span class="comment">// SH3 little-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_SH3DSP            0x01a3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_SH3E              0x01a4  <span class="comment">// SH3E little-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_SH4               0x01a6  <span class="comment">// SH4 little-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_SH5               0x01a8  <span class="comment">// SH5</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_ARM               0x01c0  <span class="comment">// ARM Little-Endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_THUMB             0x01c2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_AM33              0x01d3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_POWERPC           0x01F0  <span class="comment">// IBM PowerPC Little-Endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_POWERPCFP         0x01f1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_IA64              0x0200  <span class="comment">// Intel 64</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_MIPS16            0x0266  <span class="comment">// MIPS</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_ALPHA64           0x0284  <span class="comment">// ALPHA64</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_MIPSFPU           0x0366  <span class="comment">// MIPS</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_MIPSFPU16         0x0466  <span class="comment">// MIPS</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_AXP64             IMAGE_FILE_MACHINE_ALPHA64</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_TRICORE           0x0520  <span class="comment">// Infineon</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_CEF               0x0CEF</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_EBC               0x0EBC  <span class="comment">// EFI Byte Code</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_AMD64             0x8664  <span class="comment">// AMD64 (K8)</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_M32R              0x9041  <span class="comment">// M32R little-endian</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_MACHINE_CEE               0xC0EE</span></span><br></pre></td></tr></table></figure>
+<p><code>WORD NumberOfSections;</code>2字节，该PE文件中有多少个节，也就是节表中的项数。即有多少区段表。对应.data .text等节</p>
+<p><code>DWORD TimeDateStamp;</code>4字节，PE文件的<strong>创建时间</strong>，一般有连接器填写。 比如下图<code>3FCCF133</code>转换成十进制就是<code>1070395699</code>,也就是<code>2003-12-03 04:08:19</code>。注意此时间不会随着更改程序某些字节的变化而变化。</p>
+<p><code>DWORD PointerToSymbolTable;</code>4 字节，COFF文件符号表在文件中的偏移，现在基本没用了，值位0。</p>
+<p><code>DWORD NumberOfSymbols;</code>4 字节，符号表的数量。如果有COFF 符号表，它代表其中的符号数目，COFF符号是一个大小固定的结构，如果想找到COFF 符号表的结束位置，则需要这个变量。没有COFF，值为0.</p>
+<p><code>WORD SizeOfOptionalHeader;</code>2字节，紧随其后的<strong>PE可选头</strong>的大小。下图为 00E0 即为32字节。</p>
+<p><code>WORD Characteristics;</code>2字节，可执行文件的属性，，有选择的通过几个值可以运算得到。( 这些标志的有效值是定义于 winnt.h 内的 IMAGE_FILE_** 的值，具体含义见下表。普通的EXE文件这个字段的值一般是 0100h，DLL文件这个字段的值一般是 210Eh。)多种属性可以通过 “或运算” 使得同时拥有！2字节，对应16个符号位。</p>
+<p>0100h，DLL文件这个字段的值一般是 210Eh。)多种属性可以通过 “或运算” 使得同时拥有！</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_RELOCS_STRIPPED           0x0001  <span class="comment">// Relocation info stripped from file.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_EXECUTABLE_IMAGE          0x0002  <span class="comment">// File is executable  (i.e. no unresolved externel references).</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_LINE_NUMS_STRIPPED        0x0004  <span class="comment">// Line nunbers stripped from file.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_LOCAL_SYMS_STRIPPED       0x0008  <span class="comment">// Local symbols stripped from file.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_AGGRESIVE_WS_TRIM         0x0010  <span class="comment">// Agressively trim working set</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_LARGE_ADDRESS_AWARE       0x0020  <span class="comment">// App can handle &gt;2gb addresses</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_BYTES_REVERSED_LO         0x0080  <span class="comment">// Bytes of machine word are reversed.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_32BIT_MACHINE             0x0100  <span class="comment">// 32 bit word machine.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_DEBUG_STRIPPED            0x0200  <span class="comment">// Debugging info stripped from file in .DBG file</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP   0x0400  <span class="comment">// If Image is on removable media, copy and run from the swap file.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_NET_RUN_FROM_SWAP         0x0800  <span class="comment">// If Image is on Net, copy and run from the swap file.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_SYSTEM                    0x1000  <span class="comment">// System File.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_DLL                       0x2000  <span class="comment">// File is a DLL.</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_UP_SYSTEM_ONLY            0x4000  <span class="comment">// File should only be run on a UP machine</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_FILE_BYTES_REVERSED_HI         0x8000  <span class="comment">// Bytes of machine word are reversed.</span></span></span><br></pre></td></tr></table></figure>
+<p>可以看出，PE文件头定义了PE文件的一些基本信息和属性，这些属性会在PE加载器加载时用到，如果加载器发现PE文件头中定义的一些属性不满足当前的运行环境，将会终止加载该PE。</p>
+<p><strong>PE文件表头，标准 PE 头，20 字节。</strong></p>
+<p><strong>PE文件表头可选部分，PE扩展PE头</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_OPTIONAL_HEADER</span> &#123;</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// Standard fields.</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    WORD    Magic;      <span class="comment">//  标志字, ROM 映像（0107h）,普通可执行文件（010Bh）</span></span><br><span class="line">    BYTE    MajorLinkerVersion;    <span class="comment">// 链接程序的主版本号</span></span><br><span class="line">    BYTE    MinorLinkerVersion;    <span class="comment">// 链接程序的次版本号</span></span><br><span class="line">    DWORD   SizeOfCode;           <span class="comment">// 代码段的长度，如果有多个代码段，则是代码段长度的总和。</span></span><br><span class="line">    DWORD   SizeOfInitializedData;     <span class="comment">// 所有含已初始化数据的节的总大小</span></span><br><span class="line">    DWORD   SizeOfUninitializedData;   <span class="comment">// 所有含未初始化数据的节的大小</span></span><br><span class="line">    DWORD   AddressOfEntryPoint;       <span class="comment">// 程序执行入口 RVA</span></span><br><span class="line">    DWORD   BaseOfCode;                <span class="comment">// 代码的区块的起始RVA</span></span><br><span class="line">    DWORD   BaseOfData;                <span class="comment">// 数据的区块的起始RVA</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// NT additional fields.</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    DWORD   ImageBase;                 <span class="comment">// 程序的首选装载地址，数据机制</span></span><br><span class="line">    DWORD   SectionAlignment;          <span class="comment">// 内存中的区块的对齐大小，块对齐</span></span><br><span class="line">    DWORD   FileAlignment;             <span class="comment">// 文件中的区块的对齐大小，文件块对齐</span></span><br><span class="line">    WORD    MajorOperatingSystemVersion;    <span class="comment">// 要求操作系统最低版本号的主版本号</span></span><br><span class="line">    WORD    MinorOperatingSystemVersion;    <span class="comment">// 要求操作系统最低版本号的副版本号</span></span><br><span class="line">    WORD    MajorImageVersion;      <span class="comment">// 可运行于操作系统的主版本号</span></span><br><span class="line">    WORD    MinorImageVersion;      <span class="comment">// 可运行于操作系统的次版本号</span></span><br><span class="line">    WORD    MajorSubsystemVersion;   <span class="comment">// 要求最低子系统版本的主版本号</span></span><br><span class="line">    WORD    MinorSubsystemVersion;    <span class="comment">// 要求最低子系统版本的次版本号</span></span><br><span class="line">    DWORD   Win32VersionValue;         <span class="comment">// 莫须有字段，不被病毒利用的话一般为0</span></span><br><span class="line">    DWORD   SizeOfImage;             <span class="comment">// 映像装入内存后的总尺寸</span></span><br><span class="line">    DWORD   SizeOfHeaders;            <span class="comment">// 所有头 + 区块表的尺寸大小</span></span><br><span class="line">    DWORD   CheckSum;                  <span class="comment">// 映像的校检和</span></span><br><span class="line">    WORD    Subsystem;                 <span class="comment">// 可执行文件期望的子系统</span></span><br><span class="line">    WORD    DllCharacteristics;        <span class="comment">// DllMain()函数何时被调用，默认为 0</span></span><br><span class="line">    DWORD   SizeOfStackReserve;        <span class="comment">// 初始化时的栈大小</span></span><br><span class="line">    DWORD   SizeOfStackCommit;         <span class="comment">// 初始化时实际提交的栈大小</span></span><br><span class="line">    DWORD   SizeOfHeapReserve;          <span class="comment">// 初始化时保留的堆大小</span></span><br><span class="line">    DWORD   SizeOfHeapCommit;          <span class="comment">// 初始化时实际提交的堆大小</span></span><br><span class="line">    DWORD   LoaderFlags;               <span class="comment">// 与调试有关，默认为 0</span></span><br><span class="line">    DWORD   NumberOfRvaAndSizes;    <span class="comment">//下边数据目录的项数，这个字段自Windows NT 发布以来一直是16</span></span><br><span class="line">    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];</span><br><span class="line">&#125; IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;   <span class="comment">// 数据目录表</span></span><br></pre></td></tr></table></figure>
+<p><code>WORD Magic;</code>, 表示可选头的类型。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_NT_OPTIONAL_HDR32_MAGIC      0x10b  <span class="comment">// 32位PE可选头</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_NT_OPTIONAL_HDR64_MAGIC      0x20b  <span class="comment">// 64位PE可选头</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_ROM_OPTIONAL_HDR_MAGIC       0x107</span></span><br></pre></td></tr></table></figure>
+<p><code>IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];</code> 这个字段可以说是最重要的字段之一，它由16个相同的IMAGE_DATA_DIRECTORY结构组成，虽然PE文件中的数据是按照装入内存后的页属性归类而被放在不同的节中的，但是这些处于各个节中的数据按照用途可以被分为导出表、导入表、资源、重定位表等数据块，这16个IMAGE_DATA_DIRECTORY结构就是用来定义多种不同用途的数据块的IMAGE_DATA_DIRECTORY结构的定义很简单，它仅仅指出了某种数据块的位置和长度。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct _IMAGE_DATA_DIRECTORY &#123;</span><br><span class="line">    DWORD   VirtualAddress;</span><br><span class="line">    DWORD   Size;</span><br><span class="line">&#125; IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;</span><br></pre></td></tr></table></figure>
+<p>VirtualAddress：是一个RVA。 Size：是一个大小。 16个数据目录，数据目录列表的含义如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_EXPORT          0   <span class="comment">// Export Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_IMPORT          1   <span class="comment">// Import Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_RESOURCE        2   <span class="comment">// Resource Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_EXCEPTION       3   <span class="comment">// Exception Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_SECURITY        4   <span class="comment">// Security Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_BASERELOC       5   <span class="comment">// Base Relocation Table</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_DEBUG           6   <span class="comment">// Debug Directory</span></span></span><br><span class="line">    <span class="comment">//      IMAGE_DIRECTORY_ENTRY_COPYRIGHT       7   // (X86 usage)</span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_ARCHITECTURE    7   <span class="comment">// Architecture Specific Data</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_GLOBALPTR       8   <span class="comment">// RVA of GP</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_TLS             9   <span class="comment">// TLS Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG    10   <span class="comment">// Load Configuration Directory</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT   11   <span class="comment">// Bound Import Directory in headers</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_IAT            12   <span class="comment">// Import Address Table</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT   13   <span class="comment">// Delay Load Import Descriptors</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14   <span class="comment">// COM Runtime descriptor</span></span></span><br></pre></td></tr></table></figure>
+<p>在PE文件中寻找特定的数据时就是从这些IMAGE_DATA_DIRECTORY结构开始的，比如要存取资源，那么必须从第3个IMAGE_DATA_DIRECTORY结构（索引为2）中得到资源数据块的大小和位置；同理，如果要查看PE文件导入了哪些DLL文件的哪些API函数，那就必须首先从第2个IMAGE_DATA_DIRECTORY结构得到导入表的位置和大小。</p>
+<p>32位PE文件头 为 224 字节，可扩展， 一行 16 字节，14 行</p>
+<h3 id="节表">节表</h3>
+<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231318692-747986508.jpg" alt="http://image.bubuko.com/info/201409/20180921125127615796.jpg" /><figcaption aria-hidden="true">http://image.bubuko.com/info/201409/20180921125127615796.jpg</figcaption>
+</figure>
+<p>PE文件中所有节的属性都被定义在节表中，节表由一系列的IMAGE_SECTION_HEADER结构排列而成，该类型的数组</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct _IMAGE_SECTION_HEADER &#123;</span><br><span class="line">    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME];     // 8个字节的节区名称</span><br><span class="line">    union &#123;</span><br><span class="line">            DWORD   PhysicalAddress;</span><br><span class="line">            DWORD   VirtualSize;      //节区的尺寸</span><br><span class="line">    &#125; Misc;</span><br><span class="line">    DWORD   VirtualAddress;      // 节区的 RVA 地址</span><br><span class="line">    DWORD   SizeOfRawData;        // 在文件中对齐后的尺寸</span><br><span class="line">    DWORD   PointerToRawData;      // 在文件中的偏移量</span><br><span class="line">    DWORD   PointerToRelocations;  // 在OBJ文件中使用，重定位的偏移</span><br><span class="line">    DWORD   PointerToLinenumbers;    // 行号表的偏移（供调试使用地）</span><br><span class="line">    WORD    NumberOfRelocations;    // 在OBJ文件中使用，重定位项数目</span><br><span class="line">    WORD    NumberOfLinenumbers;    // 行号表中行号的数目</span><br><span class="line">    DWORD   Characteristics;        // 节属性如可读，可写，可执行等</span><br><span class="line">&#125; IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;</span><br></pre></td></tr></table></figure>
+<p>顺序排列的一系列节表数量和节的数量相应数据。</p>
+<p>分别都为 40 字节。</p>
+<h3 id="节数据">节数据</h3>
+<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231318590-420917928.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/31967907">PE可执行文件格式详解 - 知乎 (zhihu.com)</a></p>
+<p>[PE文件结构入门到入坟 - FreeBuf网络安全行业门户</p>
+]]></content>
+      <categories>
+        <category>逆向</category>
+      </categories>
+      <tags>
+        <tag>PE</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git</title>
+    <url>/2022/07/02/Git.html</url>
+    <content><![CDATA[<h1 id="git实践">GIT实践</h1>
+<p>本文简单描述git的简单使用，主要用于目前的工作上传，项目的管理与保存。</p>
+<p>git请自行安装和配置ssh，ssh可以避免每次输入密码。</p>
+<p>推荐学习：<a href="https://mp.weixin.qq.com/s?__biz=MzA4ODUxNjUzMQ==&amp;mid=2247492950&amp;idx=1&amp;sn=31f02ab96294c1261671444cf6cef436&amp;chksm=902a578aa75dde9cabeac894d3be0f5e7f04fd3c78a8e778c82a67df7dedae1f4e605920ad45&amp;mpshare=1&amp;scene=23&amp;srcid=042951KE61l4SbyNls7io2xG&amp;sharer_sharetime=1619654594166&amp;sharer_shareid=0eb51fd6844570f534893038ef82a599#rd">万字详解Git</a></p>
+<p>创建仓库,生成了一个.gitignore文件，用于表示git操作会忽略那些文件。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">git init</span><br></pre></td></tr></table></figure>
+<h2 id="git流程">git流程</h2>
+<p>git操作的过程概念图。</p>
+<h2 id="git常用命令">git常用命令</h2>
+<h3 id="git-add">git add</h3>
+<p>先来看用的比较多的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git add filename //添加单个文件到暂存区  </span><br><span class="line">git add .        //添加目录下所有文件</span><br><span class="line">//如果有文件夹，文件夹内容并不会添加，需要进入到目录中再git add file ，文件夹会被自动add上</span><br><span class="line">git add -A  提交所有变化</span><br><span class="line">git add -u  提交被修改(modified)和被删除(deleted)文件，不包括新文件(new)</span><br><span class="line">git add .  提交新文件(new)和被修改(modified)文件，不包括被删除(deleted)文件</span><br></pre></td></tr></table></figure>
+<h3 id="git-commit">git commit</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git commit -m &quot;&quot;//提交到本地版本库</span><br></pre></td></tr></table></figure>
+<h3 id="git-status">git status</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git status //查看文件的变动情况</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231048489-344800322.png" alt="image-20211011172259237" /><figcaption aria-hidden="true">image-20211011172259237</figcaption>
+</figure>
+<h3 id="git-log">git log</h3>
+<p>打印提交的相关信息</p>
+<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702231048561-47393192.png" alt="image-20211011174502458" /><figcaption aria-hidden="true">image-20211011174502458</figcaption>
+</figure>
+<h3 id="git-remote">git remote</h3>
+<p>在push之前，我们需要将远程的版本库和本地的仓库关联起来，git直到它该往哪里提交。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git remote add [远程主机名] [url]//远程主机名可以自己定义，一般用origin</span><br><span class="line">//url是那个后缀为.git的仓库url</span><br></pre></td></tr></table></figure>
+<h3 id="git-branch">git branch</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git branch //查看当前存在的分支，本地git默认为master，最好改成mian</span><br><span class="line">git checkout -b main //创建main分支</span><br><span class="line">git merge master     //在main分支中合并master</span><br><span class="line">git branch -m master main  //master改名为main</span><br></pre></td></tr></table></figure>
+<h3 id="git-push">git push</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git push &lt;远程主机名&gt; &lt;本地分支名&gt;:&lt;远程分支名&gt;</span><br><span class="line">git push -u origin main</span><br><span class="line">git push -u origin main: main</span><br></pre></td></tr></table></figure>
+<h3 id="git-pull">git pull</h3>
+<p>将远程仓库和本地合并</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git pull origin branchname  //用法和push类似</span><br><span class="line">git pull --rebase origin master</span><br><span class="line">git pull origin master</span><br></pre></td></tr></table></figure>
+<h3 id="git-checkout">git checkout</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git checkout 分支名//转移到其他分支</span><br></pre></td></tr></table></figure>
+<h3 id="git-tag">git tag</h3>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git tag publish/0.0.1</span><br><span class="line">git push origin publish/0.0.1</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>工具</category>
+      </categories>
+      <tags>
+        <tag>git</tag>
       </tags>
   </entry>
   <entry>
@@ -822,7 +955,7 @@ k\left(x_{i}, x_{j}\right)=\exp \left(-\frac{\left\|x_{i}-x_{j}\right\|}{2 \delt
       </tags>
   </entry>
   <entry>
-    <title>transformer</title>
+    <title>Transformer</title>
     <url>/2022/07/02/transformer.html</url>
     <content><![CDATA[<p>源自论文<a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></p>
 <p>最近开始做计算机视觉CV，图像分割，将transformer引入到CV领域，有VIT , PVT 等模型。</p>
@@ -1053,6 +1186,45 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
       </tags>
   </entry>
   <entry>
+    <title>xctf-unserialize3</title>
+    <url>/2021/11/12/xctf-unserialize3.html</url>
+    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h3 id="序列化和反序列化">序列化和反序列化</h3>
+<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
+<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
+<h4 id="例子">例子：</h4>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
+<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
+<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
+<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
+<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
+<h3 id="魔法函数">魔法函数</h3>
+<figure>
+<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
+</figure>
+<h3 id="题目分析">题目分析</h3>
+<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
+<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
+<p>code可能是XCTF类序列化再反序列化的结果</p>
+<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
+<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
+<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>RandomForest</title>
     <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
     <content><![CDATA[<h2 id="决策树">决策树</h2>
@@ -1115,42 +1287,129 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
       </tags>
   </entry>
   <entry>
-    <title>xctf-unserialize3</title>
-    <url>/2021/11/12/xctf-unserialize3.html</url>
-    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h3 id="序列化和反序列化">序列化和反序列化</h3>
-<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
-<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
-<h4 id="例子">例子：</h4>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
-<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
-<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
-<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
-<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
-<h3 id="魔法函数">魔法函数</h3>
-<figure>
-<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<h3 id="题目分析">题目分析</h3>
-<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
-<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
-<p>code可能是XCTF类序列化再反序列化的结果</p>
-<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
-<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
-<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
+    <title>遗传算法（单目标）</title>
+    <url>/2022/07/02/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html</url>
+    <content><![CDATA[<h2 id="简介">简介</h2>
+<p>遗传算法模拟了自然界物竞天择、适者生存的的进化过程，保留好的物种。</p>
+<p>遗传算法是从代表问题可能潜在的解集的一个<strong>种群</strong>（population）开始的，而一个种群则由经过<strong>基因</strong>（gene）编码的一定数目的<strong>个体</strong>(individual)组成。每个个体实际上是<strong>染色体</strong>(chromosome)带有特征的实体。</p>
+<p>是一种搜索最优解的优化模型，个人感觉很多这种搜索算法都是为了解决局部最优解的问题。遗传算法并<strong>不保证你能获得问题的最优解</strong>，但是使用遗传算法的最大优点在于你不<strong>必去了解和操心如何去“找”最优解</strong>,而只要简单的“否定”一些表现不好的个体就行了。</p>
+<h2 id="理解">理解</h2>
+<p>遗传算法中<strong>每一条染色体/个体，对应着遗传算法的一个解决方案</strong>，一般我们用<strong>适应性函数（fitness function）</strong>来衡量这个解决方案的优劣。所以从一个基因组到其解的适应度形成一个映射。可以把遗传算法的过程看作是一个在多元函数里面求最优解的过程。</p>
+<p>生动理解：</p>
+<p>在遗传算法中，有很多袋鼠，它们降落到喜玛拉雅山脉的任意地方。这些袋鼠并不知道它们的任务是寻找珠穆朗玛峰。但每过几年，就在一些<strong>海拔高度较低的地方射杀一些袋鼠</strong>，并希望存活下来的袋鼠是多产的，在它们所处的地方生儿育女。就这样经过许多年，这些袋鼠们竟然都不自觉地聚拢到了一个个的山峰上，可是在所有的袋鼠中，只有聚拢到珠穆朗玛峰的袋鼠被带回了美丽的澳洲（最优解）。</p>
+<h2 id="概念">概念</h2>
+<h3 id="列举">列举</h3>
+<p>基因型(genotype)：性状染色体的内部表现；</p>
+<p>表现型(phenotype)：染色体决定的性状的外部表现，或者说，根据基因型形成的个体的外部表现；</p>
+<p>进化(evolution)：种群逐渐适应生存环境，品质不断得到改良。生物的进化是以种群的形式进行的。</p>
+<p>适应度(fitness)：度量某个物种对于生存环境的适应程度。</p>
+<p>选择(selection)：<strong>以一定的概率</strong>从种群中选择若干个个体。一般，选择过程是一种<strong>基于适应度</strong>的优胜劣汰的过程。</p>
+<p>复制(reproduction)：细胞分裂时，遗传物质DNA通过复制而转移到新产生的细胞中，新细胞就继承了旧细胞的基因。</p>
+<p>交叉(crossover)：两个染色体的某一相同位置处DNA被切断，前后两串分别交叉组合形成两个新的染色体。也称基因重组或杂交；</p>
+<p>变异(mutation)：复制时可能（很小的概率）产生某些复制差错，变异产生新的染色体，表现出新的性状。</p>
+<p>编码(coding)：DNA中遗传信息在一个长链上按一定的模式排列。遗传编码可看作从表现型到基因型的映射。</p>
+<p>解码(decoding)：基因型到表现型的映射。</p>
+<p>个体（individual）：指染色体带有特征的实体；</p>
+<p>种群（population）：个体的集合，该集合内个体数称为种群的大小。</p>
+<h3 id="编码方式">编码方式</h3>
+<p>二进制编码和浮点数编码基因型</p>
+<p>人的基因型是46条染色体所描述的却能解码成一个眼，耳，口，鼻等特征各不相同的活生生的人。</p>
+<p>编码的前提是了解需要编码的个体的特征，尤其是与问题相关的特征。</p>
+<h3 id="物竞天择">物竞天择</h3>
+<p>物竞体现在适应度函数上。</p>
+<p>天择体现在适应度高的个体以较大概率繁殖后代，在种群中产生更多的基因留存。轮盘赌（Roulette Wheel Selection）选择法即是计算适应度函数输入结果占比来确定这个概率。</p>
+<h3 id="基因交叉重组和变异">基因交叉(重组)和变异</h3>
+<h4 id="重组交叉">重组/交叉</h4>
+<p>二进制编码，其实就是简单对基因序列进行交换、移位、翻转等操作。</p>
+<p>浮点数编码则可能产生介于中间的值，或者其他。</p>
+<h4 id="变异突变">变异/突变</h4>
+<p>二进制编码体现在某个或多个位以一定概率取反。</p>
+<p>浮点数编码体现在随机增加或减小一个步长，步长开始大，后面小，动态改变步长，尽可能加快收敛，同时保证能收敛到精确的点上。</p>
+<center>
+<image src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919095153597-434719797.jpg"/>
+</center>
+<h2 id="题目实践">题目实践</h2>
+<h3 id="问题">问题</h3>
+<p><span class="math inline">\(f(x)=2*\sin{(x)}+\cos{(x)}\)</span>的最大值</p>
+<h3 id="求解完整代码">求解完整代码</h3>
+<p>代码来自参考中,比较详尽，可以直接运行，可能要去掉第3和7行。</p>
+<p>轮盘赌部分没看懂，抽奖的方法，转盘转。</p>
+<h4 id="函数作用表">函数作用表</h4>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">函数</th>
+<th style="text-align: center;">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">species_origin</td>
+<td style="text-align: center;">返回个体数*基因数的矩阵population</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">translation</td>
+<td style="text-align: center;">输入population，得到每个个体基因的<strong>十进制数</strong>的1*population_size的矩阵</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">function</td>
+<td style="text-align: center;">输入population，得到每个个体的适应度<span class="math inline">\(f(x)\)</span>一维数组</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">fitness</td>
+<td style="text-align: center;">对function输入结果进行过滤，小于0的变为0（没看懂，可能是因为要计算适应度的和）</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">cumsum</td>
+<td style="text-align: center;">输入fitness结果，输出各适应度所占的区间，依次增大，最后一个为1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">selection</td>
+<td style="text-align: center;">输入population和fitness,根据轮盘赌算法输出新的种群</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">crossover</td>
+<td style="text-align: center;">输入population,基因的交叉操作，每相邻两个个体之间交换基因</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">mutation</td>
+<td style="text-align: center;">变异操作，根据pm，在某一位置上取反</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">b2d</td>
+<td style="text-align: center;">取最大值函数</td>
+</tr>
+</tbody>
+</table>
+<h4 id="完整代码">完整代码</h4>
+<details>
+<summary>
+点击查看代码
+</summary>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># -*-coding:utf-8 -*-</span></span><br><span class="line"><span class="comment">#目标求解2*sin(x)+cos(x)最大值</span></span><br><span class="line">%matplotlib notebook</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">%matplotlib inline</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GA</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line"><span class="comment">#初始化种群 生成chromosome_length大小的population_size个个体的种群</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self,population_size,chromosome_length,max_value,pc,pm</span>):</span></span><br><span class="line"></span><br><span class="line">        self.population_size=population_size</span><br><span class="line">        self.choromosome_length=chromosome_length</span><br><span class="line">        <span class="comment"># self.population=[[]]</span></span><br><span class="line">        self.max_value=max_value</span><br><span class="line">        self.pc=pc</span><br><span class="line">        self.pm=pm</span><br><span class="line">        <span class="comment"># self.fitness_value=[]</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">species_origin</span>(<span class="params">self</span>):</span></span><br><span class="line">        population=[[]]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.population_size):</span><br><span class="line"></span><br><span class="line">            temporary=[]</span><br><span class="line">        <span class="comment">#染色体暂存器</span></span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.choromosome_length):</span><br><span class="line"></span><br><span class="line">                temporary.append(random.randint(<span class="number">0</span>,<span class="number">1</span>))</span><br><span class="line">            <span class="comment">#随机产生一个染色体,由二进制数组成</span></span><br><span class="line"></span><br><span class="line">            population.append(temporary)</span><br><span class="line">            <span class="comment">#将染色体添加到种群中</span></span><br><span class="line">        <span class="keyword">return</span> population[<span class="number">1</span>:]</span><br><span class="line">            <span class="comment"># 将种群返回，种群是个二维数组，个体和染色体两维</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#从二进制到十进制</span></span><br><span class="line">    <span class="comment">#编码  input:种群,染色体长度 编码过程就是将多元函数转化成一元函数的过程</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">translation</span>(<span class="params">self,population</span>):</span></span><br><span class="line"></span><br><span class="line">        temporary=[]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(population)):</span><br><span class="line">            total=<span class="number">0</span></span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.choromosome_length):</span><br><span class="line">                total+=population[i][j]*(math.<span class="built_in">pow</span>(<span class="number">2</span>,j))</span><br><span class="line">            <span class="comment">#从第一个基因开始，每位对2求幂，再求和</span></span><br><span class="line">            <span class="comment"># 如：0101 转成十进制为：1 * 20 + 0 * 21 + 1 * 22 + 0 * 23 = 1 + 0 + 4 + 0 = 5</span></span><br><span class="line">            temporary.append(total)</span><br><span class="line">        <span class="comment">#一个染色体编码完成，由一个二进制数编码为一个十进制数</span></span><br><span class="line">        <span class="keyword">return</span> temporary</span><br><span class="line">   <span class="comment"># 返回种群中所有个体编码完成后的十进制数</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#from protein to function,according to its functoin value</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#a protein realize its function according its structure</span></span><br><span class="line"><span class="comment"># 目标函数相当于环境 对染色体进行筛选，这里是2*sin(x)+math.cos(x)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">function</span>(<span class="params">self,population</span>):</span></span><br><span class="line">        temporary=[]</span><br><span class="line">        function1=[]</span><br><span class="line">        temporary=self.translation(population)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(temporary)):</span><br><span class="line">            x=temporary[i]*self.max_value/(math.<span class="built_in">pow</span>(<span class="number">2</span>,self.choromosome_length)-<span class="number">10</span>)</span><br><span class="line">            function1.append(<span class="number">2</span>*math.sin(x)+math.cos(x))</span><br><span class="line"></span><br><span class="line">         <span class="comment">#这里将sin(x)作为目标函数</span></span><br><span class="line">        <span class="keyword">return</span> function1</span><br><span class="line"></span><br><span class="line"><span class="comment">#定义适应度</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fitness</span>(<span class="params">self,function1</span>):</span></span><br><span class="line"></span><br><span class="line">        fitness_value=[]</span><br><span class="line"></span><br><span class="line">        num=<span class="built_in">len</span>(function1)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num):</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(function1[i]&gt;<span class="number">0</span>):</span><br><span class="line">                temporary=function1[i]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                temporary=<span class="number">0.0</span></span><br><span class="line">        <span class="comment"># 如果适应度小于0,则定为0</span></span><br><span class="line"></span><br><span class="line">            fitness_value.append(temporary)</span><br><span class="line">        <span class="comment">#将适应度添加到列表中</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> fitness_value</span><br><span class="line"></span><br><span class="line"><span class="comment">#计算适应度和</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">sum</span>(<span class="params">self,fitness_value</span>):</span></span><br><span class="line">        total=<span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fitness_value)):</span><br><span class="line">            total+=fitness_value[i]</span><br><span class="line">        <span class="keyword">return</span> total</span><br><span class="line"></span><br><span class="line"><span class="comment">#计算适应度斐伯纳且列表</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">cumsum</span>(<span class="params">self,fitness1</span>):</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fitness1)-<span class="number">2</span>,-<span class="number">1</span>,-<span class="number">1</span>):</span><br><span class="line">        <span class="comment"># range(start,stop,[step])</span></span><br><span class="line">        <span class="comment"># 倒计数</span></span><br><span class="line">            total=<span class="number">0</span></span><br><span class="line">            j=<span class="number">0</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span>(j&lt;=i):</span><br><span class="line">                 total+=fitness1[j]</span><br><span class="line">                 j+=<span class="number">1</span></span><br><span class="line"></span><br><span class="line">            fitness1[i]=total</span><br><span class="line">            fitness1[<span class="built_in">len</span>(fitness1)-<span class="number">1</span>]=<span class="number">1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#3.选择种群中个体适应度最大的个体</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">selection</span>(<span class="params">self,population,fitness_value</span>):</span></span><br><span class="line">        new_fitness=[]</span><br><span class="line">    <span class="comment">#单个公式暂存器</span></span><br><span class="line">        total_fitness=self.<span class="built_in">sum</span>(fitness_value)</span><br><span class="line">    <span class="comment">#将所有的适应度求和</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fitness_value)):</span><br><span class="line">            new_fitness.append(fitness_value[i]/total_fitness)</span><br><span class="line">    <span class="comment">#将所有个体的适应度正则化</span></span><br><span class="line">        self.cumsum(new_fitness)</span><br><span class="line">    <span class="comment">#</span></span><br><span class="line">        ms=[]</span><br><span class="line">    <span class="comment">#存活的种群</span></span><br><span class="line">        population_length=pop_len=<span class="built_in">len</span>(population)</span><br><span class="line">    <span class="comment">#求出种群长度</span></span><br><span class="line">    <span class="comment">#根据随机数确定哪几个能存活</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(pop_len):</span><br><span class="line">            ms.append(random.random())</span><br><span class="line">    <span class="comment"># 产生种群个数的随机值</span></span><br><span class="line">    <span class="comment"># ms.sort()</span></span><br><span class="line">    <span class="comment"># 存活的种群排序</span></span><br><span class="line">        fitin=<span class="number">0</span></span><br><span class="line">        newin=<span class="number">0</span></span><br><span class="line">        new_population=new_pop=population</span><br><span class="line"></span><br><span class="line">    <span class="comment">#轮盘赌方式</span></span><br><span class="line">        <span class="keyword">while</span> newin&lt;pop_len:</span><br><span class="line">              <span class="keyword">if</span>(ms[newin]&lt;new_fitness[fitin]):</span><br><span class="line">                 new_pop[newin]=population[fitin]</span><br><span class="line">                 newin+=<span class="number">1</span></span><br><span class="line">              <span class="keyword">else</span>:</span><br><span class="line">                 fitin+=<span class="number">1</span></span><br><span class="line">        population=new_pop</span><br><span class="line"></span><br><span class="line"><span class="comment">#4.交叉操作</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">crossover</span>(<span class="params">self,population</span>):</span></span><br><span class="line"><span class="comment">#pc是概率阈值，选择单点交叉还是多点交叉，生成新的交叉个体，这里没用</span></span><br><span class="line">        pop_len=<span class="built_in">len</span>(population)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(pop_len-<span class="number">1</span>):</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(random.random()&lt;self.pc):</span><br><span class="line"></span><br><span class="line">               cpoint=random.randint(<span class="number">0</span>,<span class="built_in">len</span>(population[<span class="number">0</span>]))</span><br><span class="line">           <span class="comment">#在种群个数内随机生成单点交叉点</span></span><br><span class="line">               temporary1=[]</span><br><span class="line">               temporary2=[]</span><br><span class="line"></span><br><span class="line">               temporary1.extend(population[i][<span class="number">0</span>:cpoint])</span><br><span class="line">               temporary1.extend(population[i+<span class="number">1</span>][cpoint:<span class="built_in">len</span>(population[i])])</span><br><span class="line">           <span class="comment">#将tmporary1作为暂存器，暂时存放第i个染色体中的前0到cpoint个基因，</span></span><br><span class="line">           <span class="comment">#然后再把第i+1个染色体中的后cpoint到第i个染色体中的基因个数，补充到temporary2后面</span></span><br><span class="line"></span><br><span class="line">               temporary2.extend(population[i+<span class="number">1</span>][<span class="number">0</span>:cpoint])</span><br><span class="line">               temporary2.extend(population[i][cpoint:<span class="built_in">len</span>(population[i])])</span><br><span class="line">        <span class="comment"># 将tmporary2作为暂存器，暂时存放第i+1个染色体中的前0到cpoint个基因，</span></span><br><span class="line">        <span class="comment"># 然后再把第i个染色体中的后cpoint到第i个染色体中的基因个数，补充到temporary2后面</span></span><br><span class="line">               population[i]=temporary1</span><br><span class="line">               population[i+<span class="number">1</span>]=temporary2</span><br><span class="line">        <span class="comment"># 第i个染色体和第i+1个染色体基因重组/交叉完成</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">mutation</span>(<span class="params">self,population</span>):</span></span><br><span class="line">     <span class="comment"># pm是概率阈值</span></span><br><span class="line">         px=<span class="built_in">len</span>(population)</span><br><span class="line">    <span class="comment"># 求出种群中所有种群/个体的个数</span></span><br><span class="line">         py=<span class="built_in">len</span>(population[<span class="number">0</span>])</span><br><span class="line">    <span class="comment"># 染色体/个体基因的个数</span></span><br><span class="line">         <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(px):</span><br><span class="line">             <span class="keyword">if</span>(random.random()&lt;self.pm):</span><br><span class="line">                mpoint=random.randint(<span class="number">0</span>,py-<span class="number">1</span>)</span><br><span class="line">            <span class="comment">#</span></span><br><span class="line">                <span class="keyword">if</span>(population[i][mpoint]==<span class="number">1</span>):</span><br><span class="line">               <span class="comment">#将mpoint个基因进行单点随机变异，变为0或者1</span></span><br><span class="line">                   population[i][mpoint]=<span class="number">0</span></span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                   population[i][mpoint]=<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#transform the binary to decimalism</span></span><br><span class="line"><span class="comment"># 将每一个染色体都转化成十进制 max_value,再筛去过大的值</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">b2d</span>(<span class="params">self,best_individual</span>):</span></span><br><span class="line">        total=<span class="number">0</span></span><br><span class="line">        b=<span class="built_in">len</span>(best_individual)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(b):</span><br><span class="line">            total=total+best_individual[i]*math.<span class="built_in">pow</span>(<span class="number">2</span>,i)</span><br><span class="line"></span><br><span class="line">        total=total*self.max_value/(math.<span class="built_in">pow</span>(<span class="number">2</span>,self.choromosome_length)-<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> total</span><br><span class="line"></span><br><span class="line"><span class="comment">#寻找最好的适应度和个体</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">best</span>(<span class="params">self,population,fitness_value</span>):</span></span><br><span class="line"></span><br><span class="line">        px=<span class="built_in">len</span>(population)</span><br><span class="line">        bestindividual=[]</span><br><span class="line">        bestfitness=fitness_value[<span class="number">0</span>]</span><br><span class="line">        <span class="comment"># print(fitness_value)</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,px):</span><br><span class="line">   <span class="comment"># 循环找出最大的适应度，适应度最大的也就是最好的个体</span></span><br><span class="line">            <span class="keyword">if</span>(fitness_value[i]&gt;bestfitness):</span><br><span class="line"></span><br><span class="line">               bestfitness=fitness_value[i]</span><br><span class="line">               bestindividual=population[i]</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> [bestindividual,bestfitness]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">plot</span>(<span class="params">self, results</span>):</span></span><br><span class="line">        X = []</span><br><span class="line">        Y = []</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">500</span>):</span><br><span class="line">            X.append(i)</span><br><span class="line">            Y.append(results[i][<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">        plt.plot(X, Y)</span><br><span class="line">        plt.show()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">main</span>(<span class="params">self</span>):</span></span><br><span class="line"></span><br><span class="line">        results = [[]]</span><br><span class="line">        fitness_value = []</span><br><span class="line">        fitmean = []</span><br><span class="line"></span><br><span class="line">        population = pop = self.species_origin()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">500</span>):</span><br><span class="line">            function_value = self.function(population)</span><br><span class="line">            <span class="comment"># print(&#x27;fit funtion_value:&#x27;,function_value)</span></span><br><span class="line">            fitness_value = self.fitness(function_value)</span><br><span class="line">            <span class="comment"># print(&#x27;fitness_value:&#x27;,fitness_value)</span></span><br><span class="line"></span><br><span class="line">            best_individual, best_fitness = self.best(population,fitness_value)</span><br><span class="line">            results.append([best_fitness, self.b2d(best_individual)])</span><br><span class="line">        <span class="comment"># 将最好的个体和最好的适应度保存，并将最好的个体转成十进制,适应度函数</span></span><br><span class="line">            self.selection(population,fitness_value)</span><br><span class="line">            self.crossover(population)</span><br><span class="line">            self.mutation(population)</span><br><span class="line">        results = results[<span class="number">1</span>:]</span><br><span class="line">        results.sort()</span><br><span class="line">        self.plot(results)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">   population_size=<span class="number">400</span><span class="comment">#种群大小</span></span><br><span class="line">   max_value=<span class="number">10</span><span class="comment">#x的最大值，x是表现型，由基因构造的比率乘以最大值得到，其他情况下是乘以区间长度加上最小值</span></span><br><span class="line">   chromosome_length=<span class="number">20</span><span class="comment">#基因的位数，采用二进制编码</span></span><br><span class="line">   pc=<span class="number">0.6</span><span class="comment">#交叉中的概率阈值，但是这个代码貌似并没有用</span></span><br><span class="line">   pm=<span class="number">0.01</span><span class="comment">#突变的概率，突变时使用random生成一个概率和它比较</span></span><br><span class="line">   ga=GA(population_size,chromosome_length,max_value,pc,pm)</span><br><span class="line">   ga.main()</span><br></pre></td></tr></table></figure>
+</details>
+<h3 id="运行结果">运行结果</h3>
+<p>500次每次的最大<span class="math inline">\(f(x)\)</span>,可以清除看到每次都在上升，但是貌似并没有标注是哪个<span class="math inline">\(x\)</span>生成的。</p>
+<center>
+<image src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919112345724-1119869064.png"/>
+</center>
+<h2 id="轮盘赌算法">轮盘赌算法</h2>
+<p>因为前面的轮盘赌算法没看懂，又去找博客看了看。</p>
+<p>个人理解：假设有一个转盘和指针，指针转动一圈停留在哪个区间就是哪个。指针转动可以使用随机函数random.random模拟，随机落到0-1的区间，落在哪个区间对应的方案就是哪个。构造区间我们使用</p>
+<pre><code>                                                                            $$q_i=\sum_&#123;j=0&#125;^&#123;i&#125;P(x_j)$$</code></pre>
+<p><span class="math inline">\(P(x_j)\)</span>是<span class="math inline">\(x_j\)</span>被选中的概率，依次生成<span class="math inline">\(0,q_1,q_2,q_3,\cdots,q_n，1\)</span>，随机一个概率<span class="math inline">\(r\)</span>，落在哪个区间就是哪个。例如<span class="math inline">\(q_2&lt;r&lt;q_3\)</span>,则选中了<span class="math inline">\(x_3\)</span></p>
+<center>
+<image src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210919125024238-93986478.png" style="width:50%;height:50%;"/>
+</center>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/112788663">用Python实现遗传算法 - 知乎 (zhihu.com)</a>理解详尽，推荐</p>
+<p><a href="https://blog.csdn.net/pymqq/article/details/51375522">(10条消息) 轮盘赌算法_pymqq的专栏-CSDN博客</a></p>
 ]]></content>
       <categories>
-        <category>CTF</category>
+        <category>数学模型</category>
       </categories>
       <tags>
-        <tag>web</tag>
+        <tag>优化算法</tag>
       </tags>
   </entry>
 </search>
