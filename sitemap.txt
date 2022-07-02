@@ -1,4 +1,6 @@
-http://un0o7.github.io/2022/07/01/test.html
+http://un0o7.github.io/2022/07/02/pwn-protect.html
+http://un0o7.github.io/2022/07/02/NRL.html
+http://un0o7.github.io/2022/07/02/transformer.html
 http://un0o7.github.io/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html
 http://un0o7.github.io/2021/11/12/xctf-unserialize3.html
 http://un0o7.github.io/2021/11/12/xctf-fakebook.html
@@ -21,8 +23,11 @@ http://un0o7.github.io/
 http://un0o7.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/
 http://un0o7.github.io/tags/reversing/
 http://un0o7.github.io/tags/pwn/
+http://un0o7.github.io/tags/deep-learning/
 http://un0o7.github.io/tags/model/
+http://un0o7.github.io/tags/deep-learngin/
 http://un0o7.github.io/tags/web/
 http://un0o7.github.io/categories/deep-learning/
 http://un0o7.github.io/categories/CTF/
+http://un0o7.github.io/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/
 http://un0o7.github.io/categories/machine-learning/

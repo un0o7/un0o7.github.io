@@ -1,0 +1,398 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>pwn_protect | un0o7's blog</title><meta name="keywords" content="pwn"><meta name="author" content="un0o7"><meta name="copyright" content="un0o7"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="对pwn过程中遇到的保护机制做一下详解与归纳。 Stack Canaries 放一篇写的好的：PWN之Canary学习 - sarace - 博客园 (cnblogs.com) 简介 stack canaries取名自地下煤矿的金丝雀，能比矿工更快发现煤气泄露，有预警的作用。这个概念应用在栈保护上则是在初始化一个栈帧时在栈底设置一个随机的canary值 ，栈帧销毁前测试该值是否“死掉”">
+<meta property="og:type" content="article">
+<meta property="og:title" content="pwn_protect">
+<meta property="og:url" content="http://un0o7.github.io/2022/07/02/pwn-protect.html">
+<meta property="og:site_name" content="un0o7&#39;s blog">
+<meta property="og:description" content="对pwn过程中遇到的保护机制做一下详解与归纳。 Stack Canaries 放一篇写的好的：PWN之Canary学习 - sarace - 博客园 (cnblogs.com) 简介 stack canaries取名自地下煤矿的金丝雀，能比矿工更快发现煤气泄露，有预警的作用。这个概念应用在栈保护上则是在初始化一个栈帧时在栈底设置一个随机的canary值 ，栈帧销毁前测试该值是否“死掉”">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://un0o7.github.io/img/default_cover2.jpg">
+<meta property="article:published_time" content="2022-07-02T15:02:41.000Z">
+<meta property="article:modified_time" content="2022-07-02T15:03:09.119Z">
+<meta property="article:author" content="un0o7">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://un0o7.github.io/img/default_cover2.jpg"><link rel="shortcut icon" href="/img/avatar.png"><link rel="canonical" href="http://un0o7.github.io/2022/07/02/pwn-protect"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: un0o7","link":"链接: ","source":"来源: un0o7's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'pwn_protect',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-02 23:03:09'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="referrer" content="no-referrer"/><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="un0o7's blog" type="application/atom+xml">
+</head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/default_cover2.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">un0o7's blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">pwn_protect</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-02T15:02:41.000Z" title="发表于 2022-07-02 23:02:41">2022-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-02T15:03:09.119Z" title="更新于 2022-07-02 23:03:09">2022-07-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CTF/">CTF</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="pwn_protect"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/07/02/pwn-protect.html#post-comment" itemprop="discussionUrl"><span class="valine-comment-count" data-xid="/2022/07/02/pwn-protect.html" itemprop="commentCount"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><hr />
+<p>对pwn过程中遇到的保护机制做一下详解与归纳。</p>
+<h2 id="stack-canaries">Stack Canaries</h2>
+<p>放一篇写的好的：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ttxs69/p/pwn_canary.html">PWN之Canary学习 - sarace - 博客园 (cnblogs.com)</a></p>
+<h3 id="简介">简介</h3>
+<p>stack canaries取名自地下煤矿的金丝雀，能比矿工更快发现煤气泄露，有预警的作用。这个概念应用在栈保护上则是在<strong>初始化一个栈帧时在栈底设置一个随机的canary值</strong> ，栈帧销毁前测试该值是否“死掉”，即是否被改变，若被改变则说明栈溢出发生，程序走另一个流程结束，以免漏洞利用成功。</p>
+<p>主要分为三类：<strong>terminator, random, random XOR</strong> ,具体实现有 <strong>StackGuard，StackShied, ProPoliced</strong> 等。</p>
+<ul>
+<li><p>terminator canaries: 考虑到很多栈溢出都是由于字符串操作不当所产生的，而这些字符串以NULL 00结尾， 被00截断，所有terminator将低位设置为，防止泄露，也可以防止伪造，截断字符还包括CR(0x0d),LF(0x0a), EOF(0xff)。其实就是将最后部分的最高位置为00，00ab1245</p></li>
+<li><p>random canaries : 为了防止canaries被攻击者猜到，通常会在程序初始化的时候随机生成canary，保存在安全的地方。</p></li>
+<li><p>random canaries XOR:其实就是比random canaries多了一个XOR操作，无论canaries还是XOR的数据被篡改，都会被检测到。xor eax,DWORD PTR gs:0x14</p></li>
+</ul>
+<h3 id="实现原理">实现原理</h3>
+<p>Linux下，存在fs寄存器，用于保存线程局部存储TLS，TLS主要是为了避免多个线程访问同一全局变量或静态变量所导致的冲突。64位使用fs寄存器，偏移在0x28。32位使用gs寄存，偏移在0x14。该位置存储stack_guard，即保留和canary，最后和栈中的canary进行比较，检测溢出。</p>
+<p>具体过程是使用_dl_random来生成stack_chk_guard，然后使用THREAD_SET_STACK_GUARD来设置stack_guard ，canary的最低位设置为。如果_dl_random==NULL，那么canary为定值。</p>
+<p>如果程序没有定义THREAD_SET_STACK_GUARD宏，那么就会直接使用_stack_chk_guard，它是一个全局变量，放在.bss段中。</p>
+<p>TLS结构体</p>
+<p>x86 32位</p>
+<figure class="highlight plaintext"><figcaption><span>Assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mov    eax,gs:0x14</span><br><span class="line">mov    DWORD PTR [ebp-0xc],eax</span><br><span class="line"></span><br><span class="line">mov    eax,DWORD PTR [ebp-0xc]</span><br><span class="line">xor    eax,DWORD PTR gs:0x14</span><br><span class="line">je     0x80492b2 &lt;vuln+103&gt; # 正常函数返回</span><br><span class="line">call   0x8049380 &lt;__stack_chk_fail_local&gt; # 调用出错处理函数</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><figcaption><span>Assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">High  </span><br><span class="line">       Address |                 |  </span><br><span class="line">               +-----------------+</span><br><span class="line">               | args            |</span><br><span class="line">               +-----------------+</span><br><span class="line">               | return address  |</span><br><span class="line">               +-----------------+</span><br><span class="line">               | old ebp         |</span><br><span class="line">     ebp =&gt;    +-----------------+</span><br><span class="line">               | ebx             |</span><br><span class="line">   ebp-4 =&gt;    +-----------------+</span><br><span class="line">               | unknown         |</span><br><span class="line">   ebp-8 =&gt;    +-----------------+</span><br><span class="line">               | canary value    |</span><br><span class="line">  ebp-12 =&gt;    +-----------------+</span><br><span class="line">               | 局部变量         |</span><br><span class="line">       Low     |                 |</span><br><span class="line">       Address</span><br></pre></td></tr></table></figure>
+<p>64位</p>
+<figure class="highlight plaintext"><figcaption><span>Assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mov    rax,QWORD PTR fs:0x28</span><br><span class="line">mov    QWORD PTR [rbp-0x8],rax</span><br><span class="line"></span><br><span class="line">mov    rax,QWORD PTR [rbp-0x8]</span><br><span class="line">xor    rax,QWORD PTR fs:0x28</span><br><span class="line">je     0x401232 &lt;vuln+102&gt; # 正常函数返回</span><br><span class="line">call   0x401040 &lt;__stack_chk_fail@plt&gt; # 调用出错处理函数</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><figcaption><span>Assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">High</span><br><span class="line">       Address |                 |</span><br><span class="line">               +-----------------+</span><br><span class="line">               | args            |</span><br><span class="line">               +-----------------+</span><br><span class="line">               | return address  |</span><br><span class="line">               +-----------------+</span><br><span class="line">               | old ebp         |</span><br><span class="line">     rbp =&gt;    +-----------------+</span><br><span class="line">               | canary value    |</span><br><span class="line">   rbp-8 =&gt;    +-----------------+</span><br><span class="line">               | 局部变量         |</span><br><span class="line">       Low     |                 |</span><br><span class="line">       Address</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253247-1850220162.png" /></p>
+<h3 id="实验">实验</h3>
+<p>canary.c smash：粉碎，破碎，打破</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;tdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">  <span class="built_in">scanf</span>(<span class="string">&quot;%s&quot;</span>,buf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc <span class="literal">-fno</span><span class="literal">-stack</span><span class="literal">-protector</span> canary.c <span class="literal">-o</span> canary_no.out</span><br><span class="line">gcc <span class="literal">-fstack</span><span class="literal">-protector</span> canary.c <span class="literal">-o</span> canary_pro.out</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253082-1687133293.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253068-1776729338.png" /></p>
+<h3 id="绕过方式">绕过方式</h3>
+<ul>
+<li><p>泄露内存中的canary，如通过格式化字符串漏洞打印出来</p></li>
+<li><p>one-by-one爆破，但是一般是多线程的程序，产生新线程后canary不变才行。最高位为00。</p></li>
+<li><p>劫持_stack_chk_fail函数，canary验证失败会进行该函数，__stack_chk_fail 函数是一个普通的延迟绑定函数，可以通过修改 GOT 表劫持这个函数。</p></li>
+<li><p>覆盖线程局部存储TLS中的canary，溢出尺寸比较大可以用。同时修改栈上的canary和TLS中的canary.</p></li>
+</ul>
+<h2 id="no-executenx">No-eXecute（NX）</h2>
+<h3 id="简介-1">简介</h3>
+<p>No-eXecute（NX）表示不可执行，其原理是将数据所在的内存页标识为不可执行。</p>
+<p>在Linux中，程序载入内存后，将.text节标记为可执行，.data .bss等标记为不可执行，堆栈等均不可知性，传统的修改GOT表的方式不再可行。但是无法阻止代码重用攻击ret2libc</p>
+<h3 id="实现">实现</h3>
+<p>通过编译选项，使用strcmp比较，在_handle_option函数设置link_info结构体的execstack和noexecstack为true和false。</p>
+<p>在bfd_elf_size_dynamic_sections函数中，根据link_info来设置elf_stack_flags = PF_R | PF_W | PF_X</p>
+<p>开启了NX就只有两个，没有PF_X。</p>
+<p>在_bfd_elf_map_sections_to_segments函数中，设置stuct elf_segment_map结构体中的p_flags=elf_stack_flags。就完成了编译设置。</p>
+<p>在装载时，调用elf_load_binary函数，根据上面的p_flags来设置executable_stack=EXSTACK_ENABLE_X</p>
+<p>或EXSTACK_DISABLE_X</p>
+<p>将executable_stack传入setup_arg_pages中，通过vm_flags设置进程的虚拟内存空间vma。</p>
+<p>当程序计数器指向了不可知性的内存页时，就会触发页错误。</p>
+<h3 id="实验-1">实验</h3>
+<p>nx.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">vuln_func</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">128</span>];</span><br><span class="line">    read(STDIN_FILENO,buf,<span class="number">256</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc , <span class="keyword">char</span>*argv[])</span></span>&#123;</span><br><span class="line">    vuln_func();</span><br><span class="line">    write(STDOUT_FILENO,<span class="string">&quot;Hello world!\n&quot;</span>,<span class="number">13</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253344-1833694897.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253196-268606348.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253213-2077211062.png" /></p>
+<h2 id="aslr和pie">ASLR和PIE</h2>
+<h3 id="简介-2">简介</h3>
+<p>大多数攻击都需要知道程序的内存布局，引入内存布局的随机化可以增加漏洞利用的难度，<strong>地址空间布局随机化ASLR（address space layout randomization）</strong></p>
+<p>ASLR /proc/sys/kernel/randomize_va_space有三种情况：</p>
+<table>
+<thead>
+<tr class="header">
+<th>ASLR</th>
+<th>Executable</th>
+<th>PLT</th>
+<th>Heap</th>
+<th>Stack</th>
+<th>Shared Libraries</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>不变</td>
+<td>不变</td>
+<td>不变</td>
+<td>不变</td>
+<td>不变</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>不变</td>
+<td>不变</td>
+<td>不变</td>
+<td>变</td>
+<td>变</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>不变</td>
+<td>不变</td>
+<td>变</td>
+<td>变</td>
+<td>变</td>
+</tr>
+<tr class="even">
+<td>2+pie</td>
+<td>变</td>
+<td>变</td>
+<td>变</td>
+<td>变</td>
+<td>变</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PIE</strong> 位置无关可执行文件，在应用层的编译器上实现，通过将程序编译为位置无关代码PIC，使程序加载到任意位置，就像是一个特殊的共享库。PIE会一定程度上影响性能。</p>
+<h3 id="实验-2">实验：</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">stack</span>;</span><br><span class="line">    <span class="keyword">int</span> *heap=<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    <span class="keyword">void</span> *handle = dlopen(<span class="string">&quot;libc.so.6&quot;</span>,RTLD_NOW | RTLD_GLOBAL);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;executable:%p\n&quot;</span>,&amp;main);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;system@plt:%p\n&quot;</span>,&amp;system);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;heap: %p\n&quot;</span>,heap);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;stack: %p\n&quot;</span>,&amp;<span class="built_in">stack</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;libc: %p\n&quot;</span>,handle);</span><br><span class="line">    <span class="built_in">free</span>(heap);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253207-1651106603.png" /></p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /proc/sys/kernel/randomize_va_space</span><br><span class="line"><span class="built_in">echo</span> <span class="number">0</span>/<span class="number">1</span>/<span class="number">2</span> &gt; /proc/sys/kernel/randomize_va_space</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253169-1859287323.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253309-1823437057.png" /></p>
+<p>ASLR=2，且开启PIE</p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253221-334135671.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253308-901706542.png" /></p>
+<h2 id="fortify_source">FORTIFY_SOURCE</h2>
+<h3 id="简介-3">简介</h3>
+<p>缓冲区溢出常常发生在程序调用了一些危险函数的时候，如memcpy，当源字符串的长度大于目的缓冲区时，就会发生缓冲区溢出。</p>
+<p>FORTIFY_SOURCE本质上一种检查和替换机制，对GCC和glibc的一个安全补丁。</p>
+<p>检查危险函数，并替换为安全函数，不会对程序的性能产生大的影响。目前支持memcpy, memmove, memset, strcpy, strncpy, strcat, strncat,sprintf, vsprintf, snprintf, vsnprintf, gets等。</p>
+<h3 id="实现-1">实现</h3>
+<p><strong>缓冲区溢出检查</strong> ，以安全函数<code>_strcpy_chk()</code>为例，可以看到该函数判断源数据长度是否大于目的缓冲区，是就调用<code>_chk_fail()</code>否则正常调用memcpy执行。</p>
+<p><strong>格式化字符串检查</strong> ，以安全函数 <code>_printf_chk()</code>为例，针对%n和%N$两种格式化字符串。</p>
+<h3 id="实验-3">实验</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>*argv[])</span></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buf1[<span class="number">10</span>],buf2[<span class="number">10</span>],*s;</span><br><span class="line">    <span class="keyword">int</span> num;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(buf1,argv[<span class="number">1</span>],<span class="number">10</span>);           <span class="comment">//safe</span></span><br><span class="line">    <span class="built_in">strcpy</span>(buf2,<span class="string">&quot;AAAABBBBC&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s %s\n&quot;</span>,buf1,buf2);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(buf1,argv[<span class="number">2</span>],atoi(argv[<span class="number">3</span>])); <span class="comment">//unknown</span></span><br><span class="line">    <span class="built_in">strcpy</span>(buf2,argv[<span class="number">1</span>]);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s %s\n&quot;</span>,buf1,buf2);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//memcpy(buf1,argv[1],11);         //unsafe</span></span><br><span class="line">    <span class="comment">//strcpy(buf2,&quot;AAAABBBBCC&quot;);</span></span><br><span class="line"></span><br><span class="line">    s=fgets(buf1,<span class="number">11</span>,<span class="built_in">stdin</span>);            <span class="comment">//fmt unknown</span></span><br><span class="line">    <span class="built_in">printf</span>(buf1,&amp;num);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253354-633158759.png" /></p>
+<p>使用gdb-pwndbg，反编译main</p>
+<p>使用选项0 1 2 分别生成fortify0 1 2</p>
+<p>gdb-pwndbg fortify1,可以看到替换成了安全函数,但是printf并没有被替换。</p>
+<figure class="highlight plaintext"><figcaption><span>Assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">Dump of assembler code for function main:</span><br><span class="line">   0x0000000000001175 &lt;+0&gt;:     push   r12</span><br><span class="line">   0x0000000000001177 &lt;+2&gt;:     push   rbp</span><br><span class="line">   0x0000000000001178 &lt;+3&gt;:     push   rbx</span><br><span class="line">   0x0000000000001179 &lt;+4&gt;:     sub    rsp,0x20</span><br><span class="line">   0x000000000000117d &lt;+8&gt;:     mov    rbx,rsi</span><br><span class="line">   0x0000000000001180 &lt;+11&gt;:    mov    rax,QWORD PTR [rsi+0x8]</span><br><span class="line">   0x0000000000001184 &lt;+15&gt;:    mov    rdx,QWORD PTR [rax]</span><br><span class="line">   0x0000000000001187 &lt;+18&gt;:    mov    QWORD PTR [rsp+0x16],rdx</span><br><span class="line">   0x000000000000118c &lt;+23&gt;:    movzx  eax,WORD PTR [rax+0x8]</span><br><span class="line">   0x0000000000001190 &lt;+27&gt;:    mov    WORD PTR [rsp+0x1e],ax</span><br><span class="line">   0x0000000000001195 &lt;+32&gt;:    movabs rax,0x4242424241414141</span><br><span class="line">   0x000000000000119f &lt;+42&gt;:    mov    QWORD PTR [rsp+0xc],rax</span><br><span class="line">   0x00000000000011a4 &lt;+47&gt;:    mov    WORD PTR [rsp+0x14],0x43</span><br><span class="line">   0x00000000000011ab &lt;+54&gt;:    lea    r12,[rsp+0xc]</span><br><span class="line">   0x00000000000011b0 &lt;+59&gt;:    lea    rbp,[rsp+0x16]</span><br><span class="line">   0x00000000000011b5 &lt;+64&gt;:    mov    rdx,r12</span><br><span class="line">   0x00000000000011b8 &lt;+67&gt;:    mov    rsi,rbp</span><br><span class="line">   0x00000000000011bb &lt;+70&gt;:    lea    rdi,[rip+0xe42]        # 0x2004</span><br><span class="line">   0x00000000000011c2 &lt;+77&gt;:    mov    eax,0x0</span><br><span class="line">   0x00000000000011c7 &lt;+82&gt;:    call   0x1030 &lt;printf@plt&gt;</span><br><span class="line">   0x00000000000011cc &lt;+87&gt;:    mov    rdi,QWORD PTR [rbx+0x18]</span><br><span class="line">   0x00000000000011d0 &lt;+91&gt;:    mov    edx,0xa</span><br><span class="line">   0x00000000000011d5 &lt;+96&gt;:    mov    esi,0x0</span><br><span class="line">   0x00000000000011da &lt;+101&gt;:   call   0x1050 &lt;strtol@plt&gt;</span><br><span class="line">   0x00000000000011df &lt;+106&gt;:   movsxd rdx,eax</span><br><span class="line">   0x00000000000011e2 &lt;+109&gt;:   mov    rsi,QWORD PTR [rbx+0x10]</span><br><span class="line">   0x00000000000011e6 &lt;+113&gt;:   mov    ecx,0xa</span><br><span class="line">   0x00000000000011eb &lt;+118&gt;:   mov    rdi,rbp</span><br><span class="line">   0x00000000000011ee &lt;+121&gt;:   call   0x1040 &lt;__memcpy_chk@plt&gt;</span><br><span class="line">   0x00000000000011f3 &lt;+126&gt;:   mov    rsi,QWORD PTR [rbx+0x8]</span><br><span class="line">   0x00000000000011f7 &lt;+130&gt;:   mov    edx,0xa</span><br><span class="line">   0x00000000000011fc &lt;+135&gt;:   mov    rdi,r12</span><br><span class="line">   0x00000000000011ff &lt;+138&gt;:   call   0x1070 &lt;__strcpy_chk@plt&gt;</span><br><span class="line">   0x0000000000001204 &lt;+143&gt;:   mov    rdx,r12</span><br><span class="line">   0x0000000000001207 &lt;+146&gt;:   mov    rsi,rbp</span><br><span class="line">   0x000000000000120a &lt;+149&gt;:   lea    rdi,[rip+0xdf3]        # 0x2004</span><br><span class="line">   0x0000000000001211 &lt;+156&gt;:   mov    eax,0x0</span><br><span class="line">   0x0000000000001216 &lt;+161&gt;:   call   0x1030 &lt;printf@plt&gt;</span><br><span class="line">   0x000000000000121b &lt;+166&gt;:   mov    rsi,QWORD PTR [rbx+0x8]</span><br><span class="line">   0x000000000000121f &lt;+170&gt;:   mov    ecx,0xa</span><br><span class="line">   0x0000000000001224 &lt;+175&gt;:   mov    edx,0xb</span><br><span class="line">   0x0000000000001229 &lt;+180&gt;:   mov    rdi,rbp</span><br><span class="line">   0x000000000000122c &lt;+183&gt;:   call   0x1040 &lt;__memcpy_chk@plt&gt;</span><br><span class="line">   0x0000000000001231 &lt;+188&gt;:   mov    edx,0xa</span><br><span class="line">   0x0000000000001236 &lt;+193&gt;:   lea    rsi,[rip+0xdce]        # 0x200b</span><br><span class="line">   0x000000000000123d &lt;+200&gt;:   mov    rdi,r12</span><br><span class="line">   0x0000000000001240 &lt;+203&gt;:   call   0x1070 &lt;__strcpy_chk@plt&gt;</span><br><span class="line">   0x0000000000001245 &lt;+208&gt;:   mov    rcx,QWORD PTR [rip+0x2e04]        # 0x4050 &lt;stdin@GLIBC_2.2.5&gt;</span><br><span class="line">   0x000000000000124c &lt;+215&gt;:   mov    edx,0xb</span><br><span class="line">   0x0000000000001251 &lt;+220&gt;:   mov    esi,0xa</span><br><span class="line">   0x0000000000001256 &lt;+225&gt;:   mov    rdi,rbp</span><br><span class="line">   0x0000000000001259 &lt;+228&gt;:   call   0x1060 &lt;__fgets_chk@plt&gt;</span><br><span class="line">   0x000000000000125e &lt;+233&gt;:   lea    rsi,[rsp+0x8]</span><br><span class="line">   0x0000000000001263 &lt;+238&gt;:   mov    rdi,rbp</span><br><span class="line">   0x0000000000001266 &lt;+241&gt;:   mov    eax,0x0</span><br><span class="line">   0x000000000000126b &lt;+246&gt;:   call   0x1030 &lt;printf@plt&gt;</span><br><span class="line">   0x0000000000001270 &lt;+251&gt;:   mov    eax,0x0</span><br><span class="line">   0x0000000000001275 &lt;+256&gt;:   add    rsp,0x20</span><br><span class="line">   0x0000000000001279 &lt;+260&gt;:   pop    rbx</span><br><span class="line">   0x000000000000127a &lt;+261&gt;:   pop    rbp</span><br><span class="line">   0x000000000000127b &lt;+262&gt;:   pop    r12</span><br><span class="line">   0x000000000000127d &lt;+264&gt;:   ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+<p>gdb-pwndbg fortify2 <code>disas main</code>，可以看到printf也被替换成安全函数了。</p>
+<figure class="highlight plaintext"><figcaption><span>Assembly</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line">Dump of assembler code for function main:</span><br><span class="line">   0x0000000000001175 &lt;+0&gt;:     push   r12</span><br><span class="line">   0x0000000000001177 &lt;+2&gt;:     push   rbp</span><br><span class="line">   0x0000000000001178 &lt;+3&gt;:     push   rbx</span><br><span class="line">   0x0000000000001179 &lt;+4&gt;:     sub    rsp,0x20</span><br><span class="line">   0x000000000000117d &lt;+8&gt;:     mov    rbx,rsi</span><br><span class="line">   0x0000000000001180 &lt;+11&gt;:    mov    rax,QWORD PTR [rsi+0x8]</span><br><span class="line">   0x0000000000001184 &lt;+15&gt;:    mov    rdx,QWORD PTR [rax]</span><br><span class="line">   0x0000000000001187 &lt;+18&gt;:    mov    QWORD PTR [rsp+0x16],rdx</span><br><span class="line">   0x000000000000118c &lt;+23&gt;:    movzx  eax,WORD PTR [rax+0x8]</span><br><span class="line">   0x0000000000001190 &lt;+27&gt;:    mov    WORD PTR [rsp+0x1e],ax</span><br><span class="line">   0x0000000000001195 &lt;+32&gt;:    movabs rax,0x4242424241414141</span><br><span class="line">   0x000000000000119f &lt;+42&gt;:    mov    QWORD PTR [rsp+0xc],rax</span><br><span class="line">   0x00000000000011a4 &lt;+47&gt;:    mov    WORD PTR [rsp+0x14],0x43</span><br><span class="line">   0x00000000000011ab &lt;+54&gt;:    lea    r12,[rsp+0xc]</span><br><span class="line">   0x00000000000011b0 &lt;+59&gt;:    lea    rbp,[rsp+0x16]</span><br><span class="line">   0x00000000000011b5 &lt;+64&gt;:    mov    rcx,r12</span><br><span class="line">   0x00000000000011b8 &lt;+67&gt;:    mov    rdx,rbp</span><br><span class="line">   0x00000000000011bb &lt;+70&gt;:    lea    rsi,[rip+0xe42]        # 0x2004</span><br><span class="line">   0x00000000000011c2 &lt;+77&gt;:    mov    edi,0x1</span><br><span class="line">   0x00000000000011c7 &lt;+82&gt;:    mov    eax,0x0</span><br><span class="line">   0x00000000000011cc &lt;+87&gt;:    call   0x1070 &lt;__printf_chk@plt&gt;</span><br><span class="line">   0x00000000000011d1 &lt;+92&gt;:    mov    rdi,QWORD PTR [rbx+0x18]</span><br><span class="line">   0x00000000000011d5 &lt;+96&gt;:    mov    edx,0xa</span><br><span class="line">   0x00000000000011da &lt;+101&gt;:   mov    esi,0x0</span><br><span class="line">   0x00000000000011df &lt;+106&gt;:   call   0x1040 &lt;strtol@plt&gt;</span><br><span class="line">   0x00000000000011e4 &lt;+111&gt;:   movsxd rdx,eax</span><br><span class="line">   0x00000000000011e7 &lt;+114&gt;:   mov    rsi,QWORD PTR [rbx+0x10]</span><br><span class="line">   0x00000000000011eb &lt;+118&gt;:   mov    ecx,0xa</span><br><span class="line">   0x00000000000011f0 &lt;+123&gt;:   mov    rdi,rbp</span><br><span class="line">   0x00000000000011f3 &lt;+126&gt;:   call   0x1030 &lt;__memcpy_chk@plt&gt;</span><br><span class="line">   0x00000000000011f8 &lt;+131&gt;:   mov    rsi,QWORD PTR [rbx+0x8]</span><br><span class="line">   0x00000000000011fc &lt;+135&gt;:   mov    edx,0xa</span><br><span class="line">   0x0000000000001201 &lt;+140&gt;:   mov    rdi,r12</span><br><span class="line">   0x0000000000001204 &lt;+143&gt;:   call   0x1060 &lt;__strcpy_chk@plt&gt;</span><br><span class="line">   0x0000000000001209 &lt;+148&gt;:   mov    rcx,r12</span><br><span class="line">   0x000000000000120c &lt;+151&gt;:   mov    rdx,rbp</span><br><span class="line">   0x000000000000120f &lt;+154&gt;:   lea    rsi,[rip+0xdee]        # 0x2004</span><br><span class="line">   0x0000000000001216 &lt;+161&gt;:   mov    edi,0x1</span><br><span class="line">   0x000000000000121b &lt;+166&gt;:   mov    eax,0x0</span><br><span class="line">   0x0000000000001220 &lt;+171&gt;:   call   0x1070 &lt;__printf_chk@plt&gt;</span><br><span class="line">   0x0000000000001225 &lt;+176&gt;:   mov    rsi,QWORD PTR [rbx+0x8]</span><br><span class="line">   0x0000000000001229 &lt;+180&gt;:   mov    ecx,0xa</span><br><span class="line">   0x000000000000122e &lt;+185&gt;:   mov    edx,0xb</span><br><span class="line">   0x0000000000001233 &lt;+190&gt;:   mov    rdi,rbp</span><br><span class="line">   0x0000000000001236 &lt;+193&gt;:   call   0x1030 &lt;__memcpy_chk@plt&gt;</span><br><span class="line">   0x000000000000123b &lt;+198&gt;:   mov    edx,0xa</span><br><span class="line">   0x0000000000001240 &lt;+203&gt;:   lea    rsi,[rip+0xdc4]        # 0x200b</span><br><span class="line">   0x0000000000001247 &lt;+210&gt;:   mov    rdi,r12</span><br><span class="line">   0x000000000000124a &lt;+213&gt;:   call   0x1060 &lt;__strcpy_chk@plt&gt;</span><br><span class="line">   0x000000000000124f &lt;+218&gt;:   mov    rcx,QWORD PTR [rip+0x2dfa]        # 0x4050 &lt;stdin@GLIBC_2.2.5&gt;</span><br><span class="line">   0x0000000000001256 &lt;+225&gt;:   mov    edx,0xb</span><br><span class="line">   0x000000000000125b &lt;+230&gt;:   mov    esi,0xa</span><br><span class="line">   0x0000000000001260 &lt;+235&gt;:   mov    rdi,rbp</span><br><span class="line">   0x0000000000001263 &lt;+238&gt;:   call   0x1050 &lt;__fgets_chk@plt&gt;</span><br><span class="line">   0x0000000000001268 &lt;+243&gt;:   lea    rdx,[rsp+0x8]</span><br><span class="line">   0x000000000000126d &lt;+248&gt;:   mov    rsi,rbp</span><br><span class="line">   0x0000000000001270 &lt;+251&gt;:   mov    edi,0x1</span><br><span class="line">   0x0000000000001275 &lt;+256&gt;:   mov    eax,0x0</span><br><span class="line">   0x000000000000127a &lt;+261&gt;:   call   0x1070 &lt;__printf_chk@plt&gt;</span><br><span class="line">   0x000000000000127f &lt;+266&gt;:   mov    eax,0x0</span><br><span class="line">   0x0000000000001284 &lt;+271&gt;:   add    rsp,0x20</span><br><span class="line">   0x0000000000001288 &lt;+275&gt;:   pop    rbx</span><br><span class="line">   0x0000000000001289 &lt;+276&gt;:   pop    rbp</span><br><span class="line">   0x000000000000128a &lt;+277&gt;:   pop    r12</span><br><span class="line">   0x000000000000128c &lt;+279&gt;:   ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+<p>fortify1测试结果，在strcpy中出现溢出，被检测到了。但是任然可以使用格式化字符串漏洞。</p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253141-1679640012.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253221-1782900717.png" /></p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253265-1403602704.png" /></p>
+<p>使用fortify2实验，%n和%N$ 被检测到了。而且%N$需要从%1$x后开始连续可用，下图中仅打印出一个。</p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253222-158387292.png" /></p>
+<h2 id="relro">RELRO</h2>
+<h3 id="简介-4">简介</h3>
+<p>在启用延时绑定时，符号的解析只发生在第一次使用的时候，该过程是通过PLT表进行的，解析完成后，相应的GOT表条目才会修改为正确的函数地址。因此，在延迟绑定的情况下，.got.plt必须是可写的。攻击者就可以通过篡改地址劫持程序。</p>
+<p>RELRO(Relocation Read-Only)机制的提出就是为了解决延时绑定的安全问题。将符号重定向表设置为只读，或者在程序启动时就解析绑定所有的动态符号，从而避免GOT被篡改。RELRO有两种形式：</p>
+<ul>
+<li><p>Partial RELRO : 一些段（.dynamic , .got等在初始化后将会被标记为只读），默认开启。</p></li>
+<li><p>Full RELRO： 除了Partial RELRO，延时绑定被禁止，所有的导入符号将在开始时被解析,.got.plt段会被完全初始化为目标函数的最终地址，并被mprotect标记为只读，但是.got.plt会被合并到.got，也就看不到这段了。会对性能造成影响。</p></li>
+</ul>
+<h3 id="实验-4">实验</h3>
+<p>relro.c 意思就是输入一个16进制地址，然后向该地址写入4141414141414141</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>*argv[])</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>,argv[<span class="number">1</span>]);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;sdsd&quot;</span>);</span><br><span class="line">    <span class="keyword">size_t</span> * p=(<span class="keyword">size_t</span>*)strtol(argv[<span class="number">1</span>],<span class="literal">NULL</span>,<span class="number">16</span>);</span><br><span class="line">    p[<span class="number">0</span>]=<span class="number">0x41414141</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;RELRO: %x\n&quot;</span>,(<span class="keyword">unsigned</span> <span class="keyword">int</span> )*p);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实验过程失败了，按照书来的出现一个问题</p>
+<p>动态重定位表中，main始终是R_X86_64_GLOB_DAT, 书上应该是和printf相同的才对。</p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253327-225509548.png" /></p>
+<p>结论：norelro，可以修改.got和.got.plt</p>
+<pre><code>  partial可以修改.got.plt</code></pre>
+<p>full一个都不能修改</p>
+<p>不能修改情况如下，当然可能有其他的原因</p>
+<p><img src="https://img2022.cnblogs.com/blog/2348945/202207/2348945-20220702230253255-1376568986.png" /></p>
+<h3 id="实现-2">实现</h3>
+<p>有延时绑定时，call会先跳到printf@plt，然后jmp到.got.plt项，再跳归来进行符号绑定，完成后.got.plt修改为真正的函数地址。</p>
+<p>没有延时绑定时，所有解析工作在程序加载时完成，执行call指令跳转到对应的.plt.got项，然后jmp到对应的.got项，已经保存了解析好的函数地址。</p>
+<h2 id="编译选项总结">编译选项总结</h2>
+<p>stack canaries</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-fstack-protector        对alloca系列函数和内部缓冲区大于<span class="number">8</span>字节的函数启用保护</span><br><span class="line">-fstack-protector-strong 增加对包含局部数组定和地址引用的函数的保护</span><br><span class="line">-fstack-protector-all    对所有函数启用保护</span><br><span class="line">-fstack-protector-<span class="keyword">explicit</span> 对包含stack_protect属性的函数启用保护</span><br><span class="line">-fno-<span class="built_in">stack</span>-protector       禁用保护</span><br></pre></td></tr></table></figure>
+<p>nx</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-z execstack</span><br><span class="line">-z no execstack</span><br></pre></td></tr></table></figure>
+<p>ASLR</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-ldl</span><br></pre></td></tr></table></figure>
+<p>PIE</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-fpic   为共享库生成位置无关代码</span><br><span class="line">-pie    生成动态链接的位置无关可执行文件，通常需要同时指定-fpie</span><br><span class="line">-no-pie 不生成动态链接的位置无关可执行文件</span><br><span class="line">-fpie   类似于-fpic，但生成的位置无关代码只能用于可执行文件</span><br><span class="line">-fno-pie 不生成位置无关代码</span><br></pre></td></tr></table></figure>
+<p>FORTIFY_SOURCE</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-D_FORTIFY_SOURCE=1   开启缓冲区溢出攻击检查</span><br><span class="line">-D_FORTIFY_SOURCE=2   开启缓冲区溢出以及格式化字符串攻击检查</span><br></pre></td></tr></table></figure>
+<p>RELRO</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-z norelro              禁用relro</span><br><span class="line">-z lazy                 开启Partial RELRO</span><br><span class="line">-z now                  FULL PARTIAL</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://www.un0o7.asia/">un0o7</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://un0o7.github.io/2022/07/02/pwn-protect.html">http://un0o7.github.io/2022/07/02/pwn-protect.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://un0o7.github.io" target="_blank">un0o7's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/pwn/">pwn</a></div><div class="post_share"><div class="social-share" data-image="/img/default_cover2.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/07/02/NRL.html"><img class="next-cover" src="/img/default_cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">随机游走</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html" title="ELF文件解析"><img class="cover" src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630093618000-396277112.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-12</div><div class="title">ELF文件解析</div></div></a></div><div><a href="/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html" title="GCC编译过程"><img class="cover" src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630093923678-672911698.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-12</div><div class="title">GCC编译过程</div></div></a></div><div><a href="/2021/11/12/PWN%E5%85%A5%E9%97%A8.html" title="PWN入门"><img class="cover" src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630094029336-1456909627.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-12</div><div class="title">PWN入门</div></div></a></div><div><a href="/2021/11/12/xctf-CGfsd.html" title="xctf-CGfsd"><img class="cover" src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630094351316-1397808926.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-12</div><div class="title">xctf-CGfsd</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">un0o7</div><div class="author-info__description">sharing, learning and creating</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">14</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/un0o7"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/un0o7" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:un0o7@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://www.cnblogs.com/dddddblog/" target="_blank" title=""><i class="fa-solid fa-square-rss"></i></a><a class="social-icon" href="https://www.kaggle.com/hjhsdsdww" target="_blank" title=""><i class="fa-brands fa-kaggle"></i></a><a class="social-icon" href="https://ctf.show/user" target="_blank" title=""><i class="fa-solid fa-flag"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">无极之道，在我内心延续。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#stack-canaries"><span class="toc-number">1.</span> <span class="toc-text">Stack Canaries</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">1.3.</span> <span class="toc-text">实验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E6%96%B9%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">绕过方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#no-executenx"><span class="toc-number">2.</span> <span class="toc-text">No-eXecute（NX）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B-1"><span class="toc-number">2.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.2.</span> <span class="toc-text">实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C-1"><span class="toc-number">2.3.</span> <span class="toc-text">实验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aslr%E5%92%8Cpie"><span class="toc-number">3.</span> <span class="toc-text">ASLR和PIE</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B-2"><span class="toc-number">3.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C-2"><span class="toc-number">3.2.</span> <span class="toc-text">实验：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fortify_source"><span class="toc-number">4.</span> <span class="toc-text">FORTIFY_SOURCE</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B-3"><span class="toc-number">4.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0-1"><span class="toc-number">4.2.</span> <span class="toc-text">实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C-3"><span class="toc-number">4.3.</span> <span class="toc-text">实验</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#relro"><span class="toc-number">5.</span> <span class="toc-text">RELRO</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B-4"><span class="toc-number">5.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C-4"><span class="toc-number">5.2.</span> <span class="toc-text">实验</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0-2"><span class="toc-number">5.3.</span> <span class="toc-text">实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">编译选项总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/pwn-protect.html" title="pwn_protect"><img src="/img/default_cover2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="pwn_protect"/></a><div class="content"><a class="title" href="/2022/07/02/pwn-protect.html" title="pwn_protect">pwn_protect</a><time datetime="2022-07-02T15:02:41.000Z" title="发表于 2022-07-02 23:02:41">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/NRL.html" title="随机游走"><img src="/img/default_cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="随机游走"/></a><div class="content"><a class="title" href="/2022/07/02/NRL.html" title="随机游走">随机游走</a><time datetime="2022-07-02T15:01:13.000Z" title="发表于 2022-07-02 23:01:13">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/02/transformer.html" title="transformer"><img src="/img/default_cover2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="transformer"/></a><div class="content"><a class="title" href="/2022/07/02/transformer.html" title="transformer">transformer</a><time datetime="2022-07-02T14:59:32.000Z" title="发表于 2022-07-02 22:59:32">2022-07-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html" title="ELF文件解析"><img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630093618000-396277112.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ELF文件解析"/></a><div class="content"><a class="title" href="/2021/11/12/ELF%E6%96%87%E4%BB%B6%E8%A7%A3%E6%9E%90.html" title="ELF文件解析">ELF文件解析</a><time datetime="2021-11-12T15:07:12.000Z" title="发表于 2021-11-12 23:07:12">2021-11-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html" title="GCC编译过程"><img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630093923678-672911698.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="GCC编译过程"/></a><div class="content"><a class="title" href="/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html" title="GCC编译过程">GCC编译过程</a><time datetime="2021-11-12T15:05:36.000Z" title="发表于 2021-11-12 23:05:36">2021-11-12</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By un0o7</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'mdvXRfkv4gfe7M6IAz3sA1KO-gzGzoHsz# leancloud application app id',
+      appKey: 'ukMNggcY3GfPrgKHd3UaMOw9# leancloud application app key',
+      avatar: 'monsterid',
+      serverURLs: 'https://mdvxrfkv.lc-cn-n1-shared.com# This configuration is suitable for domestic custom domain name users, overseas version will be automatically detected (no need to manually fill in)',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"live2d-widget-model-shizuku"},"display":{"position":"right","width":70,"height":120},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body></html>
