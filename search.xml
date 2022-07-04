@@ -54,58 +54,6 @@
       </tags>
   </entry>
   <entry>
-    <title>GCC编译过程</title>
-    <url>/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html</url>
-    <content><![CDATA[<p>GCC（英文全拼：GNU Compiler Collection）是 GNU 工具链的主要组成部分，是一套以 GPL 和 LGPL 许可证发布的程序语言编译器自由软件，由 Richard Stallman 于 1985 年开始开发。</p>
-<span id="more"></span>
-<figure>
-<img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630093923678-672911698.jpg" alt="查看源图像" /><figcaption aria-hidden="true">查看源图像</figcaption>
-</figure>
-<meta name="referrer" content="no-referrer"/>
-<p>GCC 原名为 GNU C语言编译器，因为它原本只能处理 C 语言，但如今的 GCC 不仅可以编译 C、C++ 和 Objective-C，还可以通过不同的前端模块支持各种语言，包括 Java、Fortran、Ada、Pascal、Go 和 D 语言等等。</p>
-<p>GCC 的编译过程可以划分为四个阶段：<strong>预处理（Pre-Processing）、编译（Compiling）、汇编（Assembling）以及链接（Linking）</strong>。</p>
-<p><img src="/images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111180607726-394481153.jpg" /></p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HH 5</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Here is a static library\n&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,HH);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="预处理">预处理</h2>
-<p>主要是处理程序中以<strong>#</strong>开头的预处理指令，将其转换后插入文本中。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">gcc -e hello.c -o hello.i</span><br></pre></td></tr></table></figure>
-<ul>
-<li>递归处理#include预处理指令，将对应文件的内容复制到该处,出现了很多extern的函数原型</li>
-<li>删除#define，并且在其被引用处递归地展开所有的宏定义</li>
-<li>处理所有条件预处理指令 #if #ifdef</li>
-<li>删除注释</li>
-<li>添加行号和文件名标识</li>
-</ul>
-<p><img src="/images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111181618747-1578372619.png" /></p>
-<h2 id="编译">编译</h2>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc -S hello.c -o hello.s</span><br><span class="line">gcc -S hello.i -o hello.s -masm= intel -fno-asynchronous-unwind-tables</span><br></pre></td></tr></table></figure>
-<p>-masm= intel用于指定为intel格式</p>
-<p>-fno-asynchronous-unwind-tables 用于生成没有cfi宏的汇编指令，提高可读性</p>
-<p>可以看到只有单个参数的printf被替换成puts了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">	.file	&quot;hello.c&quot;</span><br><span class="line">	.text</span><br><span class="line">	.section	.rodata</span><br><span class="line">.LC0:</span><br><span class="line">	.string	&quot;Here is a test of gcc&quot;</span><br><span class="line">.LC1:</span><br><span class="line">	.string	&quot;%d\n&quot;</span><br><span class="line">	.text</span><br><span class="line">	.globl	foo</span><br><span class="line">	.type	foo, @function</span><br><span class="line">foo:</span><br><span class="line">.LFB0:</span><br><span class="line">	.cfi_startproc</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.cfi_def_cfa_offset 16</span><br><span class="line">	.cfi_offset 6, -16</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.cfi_def_cfa_register 6</span><br><span class="line">	leaq	.LC0(%rip), %rdi</span><br><span class="line">	call	puts@PLT</span><br><span class="line">	movl	$5, %esi</span><br><span class="line">	leaq	.LC1(%rip), %rdi</span><br><span class="line">	movl	$0, %eax</span><br><span class="line">	call	printf@PLT</span><br><span class="line">	nop</span><br><span class="line">	popq	%rbp</span><br><span class="line">	.cfi_def_cfa 7, 8</span><br><span class="line">	ret</span><br><span class="line">	.cfi_endproc</span><br><span class="line">.LFE0:</span><br><span class="line">	.size	foo, .-foo</span><br><span class="line">	.ident	&quot;GCC: (Debian 10.2.1-6) 10.2.1 20210110&quot;</span><br><span class="line">	.section	.note.GNU-stack,&quot;&quot;,@progbits</span><br></pre></td></tr></table></figure>
-<h2 id="汇编">汇编</h2>
-<p>汇编器根据汇编指定和机器指令对应的表进行翻译，生成目标文件。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc -c hello.c -o hello.o</span><br><span class="line">gcc -c hello.s -o hello.o</span><br></pre></td></tr></table></figure>
-<p>此时hello.o是一个可重定位文件</p>
-<p><img src="/images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111182739761-2004410264.png" /></p>
-<p>使用objdump查看内容，可以发现此时由于没有链接，导致字符串的起始地址为0x0000，函数地址也用foo标识。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ocjdump -sd hello.o -M intel</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hello.o：     文件格式 elf64-x86-64</span><br><span class="line"></span><br><span class="line">Contents of section .text:</span><br><span class="line"> 0000 554889e5 488d3d00 000000e8 00000000  UH..H.=.........</span><br><span class="line"> 0010 be050000 00488d3d 00000000 b8000000  .....H.=........</span><br><span class="line"> 0020 00e80000 0000905d c3                 .......].       </span><br><span class="line">Contents of section .rodata:</span><br><span class="line"> 0000 48657265 20697320 61207465 7374206f  Here is a test o</span><br><span class="line"> 0010 66206763 63002564 0a00               f gcc.%d..      </span><br><span class="line">Contents of section .comment:</span><br><span class="line"> 0000 00474343 3a202844 65626961 6e203130  .GCC: (Debian 10</span><br><span class="line"> 0010 2e322e31 2d362920 31302e32 2e312032  .2.1-6) 10.2.1 2</span><br><span class="line"> 0020 30323130 31313000                    0210110.        </span><br><span class="line">Contents of section .eh_frame:</span><br><span class="line"> 0000 14000000 00000000 017a5200 01781001  .........zR..x..</span><br><span class="line"> 0010 1b0c0708 90010000 1c000000 1c000000  ................</span><br><span class="line"> 0020 00000000 29000000 00410e10 8602430d  ....)....A....C.</span><br><span class="line"> 0030 06640c07 08000000                    .d......        </span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">0000000000000000 &lt;foo&gt;:</span><br><span class="line">   0:   55                      push   rbp</span><br><span class="line">   1:   48 89 e5                mov    rbp,rsp</span><br><span class="line">   4:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # b &lt;foo+0xb&gt;</span><br><span class="line">   b:   e8 00 00 00 00          call   10 &lt;foo+0x10&gt;</span><br><span class="line">  10:   be 05 00 00 00          mov    esi,0x5</span><br><span class="line">  15:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # 1c &lt;foo+0x1c&gt;</span><br><span class="line">  1c:   b8 00 00 00 00          mov    eax,0x0</span><br><span class="line">  21:   e8 00 00 00 00          call   26 &lt;foo+0x26&gt;</span><br><span class="line">  26:   90                      nop</span><br><span class="line">  27:   5d                      pop    rbp</span><br><span class="line">  28:   c3                      ret    </span><br></pre></td></tr></table></figure>
-<h2 id="链接">链接</h2>
-<p>gcc默认使用动态链接，加入-static选项即可静态链接。将目标文件及其依赖库进行连接，生成可执行文件，主要包括 <strong>地址和空间分配</strong>，<strong>符号绑定</strong>，<strong>重定位</strong>。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc hello.o -o hello -static</span><br></pre></td></tr></table></figure>
-<p>由于使用静态链接，导致objdump后存在大量汇编指令</p>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/380180101">gcc 编译命令详解及最佳实践 - 知乎 (zhihu.com)</a></p>
-]]></content>
-      <categories>
-        <category>CTF</category>
-      </categories>
-      <tags>
-        <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>C语言函数调用栈的变化</title>
     <url>/2021/11/12/C%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E7%9A%84%E5%8F%98%E5%8C%96.html</url>
     <content><![CDATA[<p>函数调用过程中栈的变化情况，使用OD查看。</p>
@@ -157,6 +105,58 @@
       </categories>
       <tags>
         <tag>reversing</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>GCC编译过程</title>
+    <url>/2021/11/12/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B.html</url>
+    <content><![CDATA[<p>GCC（英文全拼：GNU Compiler Collection）是 GNU 工具链的主要组成部分，是一套以 GPL 和 LGPL 许可证发布的程序语言编译器自由软件，由 Richard Stallman 于 1985 年开始开发。</p>
+<span id="more"></span>
+<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630093923678-672911698.jpg" alt="查看源图像" /><figcaption aria-hidden="true">查看源图像</figcaption>
+</figure>
+<meta name="referrer" content="no-referrer"/>
+<p>GCC 原名为 GNU C语言编译器，因为它原本只能处理 C 语言，但如今的 GCC 不仅可以编译 C、C++ 和 Objective-C，还可以通过不同的前端模块支持各种语言，包括 Java、Fortran、Ada、Pascal、Go 和 D 语言等等。</p>
+<p>GCC 的编译过程可以划分为四个阶段：<strong>预处理（Pre-Processing）、编译（Compiling）、汇编（Assembling）以及链接（Linking）</strong>。</p>
+<p><img src="/images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111180607726-394481153.jpg" /></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HH 5</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Here is a static library\n&quot;</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,HH);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="预处理">预处理</h2>
+<p>主要是处理程序中以<strong>#</strong>开头的预处理指令，将其转换后插入文本中。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">gcc -e hello.c -o hello.i</span><br></pre></td></tr></table></figure>
+<ul>
+<li>递归处理#include预处理指令，将对应文件的内容复制到该处,出现了很多extern的函数原型</li>
+<li>删除#define，并且在其被引用处递归地展开所有的宏定义</li>
+<li>处理所有条件预处理指令 #if #ifdef</li>
+<li>删除注释</li>
+<li>添加行号和文件名标识</li>
+</ul>
+<p><img src="/images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111181618747-1578372619.png" /></p>
+<h2 id="编译">编译</h2>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc -S hello.c -o hello.s</span><br><span class="line">gcc -S hello.i -o hello.s -masm= intel -fno-asynchronous-unwind-tables</span><br></pre></td></tr></table></figure>
+<p>-masm= intel用于指定为intel格式</p>
+<p>-fno-asynchronous-unwind-tables 用于生成没有cfi宏的汇编指令，提高可读性</p>
+<p>可以看到只有单个参数的printf被替换成puts了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">	.file	&quot;hello.c&quot;</span><br><span class="line">	.text</span><br><span class="line">	.section	.rodata</span><br><span class="line">.LC0:</span><br><span class="line">	.string	&quot;Here is a test of gcc&quot;</span><br><span class="line">.LC1:</span><br><span class="line">	.string	&quot;%d\n&quot;</span><br><span class="line">	.text</span><br><span class="line">	.globl	foo</span><br><span class="line">	.type	foo, @function</span><br><span class="line">foo:</span><br><span class="line">.LFB0:</span><br><span class="line">	.cfi_startproc</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.cfi_def_cfa_offset 16</span><br><span class="line">	.cfi_offset 6, -16</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.cfi_def_cfa_register 6</span><br><span class="line">	leaq	.LC0(%rip), %rdi</span><br><span class="line">	call	puts@PLT</span><br><span class="line">	movl	$5, %esi</span><br><span class="line">	leaq	.LC1(%rip), %rdi</span><br><span class="line">	movl	$0, %eax</span><br><span class="line">	call	printf@PLT</span><br><span class="line">	nop</span><br><span class="line">	popq	%rbp</span><br><span class="line">	.cfi_def_cfa 7, 8</span><br><span class="line">	ret</span><br><span class="line">	.cfi_endproc</span><br><span class="line">.LFE0:</span><br><span class="line">	.size	foo, .-foo</span><br><span class="line">	.ident	&quot;GCC: (Debian 10.2.1-6) 10.2.1 20210110&quot;</span><br><span class="line">	.section	.note.GNU-stack,&quot;&quot;,@progbits</span><br></pre></td></tr></table></figure>
+<h2 id="汇编">汇编</h2>
+<p>汇编器根据汇编指定和机器指令对应的表进行翻译，生成目标文件。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc -c hello.c -o hello.o</span><br><span class="line">gcc -c hello.s -o hello.o</span><br></pre></td></tr></table></figure>
+<p>此时hello.o是一个可重定位文件</p>
+<p><img src="/images/GCC%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/2348945-20211111182739761-2004410264.png" /></p>
+<p>使用objdump查看内容，可以发现此时由于没有链接，导致字符串的起始地址为0x0000，函数地址也用foo标识。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ocjdump -sd hello.o -M intel</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hello.o：     文件格式 elf64-x86-64</span><br><span class="line"></span><br><span class="line">Contents of section .text:</span><br><span class="line"> 0000 554889e5 488d3d00 000000e8 00000000  UH..H.=.........</span><br><span class="line"> 0010 be050000 00488d3d 00000000 b8000000  .....H.=........</span><br><span class="line"> 0020 00e80000 0000905d c3                 .......].       </span><br><span class="line">Contents of section .rodata:</span><br><span class="line"> 0000 48657265 20697320 61207465 7374206f  Here is a test o</span><br><span class="line"> 0010 66206763 63002564 0a00               f gcc.%d..      </span><br><span class="line">Contents of section .comment:</span><br><span class="line"> 0000 00474343 3a202844 65626961 6e203130  .GCC: (Debian 10</span><br><span class="line"> 0010 2e322e31 2d362920 31302e32 2e312032  .2.1-6) 10.2.1 2</span><br><span class="line"> 0020 30323130 31313000                    0210110.        </span><br><span class="line">Contents of section .eh_frame:</span><br><span class="line"> 0000 14000000 00000000 017a5200 01781001  .........zR..x..</span><br><span class="line"> 0010 1b0c0708 90010000 1c000000 1c000000  ................</span><br><span class="line"> 0020 00000000 29000000 00410e10 8602430d  ....)....A....C.</span><br><span class="line"> 0030 06640c07 08000000                    .d......        </span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line">0000000000000000 &lt;foo&gt;:</span><br><span class="line">   0:   55                      push   rbp</span><br><span class="line">   1:   48 89 e5                mov    rbp,rsp</span><br><span class="line">   4:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # b &lt;foo+0xb&gt;</span><br><span class="line">   b:   e8 00 00 00 00          call   10 &lt;foo+0x10&gt;</span><br><span class="line">  10:   be 05 00 00 00          mov    esi,0x5</span><br><span class="line">  15:   48 8d 3d 00 00 00 00    lea    rdi,[rip+0x0]        # 1c &lt;foo+0x1c&gt;</span><br><span class="line">  1c:   b8 00 00 00 00          mov    eax,0x0</span><br><span class="line">  21:   e8 00 00 00 00          call   26 &lt;foo+0x26&gt;</span><br><span class="line">  26:   90                      nop</span><br><span class="line">  27:   5d                      pop    rbp</span><br><span class="line">  28:   c3                      ret    </span><br></pre></td></tr></table></figure>
+<h2 id="链接">链接</h2>
+<p>gcc默认使用动态链接，加入-static选项即可静态链接。将目标文件及其依赖库进行连接，生成可执行文件，主要包括 <strong>地址和空间分配</strong>，<strong>符号绑定</strong>，<strong>重定位</strong>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gcc hello.o -o hello -static</span><br></pre></td></tr></table></figure>
+<p>由于使用静态链接，导致objdump后存在大量汇编指令</p>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/380180101">gcc 编译命令详解及最佳实践 - 知乎 (zhihu.com)</a></p>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>pwn</tag>
       </tags>
   </entry>
   <entry>
@@ -265,6 +265,26 @@
       </tags>
   </entry>
   <entry>
+    <title>ROC曲线</title>
+    <url>/2022/07/02/ROC%E6%9B%B2%E7%BA%BF.html</url>
+    <content><![CDATA[<h1 id="roc曲线">ROC曲线</h1>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#from sklearn.metrics import accuracy_score, classification_report,recall_score</span></span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> roc_curve, auc</span><br></pre></td></tr></table></figure>
+<p>注意实际的和预测的概率不能调换，而且要用score值，不能用0，1</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fpr, tpr, thresholds = roc_curve(val_true, val_score)</span><br><span class="line">auc = auc(fpr, tpr)</span><br><span class="line">ax, =plt.plot(fpr, tpr, color=<span class="string">&#x27;darkorange&#x27;</span>)</span><br><span class="line">plt.plot([<span class="number">0</span>, <span class="number">1</span>], [<span class="number">0</span>, <span class="number">1</span>], color=<span class="string">&#x27;navy&#x27;</span>, linestyle=<span class="string">&#x27;--&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;False Positive Rate&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;True Positive Rate&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;ROC&#x27;</span>)</span><br><span class="line">plt.legend([ax],[<span class="string">&#x27;ROC curve (area = %0.2f)&#x27;</span> % auc])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p><strong>深度学习中需要注意的一个问题：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y_pred,event_pred = multi_model(batch_text0,batch_text1,batch_text2,batch_image)</span><br></pre></td></tr></table></figure>
+<p>此时y_pred是batch_size * 2的tensor，2分别代表的是预测为0和1的概率</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">val_score.extend([b <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br><span class="line">val_score.extend([<span class="built_in">max</span>(a,b) <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br></pre></td></tr></table></figure>
+<p>我们要的是预测为1的概率，这里要用b，不能用max或者a</p>
+]]></content>
+      <categories>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>deep_learning</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>PWN入门</title>
     <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
     <content><![CDATA[<p>pwn 入门学习，走一遍流程</p>
@@ -311,76 +331,6 @@
       </categories>
       <tags>
         <tag>pwn</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ROC曲线</title>
-    <url>/2022/07/02/ROC%E6%9B%B2%E7%BA%BF.html</url>
-    <content><![CDATA[<h1 id="roc曲线">ROC曲线</h1>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#from sklearn.metrics import accuracy_score, classification_report,recall_score</span></span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> roc_curve, auc</span><br></pre></td></tr></table></figure>
-<p>注意实际的和预测的概率不能调换，而且要用score值，不能用0，1</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fpr, tpr, thresholds = roc_curve(val_true, val_score)</span><br><span class="line">auc = auc(fpr, tpr)</span><br><span class="line">ax, =plt.plot(fpr, tpr, color=<span class="string">&#x27;darkorange&#x27;</span>)</span><br><span class="line">plt.plot([<span class="number">0</span>, <span class="number">1</span>], [<span class="number">0</span>, <span class="number">1</span>], color=<span class="string">&#x27;navy&#x27;</span>, linestyle=<span class="string">&#x27;--&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;False Positive Rate&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;True Positive Rate&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;ROC&#x27;</span>)</span><br><span class="line">plt.legend([ax],[<span class="string">&#x27;ROC curve (area = %0.2f)&#x27;</span> % auc])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
-<p><strong>深度学习中需要注意的一个问题：</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y_pred,event_pred = multi_model(batch_text0,batch_text1,batch_text2,batch_image)</span><br></pre></td></tr></table></figure>
-<p>此时y_pred是batch_size * 2的tensor，2分别代表的是预测为0和1的概率</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">val_score.extend([b <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br><span class="line">val_score.extend([<span class="built_in">max</span>(a,b) <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br></pre></td></tr></table></figure>
-<p>我们要的是预测为1的概率，这里要用b，不能用max或者a</p>
-]]></content>
-      <categories>
-        <category>深度学习</category>
-      </categories>
-      <tags>
-        <tag>deep_learning</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Word2vec</title>
-    <url>/2021/10/17/word2vec.html</url>
-    <content><![CDATA[<figure>
-<img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630094304313-1930423377.png" alt="查看源图像" /><figcaption aria-hidden="true">查看源图像</figcaption>
-</figure>
-<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
-<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="基础概念">基础概念</h2>
-<h3 id="语料">语料</h3>
-<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
-<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
-<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
-<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
-<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
-<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
-<h3 id="模型基础">模型基础</h3>
-<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
-<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
-<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
-<h2 id="word2vec网络结构">word2vec网络结构</h2>
-<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
-<h3 id="cbow模型">CBOW模型</h3>
-<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
-<h3 id="skip-gram模型">skip-gram模型</h3>
-<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
-<h2 id="word2vec实践">word2vec实践</h2>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
-<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
-]]></content>
-      <categories>
-        <category>deep_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -660,42 +610,53 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
       </tags>
   </entry>
   <entry>
-    <title>xctf-unserialize3</title>
-    <url>/2021/11/12/xctf-unserialize3.html</url>
-    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
+    <title>Word2vec</title>
+    <url>/2021/10/17/word2vec.html</url>
+    <content><![CDATA[<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630094304313-1930423377.png" alt="查看源图像" /><figcaption aria-hidden="true">查看源图像</figcaption>
+</figure>
+<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
+<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
 <span id="more"></span>
 <meta name="referrer" content="no-referrer"/>
-<h3 id="序列化和反序列化">序列化和反序列化</h3>
-<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
-<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
-<h4 id="例子">例子：</h4>
-<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
-<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
-<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
-<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
-<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
-<h3 id="魔法函数">魔法函数</h3>
-<figure>
-<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
-</figure>
-<h3 id="题目分析">题目分析</h3>
-<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
-<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
-<p>code可能是XCTF类序列化再反序列化的结果</p>
-<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
-<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
-<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
+<h2 id="基础概念">基础概念</h2>
+<h3 id="语料">语料</h3>
+<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
+<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
+<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
+<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
+<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
+<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
+<h3 id="模型基础">模型基础</h3>
+<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
+<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
+<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
+<h2 id="word2vec网络结构">word2vec网络结构</h2>
+<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
+<h3 id="cbow模型">CBOW模型</h3>
+<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
+<h3 id="skip-gram模型">skip-gram模型</h3>
+<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
+<h2 id="word2vec实践">word2vec实践</h2>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
+<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
 ]]></content>
       <categories>
-        <category>CTF</category>
+        <category>deep_learning</category>
       </categories>
       <tags>
-        <tag>web</tag>
+        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -737,6 +698,45 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
 <li><p>flag:<img src="/images/xctf-fakebook/2348945-20210803115421633-1711242055.png" alt="image-20210803115419560" /></p>
 <p>iframe中的base64编码数据解码之后也可以看到flag</p></li>
 </ol>
+]]></content>
+      <categories>
+        <category>CTF</category>
+      </categories>
+      <tags>
+        <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>xctf-unserialize3</title>
+    <url>/2021/11/12/xctf-unserialize3.html</url>
+    <content><![CDATA[<p>xctf web php序列化和反序列化</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h3 id="序列化和反序列化">序列化和反序列化</h3>
+<p>序列化通俗来讲就是将对象转化为可以传输的字符串；</p>
+<p>反序列化就是把那串可以传输的字符串再变回对象。</p>
+<h4 id="例子">例子：</h4>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">chybeta</span></span>&#123;</span><br><span class="line">        <span class="keyword">var</span> <span class="variable">$test</span> = <span class="string">&#x27;123&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$class1</span> = <span class="keyword">new</span> chybeta;    <span class="comment">//这里就是创建啦一个新的对象</span></span><br><span class="line"><span class="variable">$class1_ser</span> = serialize(<span class="variable">$class1</span>);   <span class="comment">//将这个对象进行字符串封装，就是对其进行序列化</span></span><br><span class="line">print_r(<span class="variable">$class1_ser</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img src="../images/xctf-unserialize3/20190814175124372.png" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<p>来解释一下：O:7:"chybeta":1:{s:4:"test";s:3:"123";}</p>
+<p>这里的O呢就是object对象的意思，数字7代表着对象的函数名有7个占位，然后就是对象名了</p>
+<p>这个数字1表示对象里有一个变量，大括号里的s代表的是string类型还有一个i是int型</p>
+<p>再使用反序列化函数，结果print为chybeta Object([test] =&gt; 123)</p>
+<p>原文链接：https://blog.csdn.net/LTtiandd/article/details/99591998</p>
+<h3 id="魔法函数">魔法函数</h3>
+<figure>
+<img src="/images/xctf-unserialize3/2348945-20210802102700561-1202520313.png" alt="在这里插入图片描述" /><figcaption aria-hidden="true">在这里插入图片描述</figcaption>
+</figure>
+<h3 id="题目分析">题目分析</h3>
+<p>访问看到<img src="/images/xctf-unserialize3/2348945-20210802102055943-1130257407.png" alt="image-20210802102055048" /></p>
+<p>明显需要看出需要绕过__wakeup函数才行，？code表名使用GET方法传参数__</p>
+<p>code可能是XCTF类序列化再反序列化的结果</p>
+<p>**_wakeup()函数漏洞原理：当序列化字符串表示对象属性个数的值大于真实个数的属性时就会跳过__wakeup的执行。**</p>
+<p>所以将对象数改成1以上的值就可以，也就是XCTF后的2，表示的是类中的变量的个数。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">payload: ?code=O:4:&quot;xctf&quot;:2:&#123;s:4:&quot;flag&quot;;s:3:&quot;111&quot;;&#125;</span><br></pre></td></tr></table></figure>
+<p>参考：<a href="https://blog.csdn.net/qq_36438489/article/details/106141535">(3条消息) 攻防世界-unserialize3_魔术函数，以及wakeup（）函数的绕过_Kvein Fisher的博客-CSDN博客</a></p>
 ]]></content>
       <categories>
         <category>CTF</category>

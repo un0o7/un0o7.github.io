@@ -4337,7 +4337,7 @@ h1.page-title + .tag-cloud-list {
   transform: rotate(360deg);
 }
 #vcomment textarea {
-  background: url("/img/background.jpg# valine background") 100% 100% no-repeat;
+  background: url("afefef") 100% 100% no-repeat;
 }
 #vcomment textarea:focus {
   background-image: none;

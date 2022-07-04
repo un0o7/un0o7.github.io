@@ -261,14 +261,14 @@
   </url>
   
   <url>
-    <loc>http://un0o7.github.io/tags/pwn/</loc>
+    <loc>http://un0o7.github.io/tags/reversing/</loc>
     <lastmod>2022-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://un0o7.github.io/tags/reversing/</loc>
+    <loc>http://un0o7.github.io/tags/pwn/</loc>
     <lastmod>2022-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -283,13 +283,6 @@
   
   <url>
     <loc>http://un0o7.github.io/tags/deep-learning/</loc>
-    <lastmod>2022-07-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://un0o7.github.io/tags/model/</loc>
     <lastmod>2022-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -311,6 +304,13 @@
   
   <url>
     <loc>http://un0o7.github.io/tags/deep-learngin/</loc>
+    <lastmod>2022-07-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://un0o7.github.io/tags/model/</loc>
     <lastmod>2022-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
