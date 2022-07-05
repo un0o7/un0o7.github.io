@@ -265,26 +265,6 @@
       </tags>
   </entry>
   <entry>
-    <title>ROC曲线</title>
-    <url>/2022/07/02/ROC%E6%9B%B2%E7%BA%BF.html</url>
-    <content><![CDATA[<h1 id="roc曲线">ROC曲线</h1>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#from sklearn.metrics import accuracy_score, classification_report,recall_score</span></span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> roc_curve, auc</span><br></pre></td></tr></table></figure>
-<p>注意实际的和预测的概率不能调换，而且要用score值，不能用0，1</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fpr, tpr, thresholds = roc_curve(val_true, val_score)</span><br><span class="line">auc = auc(fpr, tpr)</span><br><span class="line">ax, =plt.plot(fpr, tpr, color=<span class="string">&#x27;darkorange&#x27;</span>)</span><br><span class="line">plt.plot([<span class="number">0</span>, <span class="number">1</span>], [<span class="number">0</span>, <span class="number">1</span>], color=<span class="string">&#x27;navy&#x27;</span>, linestyle=<span class="string">&#x27;--&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;False Positive Rate&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;True Positive Rate&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;ROC&#x27;</span>)</span><br><span class="line">plt.legend([ax],[<span class="string">&#x27;ROC curve (area = %0.2f)&#x27;</span> % auc])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
-<p><strong>深度学习中需要注意的一个问题：</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y_pred,event_pred = multi_model(batch_text0,batch_text1,batch_text2,batch_image)</span><br></pre></td></tr></table></figure>
-<p>此时y_pred是batch_size * 2的tensor，2分别代表的是预测为0和1的概率</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">val_score.extend([b <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br><span class="line">val_score.extend([<span class="built_in">max</span>(a,b) <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br></pre></td></tr></table></figure>
-<p>我们要的是预测为1的概率，这里要用b，不能用max或者a</p>
-]]></content>
-      <categories>
-        <category>深度学习</category>
-      </categories>
-      <tags>
-        <tag>deep_learning</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>PWN入门</title>
     <url>/2021/11/12/PWN%E5%85%A5%E9%97%A8.html</url>
     <content><![CDATA[<p>pwn 入门学习，走一遍流程</p>
@@ -363,6 +343,26 @@
       </categories>
       <tags>
         <tag>conda</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ROC曲线</title>
+    <url>/2022/07/02/ROC%E6%9B%B2%E7%BA%BF.html</url>
+    <content><![CDATA[<h1 id="roc曲线">ROC曲线</h1>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#from sklearn.metrics import accuracy_score, classification_report,recall_score</span></span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> roc_curve, auc</span><br></pre></td></tr></table></figure>
+<p>注意实际的和预测的概率不能调换，而且要用score值，不能用0，1</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">fpr, tpr, thresholds = roc_curve(val_true, val_score)</span><br><span class="line">auc = auc(fpr, tpr)</span><br><span class="line">ax, =plt.plot(fpr, tpr, color=<span class="string">&#x27;darkorange&#x27;</span>)</span><br><span class="line">plt.plot([<span class="number">0</span>, <span class="number">1</span>], [<span class="number">0</span>, <span class="number">1</span>], color=<span class="string">&#x27;navy&#x27;</span>, linestyle=<span class="string">&#x27;--&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;False Positive Rate&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;True Positive Rate&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;ROC&#x27;</span>)</span><br><span class="line">plt.legend([ax],[<span class="string">&#x27;ROC curve (area = %0.2f)&#x27;</span> % auc])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p><strong>深度学习中需要注意的一个问题：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y_pred,event_pred = multi_model(batch_text0,batch_text1,batch_text2,batch_image)</span><br></pre></td></tr></table></figure>
+<p>此时y_pred是batch_size * 2的tensor，2分别代表的是预测为0和1的概率</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">val_score.extend([b <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br><span class="line">val_score.extend([<span class="built_in">max</span>(a,b) <span class="keyword">for</span> a,b <span class="keyword">in</span> y_pred.detach().cpu().numpy().tolist()])</span><br></pre></td></tr></table></figure>
+<p>我们要的是预测为1的概率，这里要用b，不能用max或者a</p>
+]]></content>
+      <categories>
+        <category>深度学习</category>
+      </categories>
+      <tags>
+        <tag>deep_learning</tag>
       </tags>
   </entry>
   <entry>
@@ -473,6 +473,56 @@
       </categories>
       <tags>
         <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Word2vec</title>
+    <url>/2021/10/17/word2vec.html</url>
+    <content><![CDATA[<figure>
+<img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630094304313-1930423377.png" alt="查看源图像" /><figcaption aria-hidden="true">查看源图像</figcaption>
+</figure>
+<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
+<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<h2 id="基础概念">基础概念</h2>
+<h3 id="语料">语料</h3>
+<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
+<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
+<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
+<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
+<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
+<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
+<h3 id="模型基础">模型基础</h3>
+<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
+<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
+<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
+<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
+<h2 id="word2vec网络结构">word2vec网络结构</h2>
+<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
+<h3 id="cbow模型">CBOW模型</h3>
+<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
+<h3 id="skip-gram模型">skip-gram模型</h3>
+<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
+<h2 id="word2vec实践">word2vec实践</h2>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
+<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
+]]></content>
+      <categories>
+        <category>deep_learning</category>
+      </categories>
+      <tags>
+        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -610,56 +660,6 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
       </tags>
   </entry>
   <entry>
-    <title>Word2vec</title>
-    <url>/2021/10/17/word2vec.html</url>
-    <content><![CDATA[<figure>
-<img src="https://img2022.cnblogs.com/blog/2348945/202206/2348945-20220630094304313-1930423377.png" alt="查看源图像" /><figcaption aria-hidden="true">查看源图像</figcaption>
-</figure>
-<p>Word2Vec是语言模型中的一种，它是从大量文本预料中以无监督方式学习语义知识的模型，被广泛地应用于自然语言处理中。</p>
-<p>Word2Vec是用来生成词向量的工具，而词向量与语言模型有着密切的关系。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<h2 id="基础概念">基础概念</h2>
-<h3 id="语料">语料</h3>
-<p>看word2vec之前可以先看<a href="https://www.cnblogs.com/dddddblog/p/n_gram.html">n-gram模型</a></p>
-<p>word2vec是一个统计语言模型，通过计算条件概率来预测和生成向量。</p>
-<p>n-gram模型在语料库足够大的情况下，不单独统计各个条件概率，而是直接使用这种大概的方式，减少计算</p>
-<p>​ <span class="math display">\[p(w_k|w_{k-n+1},...,w_{k-1}) = \frac{count(w_{k-n},...,w_k)}{count(w_{k-n+1},...w_{k-1})}\]</span></p>
-<p>参数n（word2vec中的窗口大小）确定需要根据模型参数的数量来确定。一般来说越大越好，后面效果增加减少。</p>
-<p>对于统计语言模型而言，利用最大似然，可把目标函数设为：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+%5Cprod_%7Bw+%5Cin+C%7D%5E%7B%7D+p%28w%7CContext%28w%29%29+%5C%5C" alt="[公式]" /> 其中，C表示语料(Corpus)，Context(w)表示词w的上下文，即w周边的词的集合。当Context(w)为空时，就取 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29%3D+p%28w%29" alt="[公式]" /> 。特别地，对于前面介绍的n-gram模型，就有 <img src="https://www.zhihu.com/equation?tex=Context%28w_%7Bi%7D+%3D+w_%7Bi-n%2B1%7D%2C...%2Cw_%7Bi-1%7D%29" alt="[公式]" /> 。</p>
-<h3 id="模型基础">模型基础</h3>
-<p>当然，实际应用中常采用最大对数似然，即把目标函数设为</p>
-<p><img src="https://www.zhihu.com/equation?tex=L+%3D+%5Csum_%7Bw+%5Cin+C%7D%5E%7B%7D%7Blog+p%28w%7CContext%28w%29%29%7D++%5Ctag%7B4%7D%5C%5C" alt="[公式]" /> 然后对这个函数进行最大化。</p>
-<p>从公式（4）可见，概率 <img src="https://www.zhihu.com/equation?tex=p%28w%7CContext%28w%29%29" alt="[公式]" /> 已被视为关于w和Context(w)的函数，即：</p>
-<p><img src="https://www.zhihu.com/equation?tex=+p%28w%7CContext%28w%29%29+%3D+F%28w%2C+Context%28w%29%2C+%5Ctheta%29+%5C%5C" alt="[公式]" /> 其中 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 为待定参数集。这样一来，一旦对（4）进行优化得到最优参数集 <img src="https://www.zhihu.com/equation?tex=%5Ctheta%5E%7B+%2A%7D" alt="[公式]" /> 后，F也就唯一被确定了，以后任何概率p(w|Context(w))就可以通过函数 <img src="https://www.zhihu.com/equation?tex=F%28w%2C+Context%28w%29%2C+%5Ctheta%5E%7B+%2A%7D%29" alt="[公式]" /> 来计算了。与n-gram相比，这种方法不需要事先计算并保存所有的概率值，而是通过直接计算来获取，且通选取合适的模型可使得 <img src="https://www.zhihu.com/equation?tex=%5Ctheta" alt="[公式]" /> 中参数的个数远小于n-gram中模型参数的个数。</p>
-<h2 id="word2vec网络结构">word2vec网络结构</h2>
-<p>word2vec是轻量级的神经网络，其模型仅仅包括输入层、隐藏层和输出层，分为CBOW和Skip-gram模型。CBOW是知道上下文语料的情况下，预测当前的词。skip-gram则是根据一个词预测上下文。上下文是指根据window_size设置的前后各n个词。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202110/2348945-20211013225352657-2105331470.png" /></p>
-<h3 id="cbow模型">CBOW模型</h3>
-<p><img src="https://pic3.zhimg.com/80/v2-55eadeeae1fb93907d9b3da9aabed576_720w.jpg" /></p>
-<h3 id="skip-gram模型">skip-gram模型</h3>
-<p><img src="https://pic4.zhimg.com/80/v2-3baa8ea48cf7028510871a2894ffbb97_720w.jpg" /></p>
-<h2 id="word2vec实践">word2vec实践</h2>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch.autograd <span class="keyword">as</span> autograd</span><br><span class="line"><span class="keyword">import</span> torch.optim <span class="keyword">as</span> optim</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">CONTEXT_SIZE = <span class="number">2</span>  <span class="comment"># 2 words to the left, 2 to the right</span></span><br><span class="line">raw_text = <span class="string">&quot;&quot;&quot;We are about to study the idea of a computational process.</span></span><br><span class="line"><span class="string">Computational processes are abstract beings that inhabit computers.</span></span><br><span class="line"><span class="string">As they evolve, processes manipulate other abstract things called data.</span></span><br><span class="line"><span class="string">The evolution of a process is directed by a pattern of rules</span></span><br><span class="line"><span class="string">called a program. People create programs to direct processes. In effect,</span></span><br><span class="line"><span class="string">we conjure the spirits of the computer with our spells.&quot;&quot;&quot;</span>.split()</span><br><span class="line"></span><br><span class="line"><span class="comment"># By deriving a set from `raw_text`, we deduplicate the array</span></span><br><span class="line">vocab = <span class="built_in">set</span>(raw_text)</span><br><span class="line">vocab_size = <span class="built_in">len</span>(vocab)</span><br><span class="line"></span><br><span class="line">word_to_ix = &#123;word: i <span class="keyword">for</span> i, word <span class="keyword">in</span> <span class="built_in">enumerate</span>(vocab)&#125;</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(raw_text) - <span class="number">2</span>):</span><br><span class="line">    context = [raw_text[i - <span class="number">2</span>], raw_text[i - <span class="number">1</span>],</span><br><span class="line">               raw_text[i + <span class="number">1</span>], raw_text[i + <span class="number">2</span>]]</span><br><span class="line">    target = raw_text[i]</span><br><span class="line">    data.append((context, target))</span><br><span class="line"><span class="built_in">print</span>(data[:<span class="number">5</span>])</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CBOW</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, vocab_size, embedding_dim, context_size</span>):</span></span><br><span class="line">        <span class="built_in">super</span>(CBOW, self).__init__()</span><br><span class="line">        self.embeddings = nn.Embedding(vocab_size, embedding_dim)</span><br><span class="line">        self.linear1 = nn.Linear(context_size * embedding_dim, <span class="number">128</span>)</span><br><span class="line">        self.linear2 = nn.Linear(<span class="number">128</span>, vocab_size)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, inputs</span>):</span></span><br><span class="line">        embeds = self.embeddings(inputs).view((<span class="number">1</span>, -<span class="number">1</span>))</span><br><span class="line">        out = F.relu(self.linear1(embeds))</span><br><span class="line">        out = self.linear2(out)</span><br><span class="line">        log_probs = F.log_softmax(out, dim=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span>(log_probs)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">make_context_vector</span>(<span class="params">context, word_to_ix</span>):</span></span><br><span class="line">    idxs = [word_to_ix[w] <span class="keyword">for</span> w <span class="keyword">in</span> context]</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(idxs, dtype=torch.long)</span><br><span class="line">make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">device = torch.device(<span class="string">&#x27;cuda:0&#x27;</span>)</span><br><span class="line">losses = []</span><br><span class="line">loss_function = nn.NLLLoss()</span><br><span class="line">model = CBOW(<span class="built_in">len</span>(vocab), embedding_dim=<span class="number">10</span>, context_size=CONTEXT_SIZE*<span class="number">2</span>)</span><br><span class="line">model.to(device)</span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.1</span>)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    total_loss = torch.Tensor([<span class="number">0</span>])</span><br><span class="line">    <span class="keyword">for</span> context, target <span class="keyword">in</span> data:</span><br><span class="line">        context_ids = make_context_vector(context, word_to_ix)</span><br><span class="line">        context_ids = context_ids.to(device)</span><br><span class="line">        model.zero_grad()</span><br><span class="line">        log_probs = model(context_ids)</span><br><span class="line">        label = torch.tensor([word_to_ix[target]], dtype=torch.long)</span><br><span class="line">        label = label.to(device)</span><br><span class="line">        loss = loss_function(log_probs, label)</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line">        total_loss += loss.item()</span><br><span class="line">    losses.append(total_loss)</span><br><span class="line"><span class="built_in">print</span>(losses)</span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">model.embeddings(make_context_vector(data[<span class="number">0</span>][<span class="number">0</span>], word_to_ix))</span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p>[1] <a href="https://zhuanlan.zhihu.com/p/114538417">深入浅出Word2Vec原理解析 - 知乎 (zhihu.com)</a></p>
-<p>[2] <a href="https://samaelchen.github.io/word2vec_pytorch/">word2vec的PyTorch实现 | 碎碎念 (samaelchen.github.io)</a></p>
-]]></content>
-      <categories>
-        <category>deep_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>xctf-fakebook</title>
     <url>/2021/11/12/xctf-fakebook.html</url>
     <content><![CDATA[<p>攻防世界-web-fakebook结题过程</p>
@@ -704,6 +704,68 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
       </categories>
       <tags>
         <tag>web</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>RandomForest</title>
+    <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
+    <content><![CDATA[<h2 id="决策树">决策树</h2>
+<p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p>
+<span id="more"></span>
+<meta name="referrer" content="no-referrer"/>
+<p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p>
+<h3 id="分类决策树">分类决策树</h3>
+<p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p>
+<p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p>
+<p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p>
+<p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p>
+<p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
+<h3 id="回归决策树">回归决策树</h3>
+<h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3>
+<p>这里复习一下<strong>回归和拟合的区别</strong>：</p>
+<p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p>
+<p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p>
+<p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p>
+<figure>
+<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2>
+<h3 id="简介">简介</h3>
+<p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p>
+<p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p>
+<h3 id="决策树生成规则">决策树生成规则</h3>
+<ol type="1">
+<li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li>
+<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
+<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
+</ol>
+<p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p>
+<p>两个随机：随机取样和随机取m个特征。</p>
+<h3 id="分类效果">分类效果</h3>
+<ul>
+<li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li>
+<li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li>
+</ul>
+<p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p>
+<h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3>
+<p>袋外错误率主要用于选取最佳的m值。</p>
+<p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p>
+<p>最终得到每个样本是否被正确预测，计算袋外错误率。</p>
+<h3 id="代码使用">代码使用</h3>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考">参考</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p>
+<p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p>
+<p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p>
+<p>https://www.zhihu.com/question/24904495/answer/371618173</p>
+]]></content>
+      <categories>
+        <category>machine_learning</category>
+      </categories>
+      <tags>
+        <tag>model</tag>
       </tags>
   </entry>
   <entry>
@@ -869,68 +931,6 @@ P E_{(p o s, 2 i+1)}=\cos \left(p o s / 10000^{2 i / d}\right)
       </categories>
       <tags>
         <tag>优化算法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>RandomForest</title>
-    <url>/2021/10/17/%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97.html</url>
-    <content><![CDATA[<h2 id="决策树">决策树</h2>
-<p>先来复习一下决策树，根据预测结果不同，决策树分为回归决策树和分类决策树。很多的决策树集成，就成为了森林。常见的算法有随机森林和GDBT。</p>
-<span id="more"></span>
-<meta name="referrer" content="no-referrer"/>
-<p>决策树是一种树形结构每个内部分支都是基于一个属性，每个叶节点代表一种类型。其实决策树就是在将一个多维（特征个数）空间进行划分，切分，产生不同类别。</p>
-<h3 id="分类决策树">分类决策树</h3>
-<p>分类决策树本身就是通过计算信息增益，选择特征，根据特征的值的个数形成分支，剪支（还没学）。</p>
-<p><span class="math inline">\(x_i\)</span>代表某个特征的取值，<span class="math inline">\(P(x_i)\)</span>代表该类型的占比，<strong>信息熵</strong>衡量的是该特征的<strong>混乱程度</strong>，公式：</p>
-<p>​ <span class="math display">\[H(X)=-\sum_{i=1}^{n}p(x_i)log p(x_i)\]</span></p>
-<p>决策树要做的就是通过对比使用每个特征进行分支产生的信息增益--信息熵的减少程度来选择特征。</p>
-<p>参考：<a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
-<h3 id="回归决策树">回归决策树</h3>
-<h3 id="classification-and-regression-tree-cart">（classification and regression tree, CART）</h3>
-<p>这里复习一下<strong>回归和拟合的区别</strong>：</p>
-<p>回归分析：是一种统计学上分析数据的方法，目的在于了解两个或多个变量间<strong>是否相关</strong>、<strong>相关方向与强度</strong>，并建立数学模型以便观察特定变量来预测研究者感兴趣的变量。</p>
-<p>拟合：是一种把现有数据透过数学方法来代入<strong>一条数式</strong>的表示方式。</p>
-<p>回归决策树将一个内部节点中的所有数据的该特征的平均值作为预测值。</p>
-<p><img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925133815973-632336899.png" alt="img" style="zoom: 50%;" /></p>
-<figure>
-<img src="https://img2020.cnblogs.com/blog/2348945/202109/2348945-20210925132930783-421450240.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
-</figure>
-<h2 id="随机森林算法random-forestrf">随机森林算法（random forest,RF）</h2>
-<h3 id="简介">简介</h3>
-<p>随机森林是一种基于集成学习的思想和决策树模型而产生的分类器。<strong>集成学习（Ensemble Learning）</strong>通过使用多个弱分类器，来组成一个强分类器，提高准确率。使用多个不同决策树<strong>独立</strong>的决策结果，少数服从多数的方法来分类。</p>
-<p>少数优秀的树的预测结果将会超脱于芸芸“噪音”，做出一个好的预测。将若干个弱分类器的分类结果进行投票选择，从而组成一个强分类器，这就是随机森林<strong>bagging</strong>的思想。bagging的代价是不用单棵决策树来做预测，<strong>具体哪个变量起到重要作用变得未知</strong>，所以bagging<strong>改进了预测准确率但损失了解释性</strong>。</p>
-<h3 id="决策树生成规则">决策树生成规则</h3>
-<ol type="1">
-<li>如果训练集大小为N，对于每棵树而言，随机且有放回地从训练集中的抽取N个训练样本（这种采样方式称为bootstrap sample方法），作为该树的训练集；（<strong>bootstrap sample取样方法</strong>，随机有放回）</li>
-<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，随机地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
-<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
-</ol>
-<p><strong>解释</strong>：随机抽样可以让<strong>每个决策树使用的数据集不同</strong>，给出不同的预测结果。有放回不至于让每个决策树得到数据集中的一部分，这样的结果是<strong>片面的</strong>。</p>
-<p>两个随机：随机取样和随机取m个特征。</p>
-<h3 id="分类效果">分类效果</h3>
-<ul>
-<li>森林中任意两棵树的相关性：相关性越大，错误率越大；</li>
-<li>森林中每棵树的分类能力：每棵树的分类能力越强，整个森林的错误率越低。</li>
-</ul>
-<p>　　减小特征选择个数m，树的相关性和分类能力也会相应的降低；增大m，两者也会随之增大。所以关键问题是如何选择最优的m（或者是范围），这也是随机森林唯一的一个参数。</p>
-<h3 id="袋外错误率out-of-bag-error">袋外错误率（out of bag error）</h3>
-<p>袋外错误率主要用于选取最佳的m值。</p>
-<p>对每个样本，使用没有选择这个样本的决策树进行预测，使用少数服从多数的方法，得到预测结果。</p>
-<p>最终得到每个样本是否被正确预测，计算袋外错误率。</p>
-<h3 id="代码使用">代码使用</h3>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line">rfc = RandomForestClassifier(n_estimators=<span class="number">100</span>)<span class="comment">#树的数量</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考">参考</h2>
-<p><a href="https://zhuanlan.zhihu.com/p/373879791">决策树之分类树与回归树 - 知乎 (zhihu.com)</a></p>
-<p>[<a href="https://zhuanlan.zhihu.com/p/406627649">机器学习基础复习] 随机森林(Random Forest) - 知乎 (zhihu.com)</a></p>
-<p><a href="https://blog.csdn.net/Daycym/article/details/84455299">(12条消息) 【机器学习】分类决策树与回归决策树案例_Daycym的博客-CSDN博客</a></p>
-<p><a href="https://blog.csdn.net/cpc784221489/article/details/92085702">(12条消息) 随机森林算法详解_阿斯达克-CSDN博客_随机森林详解</a></p>
-<p>https://www.zhihu.com/question/24904495/answer/371618173</p>
-]]></content>
-      <categories>
-        <category>machine_learning</category>
-      </categories>
-      <tags>
-        <tag>model</tag>
       </tags>
   </entry>
   <entry>
